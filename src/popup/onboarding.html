@@ -10,81 +10,100 @@
       margin: 60px auto;
       padding: 20px;
       color: #0f172a;
-      background-color: #f8fafc;
+      background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
       line-height: 1.6;
+      min-height: 80vh;
     }
     .card {
       background: white;
       padding: 40px;
-      border-radius: 16px;
+      border-radius: 20px;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
     }
-    h1 { margin-top: 0; color: #1e3a8a; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-    .subtitle { font-size: 16px; color: #64748b; margin-bottom: 24px; }
-    .features { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0; }
+    h1 { margin-top: 0; color: #1e3a8a; font-size: 32px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .subtitle { font-size: 16px; color: #475569; margin-bottom: 24px; }
+    .features { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 32px 0; }
     .feature-card {
       background: #f8fafc;
-      padding: 16px;
-      border-radius: 12px;
+      padding: 20px;
+      border-radius: 14px;
       border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
-    .feature-icon { font-size: 24px; margin-bottom: 8px; }
-    .feature-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-    .feature-desc { font-size: 12px; color: #475569; }
+    .feature-icon { font-size: 28px; margin-bottom: 12px; }
+    .feature-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: #0f172a; }
+    .feature-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
     
-    .setup-box {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
+    .promo-box {
+      background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
+      color: white;
+      border-radius: 16px;
       padding: 24px;
       margin-top: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
-    .setup-title { font-weight: 700; color: #1e3a8a; margin-top: 0; margin-bottom: 12px; }
-    input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 14px;
-      box-sizing: border-box;
-      margin-bottom: 12px;
+    .promo-content {
+      flex: 1;
     }
-    .btn {
-      padding: 12px 24px;
-      background: #2563eb;
+    .promo-title { font-weight: 800; font-size: 18px; margin: 0 0 6px 0; color: #f8fafc; }
+    .promo-desc { font-size: 13px; color: #cbd5e1; margin: 0; line-height: 1.5; }
+    .btn-upgrade {
+      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
       color: white;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
+      border-radius: 10px;
+      padding: 12px 24px;
       font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
     }
-    .btn:hover { background: #1d4ed8; }
+    .btn-upgrade:hover {
+      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+      transform: translateY(-1px);
+    }
     
-    .status { margin-top: 10px; font-size: 13px; font-weight: 500; }
-    .status-success { color: #10b981; }
-    .status-error { color: #ef4444; }
+    .get-started {
+      margin-top: 32px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 24px;
+    }
+    .get-started-title { font-weight: 700; color: #0f172a; margin-top: 0; }
+    .get-started-steps {
+      padding-left: 20px;
+      font-size: 14px;
+      color: #475569;
+    }
+    .get-started-steps li {
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h1>🚀 Welcome to PromptIQ</h1>
-    <div class="subtitle">Your inline prompt assistant that scores, refines, and teaches you prompt engineering.</div>
+    <h1>🚀 Welcome to the PromptIQ Family!</h1>
+    <div class="subtitle">Your ultimate companion to elevate prompts to state-of-the-art level in real-time.</div>
     
-    <p>PromptIQ works automatically in the background on your favorite AI tools: <strong>ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek</strong>.</p>
+    <p>PromptIQ works automatically in the background on your favorite AI tools: <strong>ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek</strong>. No complex setup or API key entry is required!</p>
     
     <div class="features">
       <div class="feature-card">
         <div class="feature-icon">📊</div>
         <div class="feature-title">Live Scoring</div>
-        <div class="feature-desc">See a 0–100 quality score update dynamically as you type, indicating missing elements.</div>
+        <div class="feature-desc">See a 0–100 quality score update dynamically as you type, highlighting missing elements.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🧠</div>
-        <div class="feature-title">Model-Aware</div>
-        <div class="feature-desc">Optimization is tailored differently for Claude, ChatGPT, or Gemini for maximum quality.</div>
+        <div class="feature-title">Context Aware</div>
+        <div class="feature-desc">Optimizations are dynamically customized depending on which target AI you are currently using.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📖</div>
@@ -93,12 +112,22 @@
       </div>
     </div>
 
-    <div class="setup-box">
-      <h3 class="setup-title">Secure API Key Setup</h3>
-      <p style="font-size: 13px; color: #475569; margin-top: 0;">To optimize prompts, paste your OpenAI API Key below. Your key stays locally in your browser and is never sent to any server.</p>
-      <input type="password" id="apiKey" placeholder="sk-proj-..." />
-      <button class="btn" id="saveBtn">Save & Start Using PromptIQ</button>
-      <div class="status" id="statusMsg"></div>
+    <div class="promo-box">
+      <div class="promo-content">
+        <h3 class="promo-title">💎 Join our Premium Version</h3>
+        <p class="promo-desc">Unlock our advanced, state-of-the-art Gemini 2.5 Pro model for just <strong>₹100/month</strong>! Get maximum quality re-writing and unlimited daily optimizations.</p>
+      </div>
+      <button class="btn-upgrade" id="upgradeBtn">Upgrade to Premium</button>
+    </div>
+
+    <div class="get-started">
+      <h3 class="get-started-title">🏁 How to Get Started:</h3>
+      <ol class="get-started-steps">
+        <li>Open your favorite AI platform (e.g. <a href="https://chatgpt.com" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none;">ChatGPT</a>, <a href="https://claude.ai" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none;">Claude</a>, or <a href="https://gemini.google.com" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none;">Gemini</a>).</li>
+        <li>You will see a floating <strong>PromptIQ badge</strong> in the bottom-right corner next to the chat input area.</li>
+        <li>As you type, the badge will live-score your prompt. Click the badge to open the sidebar, optimize it, and insert it back with one click!</li>
+        <li>Click the extension icon in your browser toolbar to access your library, history logs, and settings.</li>
+      </ol>
     </div>
   </div>
 

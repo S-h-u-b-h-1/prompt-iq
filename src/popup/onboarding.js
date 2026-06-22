@@ -1,26 +1,23 @@
-import { setApiKey, getApiKey } from '../lib/storage.js';
+import { setUserTier } from '../lib/storage.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const keyInput = document.getElementById('apiKey');
-  const saveBtn = document.getElementById('saveBtn');
-  const statusMsg = document.getElementById('statusMsg');
+document.addEventListener('DOMContentLoaded', () => {
+  const upgradeBtn = document.getElementById('upgradeBtn');
 
-  // Load key if already set
-  const savedKey = await getApiKey();
-  if (savedKey) {
-    keyInput.value = savedKey;
-  }
-
-  saveBtn.addEventListener('click', async () => {
-    const key = keyInput.value.trim();
-    if (!key) {
-      statusMsg.textContent = 'Please enter an API Key.';
-      statusMsg.className = 'status status-error';
-      return;
-    }
-
-    await setApiKey(key);
-    statusMsg.textContent = 'API Key saved successfully! You can close this tab and start using PromptIQ on ChatGPT, Claude, etc.';
-    statusMsg.className = 'status status-success';
+  upgradeBtn.addEventListener('click', async () => {
+    await setUserTier('premium');
+    upgradeBtn.textContent = 'Upgraded! 💎';
+    upgradeBtn.style.background = 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+    upgradeBtn.disabled = true;
+    
+    // Add success message
+    const promoBox = document.querySelector('.promo-box');
+    const successMsg = document.createElement('div');
+    successMsg.style.color = '#10b981';
+    successMsg.style.fontSize = '14px';
+    successMsg.style.fontWeight = '600';
+    successMsg.style.marginTop = '16px';
+    successMsg.style.textAlign = 'center';
+    successMsg.textContent = 'Premium tier activated successfully! You can close this tab and start using PromptIQ.';
+    promoBox.parentNode.insertBefore(successMsg, promoBox.nextSibling);
   });
 });

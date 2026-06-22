@@ -45,7 +45,7 @@ Your response MUST be strict JSON matching this schema:
 }
 Do not include any markdown formatting (like \`\`\`json) around the JSON, just the raw JSON object. Ensure the optimized prompt includes context, a clear task, constraints, format, and role if applicable.`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',

@@ -43,10 +43,10 @@ English
 
 | Asset | Dimensions | Status | Filename |
 |-------|-----------|--------|----------|
-| Store Icon | 128×128 PNG | ⬜ Not created | Omitted (Chrome Default) |
-| Screenshot 1 | 1280×800 or 640×400 | ⬜ Not created | |
-| Screenshot 2 | 1280×800 or 640×400 | ⬜ Not created | |
-| Screenshot 3 | 1280×800 or 640×400 | ⬜ Not created | |
+| Store Icon | 128×128 PNG | ✅ Ready | `public/store_icon.png` |
+| Screenshot 1 | 1280×800 PNG | ✅ Ready | `public/screenshot1.png` |
+| Screenshot 2 | 1280×800 PNG | ✅ Ready | `public/screenshot2.png` |
+| Screenshot 3 | 1280×800 PNG | ✅ Ready | `public/screenshot3.png` |
 
 
 ## Permissions Justification

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PromptIQ Popup</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      width: 480px;
+      margin: 0;
+      padding: 0;
+      color: #0f172a;
+      background-color: #f8fafc;
+      overflow-x: hidden;
+    }
+    
+    .navbar {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-tab {
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-tab:hover {
+      color: #0f172a;
+    }
+    .nav-tab.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 16px;
+      min-height: 350px;
+      box-sizing: border-box;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Dashboard / Skill Tracker Styles */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .stat-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .stat-desc {
+      font-size: 11px;
+      color: #10b981;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+    .stat-desc.negative {
+      color: #ef4444;
+    }
+    .alert-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .alert-icon { font-size: 20px; }
+    .alert-text { font-size: 13px; color: #1e3a8a; line-height: 1.4; }
+    
+    /* Settings Styles */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    input[type="password"], input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #334155;
+      background: #ffffff;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background 0.2s;
+      box-sizing: border-box;
+    }
+    .btn:hover {
+      background: #1d4ed8;
+    }
+    .btn-danger {
+      background: #ef4444;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    .status-msg {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+    .status-success { color: #10b981; }
+    .status-error { color: #ef4444; }
+    
+    /* History Tab */
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .history-list {
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .history-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .history-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .history-platform {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #475569;
+    }
+    .history-delta {
+      font-size: 12px;
+      font-weight: 600;
+      color: #10b981;
+    }
+    .history-delta.negative { color: #ef4444; }
+    .history-prompt {
+      font-size: 12px;
+      color: #475569;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-expanded {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .history-expanded.visible {
+      display: block;
+    }
+    .history-detail-box {
+      font-size: 11px;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .history-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    
+    /* Library Tab */
+    .search-box {
+      margin-bottom: 12px;
+    }
+    .category-filter {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .category-tag {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: #e2e8f0;
+      color: #475569;
+      border-radius: 9999px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .category-tag.active {
+      background: #2563eb;
+      color: white;
+    }
+    .library-list {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .library-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .library-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .library-category {
+      font-size: 10px;
+      color: #2563eb;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .library-prompt-text {
+      font-size: 12px;
+      color: #475569;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      max-height: 80px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+    }
+    
+    /* Welcome landing styles */
+    .welcome-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .welcome-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      color: #2563eb;
+      background: #eff6ff;
+      padding: 4px 8px;
+      border-radius: 9999px;
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+    }
+    .welcome-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+      line-height: 1.25;
+    }
+    .welcome-desc {
+      font-size: 12px;
+      color: #475569;
+      margin: 0 0 16px 0;
+      line-height: 1.4;
+    }
+    .benefits-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+    .benefits-list {
+      margin: 0 0 20px 0;
+      padding: 0;
+      list-style-type: none;
+    }
+    .benefits-list li {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .upgrade-promo {
+      background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .upgrade-promo::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(236,72,153,0.15) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+    .upgrade-icon {
+      font-size: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .upgrade-text-container {
+      flex: 1;
+    }
+    .upgrade-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 2px;
+    }
+    .upgrade-desc {
+      font-size: 10px;
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+    .upgrade-btn {
+      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }
+    .upgrade-btn:hover {
+      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+    <div class="nav-tab" data-tab="library">Library</div>
+    <div class="nav-tab" data-tab="history">History</div>
+    <div class="nav-tab" data-tab="settings">Settings</div>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div class="tab-content active" id="tab-dashboard">
+    <!-- Welcome landing experience -->
+    <div class="welcome-card">
+      <div class="welcome-badge">PromptIQ Family</div>
+      <h2 class="welcome-title">Welcome to the PromptIQ Family! 🚀</h2>
+      <p class="welcome-desc">Your ultimate companion to elevate prompts to state-of-the-art quality in real-time.</p>
+      
+      <div class="benefits-title">Core Benefits:</div>
+      <ul class="benefits-list">
+        <li>📊 <strong>Live Quality Scoring:</strong> Real-time 0–100 quality indicator as you type.</li>
+        <li>🧠 <strong>Context Aware:</strong> Automatically tailors templates to the target AI.</li>
+        <li>📖 <strong>Explanation Layer:</strong> Highlights and explains all optimization changes.</li>
+        <li>⚡ <strong>One-Click Apply:</strong> Instant injection directly into the text area.</li>
+      </ul>
+      
+      <div class="upgrade-promo">
+        <div class="upgrade-icon">💎</div>
+        <div class="upgrade-text-container">
+          <div class="upgrade-title">Join our Premium Version</div>
+          <div class="upgrade-desc">Get the advanced Gemini 2.5 Pro model for just <strong>₹100/month</strong>!</div>
+        </div>
+        <button class="upgrade-btn" id="upgrade-cta-btn">Upgrade Now</button>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <div class="stat-title">Avg Score</div>
+        <div class="stat-value" id="avg-score">--</div>
+        <div class="stat-desc" id="trend-desc">No history yet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Optimizations</div>
+        <div class="stat-value" id="opt-count">0</div>
+        <div class="stat-desc" id="weekly-count">0 this week</div>
+      </div>
+    </div>
+    
+    <div class="alert-card">
+      <div class="alert-icon">💡</div>
+      <div class="alert-text" id="weak-dimension-tip">
+        Keep optimizing your prompts! The skill tracker will identify your weakest dimensions once you build a history.
+      </div>
+    </div>
+  </div>
+
+  <!-- Library Tab -->
+  <div class="tab-content" id="tab-library">
+    <div class="search-box">
+      <input type="text" id="library-search" placeholder="Search prompts..." />
+    </div>
+    <div class="category-filter" id="category-list">
+      <div class="category-tag active" data-category="all">All</div>
+    </div>
+    <div class="library-list" id="library-container">
+      Loading library...
+    </div>
+  </div>
+
+  <!-- History Tab -->
+  <div class="tab-content" id="tab-history">
+    <div class="history-header">
+      <span style="font-size: 13px; font-weight: 600; color: #64748b;" id="history-summary">0 saved runs</span>
+      <button class="btn btn-danger" id="clear-history-btn" style="padding: 4px 8px; font-size: 11px; width: auto;">Clear All</button>
+    </div>
+    <div class="history-list" id="history-container">
+      No history yet. Get started by optimizing your prompts inline!
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="tab-content" id="tab-settings">
+    <div class="form-group">
+      <label for="userTier">User Tier</label>
+      <select id="userTier">
+        <option value="free">Free (Template-based Heuristics)</option>
+        <option value="premium">Premium (Gemini Pro LLM)</option>
+      </select>
+    </div>
+
+    <button class="btn" id="saveKeyBtn">Save Settings</button>
+    <div class="status-msg" id="settings-status"></div>
+    
+    <div style="margin-top: 24px; font-size: 12px; color: #64748b; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+      <strong>Security & Privacy:</strong> Premium optimization requests are processed securely using PromptIQ's pre-configured Gemini developer key. No user API keys are required.
+    </div>
+  </div>
+
+  <script type="module" src="./popup.js"></script>
+</body>
+</html>

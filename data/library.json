@@ -1,0 +1,1073 @@
+[
+  {
+    "id": "1",
+    "category": "Coding",
+    "title": "Refactor for Performance",
+    "prompt": "Act as a senior software architect. Analyze this code snippet for performance bottlenecks, memory usage, and runtime efficiency. Suggest refactored code and explain each optimization.",
+    "useCase": "Improve performance of slow code"
+  },
+  {
+    "id": "2",
+    "category": "Coding",
+    "title": "Generate Unit Tests",
+    "prompt": "Act as a QA engineer. Write a comprehensive suite of unit tests for the following function using [Framework]. Cover typical inputs, boundary conditions, edge cases, and error handling.",
+    "useCase": "Write unit tests for functions"
+  },
+  {
+    "id": "3",
+    "category": "Coding",
+    "title": "Find Security Vulnerabilities",
+    "prompt": "Act as an application security expert. Audit the following code for vulnerabilities like SQL injection, XSS, CSRF, or authentication flaws. Explain any risks and provide secure code versions.",
+    "useCase": "Audit code for security issues"
+  },
+  {
+    "id": "4",
+    "category": "Coding",
+    "title": "Explain Complex Code",
+    "prompt": "Act as a programming tutor. Explain what the following code does step-by-step in simple language. Break down complex algorithms and library functions used.",
+    "useCase": "Learn how a block of code works"
+  },
+  {
+    "id": "5",
+    "category": "Coding",
+    "title": "Write API Documentation",
+    "prompt": "Act as a technical writer. Write clean, professional API documentation for the following code. Include endpoint details, request/response structures, and code examples.",
+    "useCase": "Document API endpoints"
+  },
+  {
+    "id": "6",
+    "category": "Coding",
+    "title": "Design Pattern Implementation",
+    "prompt": "Act as an OOP expert. Rewrite the following code to implement the [Design Pattern] pattern. Explain why this pattern is appropriate and how it enhances scalability.",
+    "useCase": "Apply design patterns"
+  },
+  {
+    "id": "7",
+    "category": "Coding",
+    "title": "Translate Language",
+    "prompt": "Translate the following code from [Source Language] to [Target Language]. Maintain the original logic, variable names, and comments while adopting target language idioms.",
+    "useCase": "Port code to another language"
+  },
+  {
+    "id": "8",
+    "category": "Coding",
+    "title": "SQL Injection Patch",
+    "prompt": "Review the following backend query code and modify it to prevent SQL injection. Use prepared statements or parameterized queries. Explain the fix.",
+    "useCase": "Secure database query code"
+  },
+  {
+    "id": "9",
+    "category": "Coding",
+    "title": "Debug Error Message",
+    "prompt": "I am getting the following error: \"[Error message]\". Here is the code that caused it. Diagnose the cause of this error, suggest fixes, and provide the updated code.",
+    "useCase": "Fix compiler/runtime errors"
+  },
+  {
+    "id": "10",
+    "category": "Coding",
+    "title": "Optimize CSS/Styles",
+    "prompt": "Review this CSS code and optimize it. Identify redundant selectors, suggest modern layouts like Flexbox/Grid where appropriate, and clean up variables.",
+    "useCase": "Clean up stylesheets"
+  },
+  {
+    "id": "11",
+    "category": "Coding",
+    "title": "RegEx Generator",
+    "prompt": "Act as a regular expression expert. Generate a regex pattern that matches [pattern requirement]. Provide examples of matching and non-matching strings, and explain the regex blocks.",
+    "useCase": "Build regular expressions"
+  },
+  {
+    "id": "12",
+    "category": "Coding",
+    "title": "HTML/A11y Audit",
+    "prompt": "Act as an accessibility specialist. Review the following HTML block for WCAG compliance. Suggest corrections for ARIA attributes, semantic elements, and keyboard navigability.",
+    "useCase": "Improve HTML accessibility"
+  },
+  {
+    "id": "13",
+    "category": "Coding",
+    "title": "Git Command Helper",
+    "prompt": "I want to perform the following git operation: [git action]. Write the sequence of git commands required, explain what each command does, and suggest safety precautions.",
+    "useCase": "Get help with git operations"
+  },
+  {
+    "id": "14",
+    "category": "Writing",
+    "title": "Polish Tone & Clarity",
+    "prompt": "Act as a professional copy editor. Revise the following text to improve clarity, flow, and active voice. Maintain a [professional/casual/friendly] tone.",
+    "useCase": "Polish articles, blogs, or copy"
+  },
+  {
+    "id": "15",
+    "category": "Writing",
+    "title": "Write Blog Outline",
+    "prompt": "Act as an SEO content planner. Create a detailed outline for a blog post about \"[Topic]\". Include H2/H3 headings, target keywords, and brief notes for each section.",
+    "useCase": "Outline articles for blog SEO"
+  },
+  {
+    "id": "16",
+    "category": "Writing",
+    "title": "Summarize Research Paper",
+    "prompt": "Act as an academic researcher. Read the following paper text and write a structured summary including context, methodology, key findings, and limitations.",
+    "useCase": "Summarize academic papers"
+  },
+  {
+    "id": "17",
+    "category": "Writing",
+    "title": "Catchy Headings",
+    "prompt": "Generate 10 catchy, click-worthy headings for an article about \"[Topic]\" targeted at [Target Audience]. Avoid cheap clickbait while keeping it engaging.",
+    "useCase": "Brainstorm article headlines"
+  },
+  {
+    "id": "18",
+    "category": "Writing",
+    "title": "Draft Newsletter",
+    "prompt": "Act as an email copywriter. Write a weekly newsletter about \"[Topic]\" for [Target Audience]. The tone should be conversational. Include a call to action to read our new post.",
+    "useCase": "Draft email newsletter copy"
+  },
+  {
+    "id": "19",
+    "category": "Writing",
+    "title": "Rewrite in Active Voice",
+    "prompt": "Rewrite the following paragraphs to convert passive voice to active voice. Make the sentences punchier and more direct.",
+    "useCase": "Convert passive sentences"
+  },
+  {
+    "id": "20",
+    "category": "Writing",
+    "title": "Expand Outline to Post",
+    "prompt": "Act as a content writer. Expand the following outline into a 500-word blog post. Use an engaging tone and include transition sentences between sections.",
+    "useCase": "Write blog post from outline"
+  },
+  {
+    "id": "21",
+    "category": "Writing",
+    "title": "Short Story Generator",
+    "prompt": "Act as a creative writer. Write a short story based on the prompt: [Prompt description]. Use descriptive sensory details and create suspense.",
+    "useCase": "Write creative stories"
+  },
+  {
+    "id": "22",
+    "category": "Writing",
+    "title": "Product Review Article",
+    "prompt": "Act as a tech reviewer. Write a detailed, unbiased product review for [Product]. Cover key features, pros, cons, and a final verdict.",
+    "useCase": "Draft product reviews"
+  },
+  {
+    "id": "23",
+    "category": "Writing",
+    "title": "Press Release Draft",
+    "prompt": "Act as a PR specialist. Write a press release announcing [Event/Launch]. Include a hook, standard quotes, media contact details, and boilerplate.",
+    "useCase": "Write news press releases"
+  },
+  {
+    "id": "24",
+    "category": "Writing",
+    "title": "Paraphrase Document",
+    "prompt": "Paraphrase the following text to make it simpler and easier for a middle-school student to read. Avoid jargon and define key terms.",
+    "useCase": "Simplify text readability"
+  },
+  {
+    "id": "25",
+    "category": "Writing",
+    "title": "Cover Letter Draft",
+    "prompt": "Act as a career coach. Write a customized cover letter for a [Job Title] role at [Company]. Highlight my experience in [Skills] based on the job description.",
+    "useCase": "Draft job application cover letters"
+  },
+  {
+    "id": "26",
+    "category": "Writing",
+    "title": "Speech Writing Outline",
+    "prompt": "Act as a speechwriter. Write a 5-minute speech outline for a [occasion/theme]. Structure it with a hook, three main points, and a memorable conclusion.",
+    "useCase": "Structure public speeches"
+  },
+  {
+    "id": "27",
+    "category": "Marketing",
+    "title": "Ad Copy generator",
+    "prompt": "Act as a direct response copywriter. Write 3 variations of Facebook ad copy for [Product/Service]. Each variation should target a different angle: benefit-driven, pain-point, and curiosity.",
+    "useCase": "Generate high-converting ad copy"
+  },
+  {
+    "id": "28",
+    "category": "Marketing",
+    "title": "SEO Keyword Plan",
+    "prompt": "Act as an SEO strategist. Generate a list of 20 relevant keywords for a business selling [Products]. Group them by search intent (informational, transactional) and suggest search volume tiers.",
+    "useCase": "Map keywords to search intent"
+  },
+  {
+    "id": "29",
+    "category": "Marketing",
+    "title": "Social Content Calendar",
+    "prompt": "Act as a social media manager. Create a 7-day content calendar for [Platform] targeting [Audience]. For each day, provide the post topic, copy, hashtag suggestions, and visual idea.",
+    "useCase": "Draft weekly social campaigns"
+  },
+  {
+    "id": "30",
+    "category": "Marketing",
+    "title": "Persona Development",
+    "prompt": "Act as a marketing analyst. Define 3 detailed customer personas for a brand selling [Product]. Include demographics, pain points, core motivations, and buying triggers.",
+    "useCase": "Build target buyer profiles"
+  },
+  {
+    "id": "31",
+    "category": "Marketing",
+    "title": "Lead Magnet Ideas",
+    "prompt": "Act as a growth marketer. Brainstorm 5 unique lead magnet ideas for [Business/Niche] that would attract [Audience]. Explain the content of each and the opt-in mechanism.",
+    "useCase": "Generate lead generation ideas"
+  },
+  {
+    "id": "32",
+    "category": "Marketing",
+    "title": "Landing Page Copy",
+    "prompt": "Act as a conversion rate optimizer. Write the copy for a landing page selling [Product]. Structure it with a headline, sub-headline, value props, social proof section, and CTA.",
+    "useCase": "Copywrite sales landing pages"
+  },
+  {
+    "id": "33",
+    "category": "Marketing",
+    "title": "Marketing Funnel Strategy",
+    "prompt": "Act as a digital marketing consultant. Map out a multi-stage funnel (Awareness, Consideration, Conversion) for a SaaS product in [Niche]. Describe the content for each stage.",
+    "useCase": "Design customer acquisition funnels"
+  },
+  {
+    "id": "34",
+    "category": "Marketing",
+    "title": "Competitor Analysis Framework",
+    "prompt": "Act as a business strategist. Provide a framework to analyze competitors in the [Industry] sector. Detail which metrics to monitor (SEO, social, pricing, ads) and how to gather them.",
+    "useCase": "Map competitor metrics"
+  },
+  {
+    "id": "35",
+    "category": "Marketing",
+    "title": "Influencer Outreach Script",
+    "prompt": "Write a friendly, professional outreach email pitch to micro-influencers in the [Niche] space. Propose a partnership for [Product] and explain the mutual benefits.",
+    "useCase": "Pitch marketing collaborations"
+  },
+  {
+    "id": "36",
+    "category": "Marketing",
+    "title": "Product Launch Campaign",
+    "prompt": "Act as a brand manager. Plan a launch campaign for a new [Product]. Outline pre-launch buzz strategies, launch day activities, and post-launch follow-up.",
+    "useCase": "Plan product launches"
+  },
+  {
+    "id": "37",
+    "category": "Marketing",
+    "title": "SMS Marketing Copy",
+    "prompt": "Write 5 SMS marketing messages under 160 characters for a flash sale on [Product]. Include urgency, a clear discount, and a link placeholder.",
+    "useCase": "Write short marketing texts"
+  },
+  {
+    "id": "38",
+    "category": "Marketing",
+    "title": "Brand Voice Guide",
+    "prompt": "Act as a brand strategist. Develop a brand voice guide for a [Niche] startup. Define 4 voice attributes, do's and don'ts, and provide examples of rewritten statements.",
+    "useCase": "Align brand tone guidelines"
+  },
+  {
+    "id": "39",
+    "category": "Marketing",
+    "title": "Local SEO Checklist",
+    "prompt": "Create a step-by-step checklist to optimize a local business in the [Industry] sector for Google Local Pack. Focus on review building, local citations, and on-page SEO.",
+    "useCase": "Optimize local search profiles"
+  },
+  {
+    "id": "40",
+    "category": "Research",
+    "title": "Literature Review Guide",
+    "prompt": "Act as an academic researcher. Write a comprehensive guide on how to conduct a literature review on \"[Topic]\". Detail search strategies, synthesis methods, and citation structures.",
+    "useCase": "Plan research study structures"
+  },
+  {
+    "id": "41",
+    "category": "Research",
+    "title": "Extract Key Insights",
+    "prompt": "Analyze the following article text. Extract the top 5 key insights, data points, and conclusions. Present them as bullet points with brief context for each.",
+    "useCase": "Extract core facts from text"
+  },
+  {
+    "id": "42",
+    "category": "Research",
+    "title": "Formulate Hypotheses",
+    "prompt": "Act as a scientific advisor. Based on the following problem statement, formulate 3 testable hypotheses. Suggest variables to measure and basic methodology.",
+    "useCase": "Draft experimental hypotheses"
+  },
+  {
+    "id": "43",
+    "category": "Research",
+    "title": "Compare Two Concepts",
+    "prompt": "Act as an educational researcher. Create a comparative analysis table comparing [Concept A] and [Concept B]. Cover definition, mechanism, use cases, pros, and cons.",
+    "useCase": "Contrast scientific concepts"
+  },
+  {
+    "id": "44",
+    "category": "Research",
+    "title": "Market Trend Analysis",
+    "prompt": "Act as a market researcher. Analyze the current trends in the [Industry] sector for the year 2026. Identify major drivers, challenges, and future predictions.",
+    "useCase": "Analyze industry trends"
+  },
+  {
+    "id": "45",
+    "category": "Research",
+    "title": "Ethical Review Draft",
+    "prompt": "Act as an ethics board member. Review this proposed research methodology [Methodology] and identify potential ethical issues (consent, data privacy, safety). Suggest mitigations.",
+    "useCase": "Audit research ethics"
+  },
+  {
+    "id": "46",
+    "category": "Research",
+    "title": "Historical Context Summary",
+    "prompt": "Act as a historian. Provide the historical context and background surrounding the [Event/Period]. Explain the main causes, key figures, and long-term historical impacts.",
+    "useCase": "Summarize historical events"
+  },
+  {
+    "id": "47",
+    "category": "Research",
+    "title": "Statistical Method Suggestion",
+    "prompt": "Act as a biostatistician. Given a dataset with [Type of data] and the research question: [Question], suggest the most appropriate statistical tests. Explain the assumptions.",
+    "useCase": "Select statistical methodologies"
+  },
+  {
+    "id": "48",
+    "category": "Research",
+    "title": "User Interview Guide",
+    "prompt": "Act as a UX researcher. Create a user interview script containing 10 open-ended questions designed to understand user challenges with [Product/Activity].",
+    "useCase": "Script user research interviews"
+  },
+  {
+    "id": "49",
+    "category": "Research",
+    "title": "Fact-Checking Framework",
+    "prompt": "Provide a step-by-step framework to verify the accuracy of a claim related to [Topic]. Detail credible source databases and verification techniques.",
+    "useCase": "Validate data claims"
+  },
+  {
+    "id": "50",
+    "category": "Research",
+    "title": "Qualitative Data Coding",
+    "prompt": "Act as a social researcher. Explain how to code and analyze a transcript of user feedback to extract recurring themes. Provide a sample codebook outline.",
+    "useCase": "Plan thematic transcript analysis"
+  },
+  {
+    "id": "51",
+    "category": "Research",
+    "title": "Patent Search Plan",
+    "prompt": "Act as a patent analyst. Design a search strategy (keywords, classifications, databases) to find existing patents related to [Technology description].",
+    "useCase": "Audit patent feasibility"
+  },
+  {
+    "id": "52",
+    "category": "Research",
+    "title": "Demographic Data Guide",
+    "prompt": "Suggest credible publicly available datasets and repositories to gather demographic data about [Target population] in [Region].",
+    "useCase": "Locate open research datasets"
+  },
+  {
+    "id": "53",
+    "category": "Data",
+    "title": "Clean Data Strategy",
+    "prompt": "Act as a data analyst. Outline a detailed strategy to clean a dirty dataset containing [issues, e.g., missing values, duplicates, outliers]. Provide Python pandas snippets for each step.",
+    "useCase": "Clean messy spreadsheets/CSV data"
+  },
+  {
+    "id": "54",
+    "category": "Data",
+    "title": "Summarize Statistics",
+    "prompt": "Act as a statistician. Explain the difference between mean, median, mode, and standard deviation to a non-technical audience. Provide simple examples of when to use each.",
+    "useCase": "Learn basic statistics definitions"
+  },
+  {
+    "id": "55",
+    "category": "Data",
+    "title": "Visualize Data Ideas",
+    "prompt": "Act as a data visualization designer. Suggest the best 3 chart types to display the relationship between [Variable A] and [Variable B] over time. Explain why and suggest design tweaks.",
+    "useCase": "Choose visual graph types"
+  },
+  {
+    "id": "56",
+    "category": "Data",
+    "title": "Database Schema Plan",
+    "prompt": "Act as a database architect. Design a relational database schema for a [Type of application]. List tables, columns, data types, and primary/foreign keys.",
+    "useCase": "Draft database architecture"
+  },
+  {
+    "id": "57",
+    "category": "Data",
+    "title": "Explain SQL Query",
+    "prompt": "Explain the mechanism of the following complex SQL query step-by-step. Focus on the JOIN types, CTEs, and window functions used.",
+    "useCase": "Decipher SQL queries"
+  },
+  {
+    "id": "58",
+    "category": "Data",
+    "title": "API JSON Parsing",
+    "prompt": "Act as a Python developer. Write a script to fetch data from [URL] API, parse the JSON response, extract [fields], and save the result to a CSV file.",
+    "useCase": "Fetch and parse web APIs"
+  },
+  {
+    "id": "59",
+    "category": "Data",
+    "title": "Interpret Regression",
+    "prompt": "Act as a data scientist. Interpret the following regression model summary coefficients, R-squared, and p-values. Explain what these mean for business decisions.",
+    "useCase": "Interpret statistical regressions"
+  },
+  {
+    "id": "60",
+    "category": "Data",
+    "title": "Machine Learning Setup",
+    "prompt": "Act as an ML engineer. Outline a pipeline to train a classification model on [Dataset description]. Include data preprocessing, model selection, and evaluation metrics.",
+    "useCase": "Set up ML pipelines"
+  },
+  {
+    "id": "61",
+    "category": "Data",
+    "title": "Anonymize User Data",
+    "prompt": "Act as a privacy compliance officer. Outline the steps to anonymize a database containing PII to comply with GDPR. Suggest hash and mask methods.",
+    "useCase": "Implement user privacy controls"
+  },
+  {
+    "id": "62",
+    "category": "Data",
+    "title": "Export Data Pandas",
+    "prompt": "Write a Python pandas script to group the following dataframe by [column] and calculate the average, count, and percentage change. Export output to Excel.",
+    "useCase": "Group and aggregate datasets"
+  },
+  {
+    "id": "63",
+    "category": "Data",
+    "title": "JSON to CSV Converter",
+    "prompt": "Write a Node.js script to read a large JSON file, flatten nested properties, and stream the output to a CSV file to avoid memory overflow.",
+    "useCase": "Convert JSON data structures"
+  },
+  {
+    "id": "64",
+    "category": "Data",
+    "title": "A/B Testing Calculator",
+    "prompt": "Act as a marketing analyst. Explain how to calculate the sample size required for an A/B test with a baseline conversion of [X]% and a minimum detectable effect of [Y]%.",
+    "useCase": "Size A/B test campaigns"
+  },
+  {
+    "id": "65",
+    "category": "Data",
+    "title": "SQL Indexing Guide",
+    "prompt": "Act as a database administrator. Explain how indexing works, when to use clustered vs non-clustered indexes, and how to optimize slow SELECT queries.",
+    "useCase": "Accelerate database search"
+  },
+  {
+    "id": "66",
+    "category": "Design",
+    "title": "UI Feedback Audit",
+    "prompt": "Act as a Senior UX/UI designer. Review the following layout description or wireframe logic: [Layout details]. Identify usability friction, visual hierarchy issues, and accessibility concerns.",
+    "useCase": "Audit interfaces for UX friction"
+  },
+  {
+    "id": "67",
+    "category": "Design",
+    "title": "Generate Color Palette",
+    "prompt": "Act as a brand designer. Generate a curated color palette of 5 colors for a [Niche] brand. Provide Hex codes, RGB, and explain the emotional impact of the primary color.",
+    "useCase": "Select harmonious brand colors"
+  },
+  {
+    "id": "68",
+    "category": "Design",
+    "title": "Design System Structure",
+    "prompt": "Act as a design system architect. Outline the components, design tokens, and style rules required for a SaaS product design system. Organize by atomic principles.",
+    "useCase": "Set up component style libraries"
+  },
+  {
+    "id": "69",
+    "category": "Design",
+    "title": "Figma Autolayout Tips",
+    "prompt": "Explain how to set up responsive Autolayout in Figma for a complex card component containing an image, title, badge, and action buttons.",
+    "useCase": "Learn responsive Figma layouts"
+  },
+  {
+    "id": "70",
+    "category": "Design",
+    "title": "A11y Typography Rules",
+    "prompt": "Provide font size, line height, and color contrast guidelines for body text, headers, and buttons that ensure WCAG 2.1 AA compliance.",
+    "useCase": "Verify typography accessibility"
+  },
+  {
+    "id": "71",
+    "category": "Design",
+    "title": "Wireframe Mobile App",
+    "prompt": "Describe the wireframe layout and UI flow for a 3-step checkout process on a mobile app. Detail the elements shown on each screen.",
+    "useCase": "Wireframe mobile UX steps"
+  },
+  {
+    "id": "72",
+    "category": "Design",
+    "title": "Logo Brainstorming Guide",
+    "prompt": "Act as a graphic designer. Brainstorm 5 conceptual directions for a logo for a company called \"[Name]\" that does [Action]. Describe the symbolisms.",
+    "useCase": "Generate logo concept directions"
+  },
+  {
+    "id": "73",
+    "category": "Design",
+    "title": "UX Copywriting Guide",
+    "prompt": "Rewrite the following generic system messages (error state, empty state, success state) to make them clear, friendly, and helpful for users.",
+    "useCase": "Polish error and state notifications"
+  },
+  {
+    "id": "74",
+    "category": "Design",
+    "title": "User Flow Mapping",
+    "prompt": "Outline the user flow and actions required for a user to register, complete onboarding, and connect their calendar in a SaaS app.",
+    "useCase": "Map software user flows"
+  },
+  {
+    "id": "75",
+    "category": "Design",
+    "title": "Landing Page Hierarchy",
+    "prompt": "Analyze a standard landing page layout and rearrange its sections to optimize for user scroll depth and conversions. Explain the order.",
+    "useCase": "Structure high-converting landing pages"
+  },
+  {
+    "id": "76",
+    "category": "Design",
+    "title": "Component State Checklist",
+    "prompt": "Provide a checklist of all states a designer needs to design for an interactive button and text input field (default, hover, focus, disabled, error).",
+    "useCase": "Check interactive UI coverage"
+  },
+  {
+    "id": "77",
+    "category": "Design",
+    "title": "Responsive Layout Rules",
+    "prompt": "Explain how to design grids and breakpoints for a responsive web dashboard that scales smoothly from desktop to mobile.",
+    "useCase": "Design responsive grid layouts"
+  },
+  {
+    "id": "78",
+    "category": "Design",
+    "title": "UX Persona Creation",
+    "prompt": "Act as a product designer. Create a detailed user persona for an app targeted at [Audience]. Detail their tech stack, goals, frustrations, and daily workflows.",
+    "useCase": "Build product user personas"
+  },
+  {
+    "id": "79",
+    "category": "Email",
+    "title": "Cold Sales Outreach",
+    "prompt": "Act as an expert B2B copywriter. Write a cold outreach email pitching [Product] to a [Target Title]. Keep it under 150 words, conversational, and with a low-friction CTA.",
+    "useCase": "Pitch prospects via email"
+  },
+  {
+    "id": "80",
+    "category": "Email",
+    "title": "Follow-up Email Template",
+    "prompt": "Write a polite, professional follow-up email to a client who hasn't responded to a proposal sent 5 days ago. Keep it warm and non-intrusive.",
+    "useCase": "Follow up on pending proposals"
+  },
+  {
+    "id": "81",
+    "category": "Email",
+    "title": "Customer Support Template",
+    "prompt": "Act as a customer support lead. Write an empathetic email responding to a customer whose package was delayed. Offer a solution and a discount code.",
+    "useCase": "Draft customer service templates"
+  },
+  {
+    "id": "82",
+    "category": "Email",
+    "title": "Meeting Request Pitch",
+    "prompt": "Draft a professional email requesting a 20-minute meeting with [Name] to discuss [Topic]. Provide three availability options in their time zone.",
+    "useCase": "Schedule corporate meetings"
+  },
+  {
+    "id": "83",
+    "category": "Email",
+    "title": "Declining a Proposal",
+    "prompt": "Write a polite, professional email declining a vendor's proposal. Thank them for their time and leave the door open for future collaboration.",
+    "useCase": "Decline B2B offers gracefully"
+  },
+  {
+    "id": "84",
+    "category": "Email",
+    "title": "Salary Negotiation Draft",
+    "prompt": "Act as a career advisor. Write an email to negotiate a job offer salary. Focus on value delivered, market rates, and maintain an enthusiastic tone.",
+    "useCase": "Negotiate employment packages"
+  },
+  {
+    "id": "85",
+    "category": "Email",
+    "title": "Newsletter Subject Lines",
+    "prompt": "Generate 10 engaging subject lines and preview texts for an email newsletter about [Topic] to increase open rates. Avoid spam triggers.",
+    "useCase": "Boost marketing email open rates"
+  },
+  {
+    "id": "86",
+    "category": "Email",
+    "title": "Product Updates Email",
+    "prompt": "Write a product update email to existing users announcing the release of [Feature]. Focus on the user benefit and provide a link to the docs.",
+    "useCase": "Announce new software updates"
+  },
+  {
+    "id": "87",
+    "category": "Email",
+    "title": "Apology Email Template",
+    "prompt": "Write an official apology email to users due to a system outage. Explain what happened, how it was resolved, and what steps are taken to prevent it.",
+    "useCase": "Communicate server outages"
+  },
+  {
+    "id": "88",
+    "category": "Email",
+    "title": "Asking for Feedback",
+    "prompt": "Write an email to customers who recently purchased [Product] asking for an honest review or feedback. Keep it short and offer a small incentive.",
+    "useCase": "Collect reviews after purchase"
+  },
+  {
+    "id": "89",
+    "category": "Email",
+    "title": "Internal Status Update",
+    "prompt": "Draft a weekly status update email to stakeholders regarding the progress of the [Project Name] project. Structure with: Accomplishments, Next Steps, Risks.",
+    "useCase": "Report project updates internally"
+  },
+  {
+    "id": "90",
+    "category": "Email",
+    "title": "Welcome Sequence Email",
+    "prompt": "Write the first email in a welcome sequence for new subscribers to a blog about [Topic]. Set expectations, introduce yourself, and share top 3 articles.",
+    "useCase": "Draft onboarding email campaigns"
+  },
+  {
+    "id": "91",
+    "category": "Email",
+    "title": "Resignation Letter Draft",
+    "prompt": "Draft a formal, positive resignation letter to a manager. Provide 2 weeks' notice, offer transition help, and thank them for the opportunities.",
+    "useCase": "Submit career resignations"
+  },
+  {
+    "id": "92",
+    "category": "SQL",
+    "title": "Group & Calculate Trend",
+    "prompt": "Write a SQL query to calculate the monthly revenue and year-over-year revenue growth percentage from a table called `orders` with columns `order_date` and `total_amount`.",
+    "useCase": "Calculate monthly sales trends"
+  },
+  {
+    "id": "93",
+    "category": "SQL",
+    "title": "Optimizing Slow Join",
+    "prompt": "Explain how to optimize the following slow query. Identify indexes to add and rewrite the JOINs or subqueries if necessary to improve execution speed.",
+    "useCase": "Optimize query query execution time"
+  },
+  {
+    "id": "94",
+    "category": "SQL",
+    "title": "Find Duplicate Records",
+    "prompt": "Write a SQL query to identify duplicate rows in a table `users` based on the `email` column. Show the email and the duplicate count.",
+    "useCase": "Locate redundant database rows"
+  },
+  {
+    "id": "95",
+    "category": "SQL",
+    "title": "Calculate Running Total",
+    "prompt": "Write a SQL query using window functions to calculate the running total of sales for each salesperson over time from a table `sales`.",
+    "useCase": "Compute cumulative sales progress"
+  },
+  {
+    "id": "96",
+    "category": "SQL",
+    "title": "Compare Active Users",
+    "prompt": "Write a SQL query to find users who were active in [Month A] but did not perform any actions in [Month B]. Use a subquery or EXCEPT.",
+    "useCase": "Track customer churn rates"
+  },
+  {
+    "id": "97",
+    "category": "SQL",
+    "title": "Handle Null Values",
+    "prompt": "Explain the differences between COALESCE, ISNULL, and CASE WHEN in SQL. Show examples of how to replace null values with a default string.",
+    "useCase": "Replace missing column data"
+  },
+  {
+    "id": "98",
+    "category": "SQL",
+    "title": "Design Relational CTEs",
+    "prompt": "Write a SQL query using Common Table Expressions (CTEs) to find the top 5 departments with the highest average salary and list their employees.",
+    "useCase": "Write complex department analyses"
+  },
+  {
+    "id": "99",
+    "category": "SQL",
+    "title": "Implement Upsert Query",
+    "prompt": "Provide SQL syntax (PostgreSQL and MySQL variants) to insert a new row or update existing values if a primary key conflict occurs (UPSERT/ON CONFLICT).",
+    "useCase": "Perform insert-or-update queries"
+  },
+  {
+    "id": "100",
+    "category": "SQL",
+    "title": "Database Partitioning",
+    "prompt": "Act as a database administrator. Explain table partitioning, when it is useful, and write a SQL statement to partition a table by date range.",
+    "useCase": "Scale database structures"
+  },
+  {
+    "id": "101",
+    "category": "SQL",
+    "title": "Find Gaps in Sequence",
+    "prompt": "Write a SQL query to identify missing numbers in a sequential column (e.g. invoice numbers or transaction IDs) from a table.",
+    "useCase": "Audit gaps in accounting sequences"
+  },
+  {
+    "id": "102",
+    "category": "SQL",
+    "title": "Convert Date Formats",
+    "prompt": "Write a SQL query to extract day of week, hour of day, and year from a timestamp column, and format it as 'YYYY-MM-DD'.",
+    "useCase": "Format timezone timestamps"
+  },
+  {
+    "id": "103",
+    "category": "SQL",
+    "title": "Calculate Daily Retention",
+    "prompt": "Write a SQL query to calculate the Day 1 retention rate of users signing up to an application, using an `events` table.",
+    "useCase": "Compute app retention statistics"
+  },
+  {
+    "id": "104",
+    "category": "SQL",
+    "title": "Rank Items in Group",
+    "prompt": "Write a SQL query using DENSE_RANK() to rank products by sales amount within their respective categories.",
+    "useCase": "Rank items dynamically in categories"
+  },
+  {
+    "id": "105",
+    "category": "Excel",
+    "title": "XLOOKUP Guide",
+    "prompt": "Explain how to use the XLOOKUP function in Excel. Provide a step-by-step example comparing it to VLOOKUP and explain its advantages.",
+    "useCase": "Locate table cell matches"
+  },
+  {
+    "id": "106",
+    "category": "Excel",
+    "title": "Conditional Formatting Rules",
+    "prompt": "Write a custom formula for Excel Conditional Formatting to highlight rows where the due date in Column B is past today and the status in Column C is not \"Done\".",
+    "useCase": "Highlight overdue tasks automatically"
+  },
+  {
+    "id": "107",
+    "category": "Excel",
+    "title": "Complex Nested IFs",
+    "prompt": "Write an Excel formula to assign letter grades based on scores in Column A: A (>=90), B (80-89), C (70-79), D (60-69), F (<60). Use IFS or nested IF.",
+    "useCase": "Automate grade distributions"
+  },
+  {
+    "id": "108",
+    "category": "Excel",
+    "title": "Clean Text Formulas",
+    "prompt": "Write Excel formulas to clean raw customer data in Column A: remove leading/trailing spaces, capitalize only the first letter, and extract domain from email.",
+    "useCase": "Clean raw text entries"
+  },
+  {
+    "id": "109",
+    "category": "Excel",
+    "title": "Calculate CAGR Formula",
+    "prompt": "Provide the Excel formula to calculate the Compound Annual Growth Rate (CAGR) given a starting value, ending value, and number of years.",
+    "useCase": "Compute investment compound growth"
+  },
+  {
+    "id": "110",
+    "category": "Excel",
+    "title": "Create Dynamic Dropdowns",
+    "prompt": "Explain how to set up dependent dropdown lists in Excel (e.g. selecting \"Country\" updates the second dropdown to show \"Cities\" in that country).",
+    "useCase": "Build interactive spreadsheet forms"
+  },
+  {
+    "id": "111",
+    "category": "Excel",
+    "title": "Advanced Pivot Tables",
+    "prompt": "Write a guide on how to group dates by quarters in an Excel Pivot Table and calculate the percentage difference from the previous quarter.",
+    "useCase": "Aggregate time series metrics"
+  },
+  {
+    "id": "112",
+    "category": "Excel",
+    "title": "Extract String with Regex",
+    "prompt": "Explain how to extract text between parentheses in Excel using standard formulas like MID, FIND, and LEN.",
+    "useCase": "Extract specific text segments"
+  },
+  {
+    "id": "113",
+    "category": "Excel",
+    "title": "Summing with Multiple Criteria",
+    "prompt": "Explain how to use SUMIFS to sum sales values in Column C where Column A is \"Region East\" and Column B is \"Product Category Electronics\".",
+    "useCase": "Filter and sum spreadsheets"
+  },
+  {
+    "id": "114",
+    "category": "Excel",
+    "title": "Date Calculation Formulas",
+    "prompt": "Write an Excel formula to calculate the number of working days between two dates, excluding weekends and a custom list of holidays.",
+    "useCase": "Calculate business durations"
+  },
+  {
+    "id": "115",
+    "category": "Excel",
+    "title": "Index Match Lookup",
+    "prompt": "Explain how to use INDEX and MATCH together in Excel to perform a left lookup. Show a practical example.",
+    "useCase": "Perform advanced matrix queries"
+  },
+  {
+    "id": "116",
+    "category": "Excel",
+    "title": "Keyboard Shortcut Cheat Sheet",
+    "prompt": "List the top 15 Excel keyboard shortcuts for data manipulation, formatting, and navigation to speed up workflows.",
+    "useCase": "Accelerate sheet navigation"
+  },
+  {
+    "id": "117",
+    "category": "Excel",
+    "title": "Identify Outlier Formulas",
+    "prompt": "Explain how to find outliers in a dataset using the IQR method in Excel. Write the required formulas for Q1, Q3, and bounds.",
+    "useCase": "Filter statistical outliers"
+  },
+  {
+    "id": "118",
+    "category": "Learning",
+    "title": "Explain Like I'm 5",
+    "prompt": "Explain the concept of \"[Topic]\" in simple terms, using a metaphor that a 5-year-old would understand.",
+    "useCase": "Simplify complex theoretical concepts"
+  },
+  {
+    "id": "119",
+    "category": "Learning",
+    "title": "Create Study Syllabus",
+    "prompt": "Act as an educator. Design a self-study syllabus to learn [Topic] from scratch in 4 weeks. Break it down day-by-day and suggest resource types.",
+    "useCase": "Design custom learning paths"
+  },
+  {
+    "id": "120",
+    "category": "Learning",
+    "title": "Feynman Technique Guide",
+    "prompt": "Teach me how to use the Feynman Technique to understand \"[Topic]\". Walk me through the steps and ask me questions to check my understanding.",
+    "useCase": "Master difficult subjects easily"
+  },
+  {
+    "id": "121",
+    "category": "Learning",
+    "title": "Active Recall Flashcards",
+    "prompt": "Create 10 high-quality flashcards (Question/Answer format) based on the following text to help me practice active recall.",
+    "useCase": "Study using flashcard Q&A"
+  },
+  {
+    "id": "122",
+    "category": "Learning",
+    "title": "Socratic Questioning Method",
+    "prompt": "Act as a Socratic teacher. Ask me thought-provoking questions one-by-one to help me critically analyze the concept of [Topic].",
+    "useCase": "Challenge core assumptions"
+  },
+  {
+    "id": "123",
+    "category": "Learning",
+    "title": "Mnemonic Device Creator",
+    "prompt": "Generate 3 mnemonic devices or acronyms to help me memorize the following list of terms: [List of terms]. Explain the association.",
+    "useCase": "Memorize complex list orders"
+  },
+  {
+    "id": "124",
+    "category": "Learning",
+    "title": "Mind Map Outline",
+    "prompt": "Create a structured outline that I can use to build a mind map about \"[Topic]\". Organize by main branches, sub-branches, and keywords.",
+    "useCase": "Outline visual mind maps"
+  },
+  {
+    "id": "125",
+    "category": "Learning",
+    "title": "Contrast Two Theories",
+    "prompt": "Compare and contrast the learning theories of [Theory A] and [Theory B]. Explain how they differ in classroom application.",
+    "useCase": "Compare educational frameworks"
+  },
+  {
+    "id": "126",
+    "category": "Learning",
+    "title": "Suggest Book Reading List",
+    "prompt": "Recommend the top 5 books to read if I want to master [Topic] from intermediate to advanced level. Provide a brief summary of what each book covers.",
+    "useCase": "Locate expert literature"
+  },
+  {
+    "id": "127",
+    "category": "Learning",
+    "title": "Practice Exam Generator",
+    "prompt": "Generate a 5-question multiple-choice practice quiz about [Topic]. Include the questions, options, correct answers, and detailed explanations.",
+    "useCase": "Test subject matter comprehension"
+  },
+  {
+    "id": "128",
+    "category": "Learning",
+    "title": "Explain Quantum Computing",
+    "prompt": "Explain the core principles of quantum computing (superposition, entanglement) to a software engineer who only knows classical programming.",
+    "useCase": "Bridge advanced tech domains"
+  },
+  {
+    "id": "129",
+    "category": "Learning",
+    "title": "Debating Both Sides",
+    "prompt": "Act as a debate coach. Present arguments for both the pros and cons of the following topic: \"[Topic]\". Use logical reasoning and evidence.",
+    "useCase": "Analyze controversial subjects"
+  },
+  {
+    "id": "130",
+    "category": "Creative",
+    "title": "Sci-Fi Worldbuilding",
+    "prompt": "Act as a worldbuilder. Design a sci-fi city located on [Planet type]. Detail the infrastructure, source of energy, social hierarchy, and one daily custom.",
+    "useCase": "Detail fictional environments"
+  },
+  {
+    "id": "131",
+    "category": "Creative",
+    "title": "Creative Writing Prompts",
+    "prompt": "Generate 5 unique creative writing prompts in the [Genre] genre. Each prompt should include a conflict, a setting, and a character quirk.",
+    "useCase": "Overcome writers block"
+  },
+  {
+    "id": "132",
+    "category": "Creative",
+    "title": "Character Backstory Creator",
+    "prompt": "Act as a novelist. Design a detailed character profile for a protagonist named [Name] in a [Genre] story. Detail their motivation, secret fear, and key relationships.",
+    "useCase": "Design fictional characters"
+  },
+  {
+    "id": "133",
+    "category": "Creative",
+    "title": "Brainstorm Lyrics Hooks",
+    "prompt": "Write 5 catchy song hooks/chorus lyrics for a [Genre] song about [Theme]. Include details about the tempo and emotional delivery.",
+    "useCase": "Compose catchy music hooks"
+  },
+  {
+    "id": "134",
+    "category": "Creative",
+    "title": "Alternative Plot Twists",
+    "prompt": "Suggest 3 alternative plot twists for the following storyline: [Story outline]. The twist should be unexpected but logically consistent.",
+    "useCase": "Solve narrative dead-ends"
+  },
+  {
+    "id": "135",
+    "category": "Creative",
+    "title": "Metaphor Generator",
+    "prompt": "Generate 10 vivid, creative metaphors for \"[Concept]\" (e.g. anxiety, hope, grief) to use in poetic writing.",
+    "useCase": "Draft descriptive prose metaphors"
+  },
+  {
+    "id": "136",
+    "category": "Creative",
+    "title": "Recipe Remix Design",
+    "prompt": "Remix a classic recipe for [Dish] by introducing 3 unexpected ingredients that pair well. Explain the flavor profiles and steps.",
+    "useCase": "Design gourmet food recipes"
+  },
+  {
+    "id": "137",
+    "category": "Creative",
+    "title": "Art Prompt Generator",
+    "prompt": "Describe a detailed scene for an oil painting. Detail the lighting, composition, color palette, subjects, and emotional atmosphere.",
+    "useCase": "Generate illustration ideas"
+  },
+  {
+    "id": "138",
+    "category": "Creative",
+    "title": "Naming Fictional Towns",
+    "prompt": "Brainstorm 10 names for a mysterious, isolated town in a fantasy novel. Explain the etymology and folklore behind each name.",
+    "useCase": "Name fantasy locations"
+  },
+  {
+    "id": "139",
+    "category": "Creative",
+    "title": "Fictional Technology design",
+    "prompt": "Describe a fictional invention or gadget in a cyberpunk setting. Detail how it functions, its social impact, and its limitations.",
+    "useCase": "Invent sci-fi gadgets"
+  },
+  {
+    "id": "140",
+    "category": "Creative",
+    "title": "Rewrite Classic Story",
+    "prompt": "Rewrite the introduction of the classic fairy tale [Fairy Tale] as a modern neo-noir story. Focus on sensory descriptions.",
+    "useCase": "Modernize old legends"
+  },
+  {
+    "id": "141",
+    "category": "Creative",
+    "title": "Dialogue Scene Prompt",
+    "prompt": "Write a dialogue scene between two characters who are trying to hide a secret from each other while discussing a trivial topic like dining.",
+    "useCase": "Draft tense script dialogues"
+  },
+  {
+    "id": "142",
+    "category": "Productivity",
+    "title": "Eisenhower Matrix Plan",
+    "prompt": "Sort the following list of tasks using the Eisenhower Matrix (Urgent & Important, Important but Not Urgent, Urgent but Not Important, Neither). Suggest what to delegate or drop.",
+    "useCase": "Prioritize daily todo lists"
+  },
+  {
+    "id": "143",
+    "category": "Productivity",
+    "title": "Optimize Daily Schedule",
+    "prompt": "Analyze my daily schedule: [Schedule]. Suggest optimizations to implement time-blocking, protect deep-focus hours, and reduce meeting fatigue.",
+    "useCase": "Organize personal calendars"
+  },
+  {
+    "id": "144",
+    "category": "Productivity",
+    "title": "Weekly Review Script",
+    "prompt": "Act as a productivity coach. Write a step-by-step checklist to conduct a highly effective 30-minute Sunday Weekly Review to plan the upcoming week.",
+    "useCase": "Plan weekly reviews"
+  },
+  {
+    "id": "145",
+    "category": "Productivity",
+    "title": "Delegate Tasks Guide",
+    "prompt": "Provide a template script to delegate [Task] to a team member. Detail the context, expected deliverables, deadlines, and checkpoints.",
+    "useCase": "Delegate tasks efficiently"
+  },
+  {
+    "id": "146",
+    "category": "Productivity",
+    "title": "Overcome Procrastination",
+    "prompt": "Provide a step-by-step action plan to start working on [Difficult project] when experiencing low motivation. Use techniques like 5-minute rule.",
+    "useCase": "Defeat procrastination"
+  },
+  {
+    "id": "147",
+    "category": "Productivity",
+    "title": "Habit Stacking Blueprint",
+    "prompt": "Design a habit loop blueprint using the Habit Stacking method to build the habit of [New Habit]. Define the Cue, Craving, Response, and Reward.",
+    "useCase": "Build positive habits"
+  },
+  {
+    "id": "148",
+    "category": "Productivity",
+    "title": "Email Inbox Zero Plan",
+    "prompt": "Outline a workflow and list of folder labels/filters to achieve Inbox Zero in under 30 minutes a day. Detail sorting rules.",
+    "useCase": "Organize messy email boxes"
+  },
+  {
+    "id": "149",
+    "category": "Productivity",
+    "title": "Pomodoro Session Planner",
+    "prompt": "Structure a 4-cycle Pomodoro focus block to accomplish [Goal]. Detail the specific sub-tasks to execute during each 25-minute interval.",
+    "useCase": "Structure deep focus sessions"
+  },
+  {
+    "id": "150",
+    "category": "Productivity",
+    "title": "Meeting Agenda Draft",
+    "prompt": "Write a highly focused 30-minute meeting agenda for [Topic]. Detail the purpose, attendees' pre-work, and a minute-by-minute breakdown.",
+    "useCase": "Plan corporate agendas"
+  },
+  {
+    "id": "151",
+    "category": "Productivity",
+    "title": "Deconstruct Giant Project",
+    "prompt": "Deconstruct the massive goal of \"[Project/Goal]\" into 10 smaller, actionable, bite-sized tasks. Put them in logical sequence.",
+    "useCase": "Break down intimidating goals"
+  },
+  {
+    "id": "152",
+    "category": "Productivity",
+    "title": "Digital Clutter Cleanup",
+    "prompt": "Provide a checklist to perform a digital cleanup of my desktop, files, browser bookmarks, and download folders in under 1 hour.",
+    "useCase": "Organize desktop and local files"
+  },
+  {
+    "id": "153",
+    "category": "Productivity",
+    "title": "Journal Prompt Routine",
+    "prompt": "Provide a list of 5 morning journaling prompts and 5 evening reflection prompts to improve self-awareness and daily productivity.",
+    "useCase": "Reflect on personal progress"
+  }
+]

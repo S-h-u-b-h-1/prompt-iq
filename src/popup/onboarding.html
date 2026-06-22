@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to PromptIQ!</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 680px;
+      margin: 60px auto;
+      padding: 20px;
+      color: #0f172a;
+      background-color: #f8fafc;
+      line-height: 1.6;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+    h1 { margin-top: 0; color: #1e3a8a; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .subtitle { font-size: 16px; color: #64748b; margin-bottom: 24px; }
+    .features { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0; }
+    .feature-card {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .feature-icon { font-size: 24px; margin-bottom: 8px; }
+    .feature-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .feature-desc { font-size: 12px; color: #475569; }
+    
+    .setup-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 32px;
+    }
+    .setup-title { font-weight: 700; color: #1e3a8a; margin-top: 0; margin-bottom: 12px; }
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
+    .btn {
+      padding: 12px 24px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .btn:hover { background: #1d4ed8; }
+    
+    .status { margin-top: 10px; font-size: 13px; font-weight: 500; }
+    .status-success { color: #10b981; }
+    .status-error { color: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>🚀 Welcome to PromptIQ</h1>
+    <div class="subtitle">Your inline prompt assistant that scores, refines, and teaches you prompt engineering.</div>
+    
+    <p>PromptIQ works automatically in the background on your favorite AI tools: <strong>ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek</strong>.</p>
+    
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Live Scoring</div>
+        <div class="feature-desc">See a 0–100 quality score update dynamically as you type, indicating missing elements.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">Model-Aware</div>
+        <div class="feature-desc">Optimization is tailored differently for Claude, ChatGPT, or Gemini for maximum quality.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <div class="feature-title">Explanation Layer</div>
+        <div class="feature-desc">Learn prompt engineering over time as we highlight differences and explain the changes.</div>
+      </div>
+    </div>
+
+    <div class="setup-box">
+      <h3 class="setup-title">Secure API Key Setup</h3>
+      <p style="font-size: 13px; color: #475569; margin-top: 0;">To optimize prompts, paste your OpenAI API Key below. Your key stays locally in your browser and is never sent to any server.</p>
+      <input type="password" id="apiKey" placeholder="sk-proj-..." />
+      <button class="btn" id="saveBtn">Save & Start Using PromptIQ</button>
+      <div class="status" id="statusMsg"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./onboarding.js"></script>
+</body>
+</html>

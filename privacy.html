@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - PromptIQ</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      color: #1e3a8a;
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 12px;
+    }
+    h2 {
+      color: #0f172a;
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+    p, li {
+      color: #475569;
+      font-size: 15px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .date {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Privacy Policy for PromptIQ</h1>
+    <div class="date">Last updated: June 22, 2026</div>
+
+    <p>This Privacy Policy describes how PromptIQ collects, uses, and shares your data when you use the PromptIQ Chrome Extension and associated services.</p>
+
+    <h2>1. What Data We Collect</h2>
+    <p>To provide prompt optimization and scoring, PromptIQ collects the following data types:</p>
+    <ul>
+      <li><strong>Prompt Text (Personal Communications):</strong> We collect the text of the prompt you choose to optimize in order to send it to the Gemini API (via our secure serverless backend) to perform the optimization.</li>
+      <li><strong>Website Content:</strong> We read the active chatbox input field content locally on supported AI platforms (e.g. ChatGPT, Claude, Gemini) solely to calculate the prompt quality score (0-100) dynamically as you type.</li>
+      <li><strong>User Activity Metadata:</strong> We collect metadata about optimization events (such as the AI platform name, the original score, the optimized score, and the time of the event) to populate your history logs and dashboard statistics.</li>
+      <li><strong>Installation ID:</strong> A randomly generated UUID is created on installation. We use this anonymous identifier to save and sync your prompt history to our database without requiring a user account.</li>
+    </ul>
+
+    <h2>2. How Data Is Stored</h2>
+    <ul>
+      <li><strong>Local Storage:</strong> Your configuration settings (tier preferences) and a local cache of your history are stored on your device using IndexedDB and Chrome Storage Local APIs.</li>
+      <li><strong>Database Storage:</strong> A copy of your optimized prompts, scores, and installation ID is transmitted to and stored securely on our central Neon Postgres database via our Vercel serverless backend.</li>
+    </ul>
+
+    <h2>3. How Data Is Used</h2>
+    <p>We use the collected data solely for the following purposes:</p>
+    <ul>
+      <li>To calculate your prompt scores in real-time.</li>
+      <li>To perform premium prompt optimizations using the Google Gemini API.</li>
+      <li>To save and synchronize your optimization runs history so you can retrieve them in your extension popup.</li>
+      <li>To monitor general system performance and improve the prompt engineering models.</li>
+    </ul>
+
+    <h2>4. Data Sharing & Third Parties</h2>
+    <ul>
+      <li><strong>No Sale of Data:</strong> We do not sell, rent, or trade your data to third parties.</li>
+      <li><strong>Third-Party APIs:</strong> Premium prompt optimizations are processed using the Google Gemini API. Only the prompt text and platform name are shared with Google's API to complete the request. We do not share any personal identifiers with Google.</li>
+    </ul>
+
+    <h2>5. Data Retention & Deletion</h2>
+    <p>We retain your optimization history in our database. You can delete all history records associated with your installation ID at any time by clicking the <strong>"Clear All"</strong> button in the History tab of the PromptIQ popup interface. This action wipes the data both locally and from our central server.</p>
+
+    <h2>6. Policy Certifications</h2>
+    <ul>
+      <li>We do not sell or transfer user data to third parties outside of the approved Gemini API use case.</li>
+      <li>We do not use or transfer user data for purposes unrelated to PromptIQ's single core function.</li>
+      <li>We do not use or transfer user data to determine creditworthiness or for lending purposes.</li>
+    </ul>
+
+    <h2>7. Contact</h2>
+    <p>If you have any questions or concerns regarding your privacy or this policy, please contact us at: <a href="mailto:shubhaangkataruka22012007@gmail.com">shubhaangkataruka22012007@gmail.com</a>.</p>
+  </div>
+</body>
+</html>

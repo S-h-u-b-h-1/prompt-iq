@@ -8,6 +8,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
+        privacy: 'privacy.html',
         onboarding: 'src/popup/onboarding.html',
       },
     },

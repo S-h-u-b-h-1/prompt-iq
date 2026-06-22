@@ -8,19 +8,19 @@
 PromptIQ
 
 **Short Description**
-Score your prompts, optimize them for ChatGPT, Claude, and Gemini in real-time, and learn prompt engineering as you type.
+Score your prompts, optimize them on popular AI platforms in real-time, and learn prompt engineering as you type.
 
 **Detailed Description**
-PromptIQ is your ultimate inline companion to elevate your prompts to state-of-the-art quality in real-time. It integrates seamlessly into your favorite AI environments to give you instant feedback and re-writes.
+PromptIQ is your ultimate inline companion to elevate your prompts to state-of-the-art quality in real-time. It integrates seamlessly into your generative AI environments to give you instant feedback and re-writes.
 
 Core Features:
 * Live Quality Scoring: Displays a real-time 0–100 quality indicator next to your chat inputs as you type, highlighting missing elements (such as role, context, specificity, and constraints).
-* Context-Aware Refinement: Automatically optimizes prompts depending on the platform you are currently using (ChatGPT, Claude, Gemini, DeepSeek, etc.).
+* Context-Aware Refinement: Automatically optimizes prompts depending on the generative AI platform you are currently using.
 * Explanation Layer: Teaches you prompt engineering by highlighting exactly what changed and explaining why it improves the prompt.
 * One-Click Injection: Inject optimized prompts directly back into the chatbox with a single click.
 
 How to Use:
-1. Open any supported AI tool (ChatGPT, Claude, Gemini, Perplexity, Copilot, or DeepSeek).
+1. Open your preferred generative AI chat platform.
 2. A sleek PromptIQ badge will float in the bottom-right corner next to the chatbox input.
 3. As you type, the badge will score your prompt. Click the badge to slide out the PromptIQ sidebar.
 4. Click "Optimize Prompt" to refine it instantly using local templates (Free) or advanced LLMs (Premium).

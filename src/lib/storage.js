@@ -24,7 +24,7 @@ function initDB() {
 // Helper to get or generate unique User ID
 export function getUserId() {
   return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get('userId', (data) => {
         if (data.userId) {
           resolve(data.userId);

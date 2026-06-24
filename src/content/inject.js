@@ -132,7 +132,12 @@ async function handleOptimize() {
 
     panelApi.showResult(result.optimized, diffedTokens, explainedChanges);
   } catch (err) {
-    panelApi.showError(err);
+    if (err.message && err.message.includes('Extension context invalidated')) {
+      const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');
+      panelApi.showError(reloadErr);
+    } else {
+      panelApi.showError(err);
+    }
   }
 }
 

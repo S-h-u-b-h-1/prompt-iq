@@ -45,42 +45,81 @@ Your response MUST be strict JSON matching this schema:
 }
 Do not include any markdown formatting (like \`\`\`json) around the JSON, just the raw JSON object. Ensure the optimized prompt includes context, a clear task, constraints, format, and role if applicable.`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `${systemPrompt}\n\nUSER PROMPT TO OPTIMIZE:\n${originalPrompt}`
-          }]
-        }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: 'OBJECT',
-            properties: {
-              optimized: { type: 'STRING' },
-              changes: {
-                type: 'ARRAY',
-                items: {
-                  type: 'OBJECT',
-                  properties: {
-                    type: { type: 'STRING' },
-                    description: { type: 'STRING' }
-                  },
-                  required: ['type', 'description']
-                }
+    const payload = {
+      contents: [{
+        parts: [{
+          text: `${systemPrompt}\n\nUSER PROMPT TO OPTIMIZE:\n${originalPrompt}`
+        }]
+      }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            optimized: { type: 'STRING' },
+            changes: {
+              type: 'ARRAY',
+              items: {
+                type: 'OBJECT',
+                properties: {
+                  type: { type: 'STRING' },
+                  description: { type: 'STRING' }
+                },
+                required: ['type', 'description']
               }
-            },
-            required: ['optimized', 'changes']
-          }
+            }
+          },
+          required: ['optimized', 'changes']
         }
-      })
-    });
+      }
+    };
+
+    let response;
+    let lastError = null;
+
+    const callApi = async (model) => {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+    };
+
+    // Attempt 1: Try primary model (gemini-2.5-flash)
+    try {
+      response = await callApi('gemini-2.5-flash');
+    } catch (err) {
+      lastError = err;
+    }
+
+    // Attempt 2: If primary model returned 503/429 or threw a network error, retry with delay
+    if (!response || response.status === 503 || response.status === 429) {
+      console.warn(`Primary model gemini-2.5-flash failed (status: ${response ? response.status : 'network error'}). Retrying in 1s...`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        response = await callApi('gemini-2.5-flash');
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    // Attempt 3: If retry still fails with 503/429, fall back to gemini-1.5-flash
+    if (!response || response.status === 503 || response.status === 429) {
+      console.warn(`Primary model retry failed. Falling back to stable gemini-1.5-flash...`);
+      try {
+        response = await callApi('gemini-1.5-flash');
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    if (!response) {
+      res.status(500).json({ error: `Failed to contact Gemini API: ${lastError ? lastError.message : 'Unknown error'}` });
+      return;
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

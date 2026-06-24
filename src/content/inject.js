@@ -1,9 +1,10 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { saveOptimization } from '../lib/storage.js';
+import { saveOptimization, getUserTier, checkDailyLimit, incrementDailyOptimization } from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
+import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.js';
 
 let currentInputEl = null;
 let panelApi = null;
@@ -59,6 +60,11 @@ function handleInput() {
   if (!currentInputEl || !panelApi) return;
   const text = adapter.getText(currentInputEl);
   const scoreData = scorePrompt(text);
+  
+  // Local structure check to identify missing prompt elements (Phase 4)
+  const structure = checkStructure(text);
+  scoreData.missing = structure.missing;
+  
   panelApi.updateScore(scoreData);
 }
 
@@ -73,7 +79,11 @@ function updateActiveInput(el) {
   currentInputEl.addEventListener('input', handleInput);
   
   const initialText = adapter.getText(currentInputEl);
-  panelApi.updateScore(scorePrompt(initialText));
+  const scoreData = scorePrompt(initialText);
+  const structure = checkStructure(initialText);
+  scoreData.missing = structure.missing;
+  
+  panelApi.updateScore(scoreData);
 }
 
 function setupObserver() {
@@ -90,7 +100,7 @@ function setupObserver() {
 function ensurePanelInjected() {
   if (document.getElementById('promptiq-container')) return;
 
-  panelApi = createPanel(handleOptimize, handleUse);
+  panelApi = createPanel(handleOptimize, handleUse, handleFeedback);
   document.body.appendChild(panelApi.container);
 }
 
@@ -125,6 +135,8 @@ function setupMessageListeners() {
         if (currentInputEl) {
           adapter.setText(currentInputEl, message.text);
           const scoreData = scorePrompt(message.text);
+          const structure = checkStructure(message.text);
+          scoreData.missing = structure.missing;
           panelApi.updateScore(scoreData);
         }
       }
@@ -142,11 +154,33 @@ async function handleOptimize() {
     return;
   }
 
+  const mode = panelApi.getMode() || 'turbo';
+  const tier = await getUserTier();
+  const limitCheck = await checkDailyLimit();
+
+  // Enforce monetization paywall checks (Phase 8)
+  if (tier === 'free') {
+    if (!limitCheck.allowed) {
+      panelApi.showPaywall('limit');
+      return;
+    }
+    if (mode !== 'turbo') {
+      panelApi.showPaywall('mode');
+      return;
+    }
+  }
+
+  // Phase 4: Local analysis & enhancement draft generation
+  const localResult = analyzeAndEnhancePrompt(text);
+
   try {
     const response = await chrome.runtime.sendMessage({
       action: 'CALL_OPTIMIZER',
       originalPrompt: text,
-      platform: adapter.platform
+      platform: adapter.platform,
+      locallyEnhancedPrompt: localResult.enhancedPrompt,
+      detectedIntent: localResult.intent,
+      mode: mode
     });
 
     if (!response || !response.success) {
@@ -160,16 +194,30 @@ async function handleOptimize() {
     const result = response.result;
     lastOptimizedPrompt = result.optimized;
     
-    // Save to history
+    // Save optimization telemetry & score delta
     const originalScore = scorePrompt(text).score;
     const newScore = scorePrompt(result.optimized).score;
-    saveOptimization(text, result.optimized, newScore - originalScore, adapter.platform);
+    const runId = await saveOptimization(
+      text, 
+      result.optimized, 
+      newScore - originalScore, 
+      adapter.platform,
+      localResult.intent,
+      mode,
+      originalScore,
+      newScore
+    );
+
+    // If on Free plan, increment their usage count
+    if (tier === 'free') {
+      await incrementDailyOptimization();
+    }
 
     // Compute diff and explain changes
     const diffedTokens = diffPrompt(text, result.optimized);
     const explainedChanges = explainChanges(result.changes);
 
-    panelApi.showResult(result.optimized, diffedTokens, explainedChanges);
+    panelApi.showResult(result.optimized, diffedTokens, explainedChanges, runId);
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) {
       const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');
@@ -186,7 +234,24 @@ function handleUse(finalPrompt) {
   if (textToUse) {
     adapter.setText(currentInputEl, textToUse);
     const scoreData = scorePrompt(textToUse);
+    const structure = checkStructure(textToUse);
+    scoreData.missing = structure.missing;
     panelApi.updateScore(scoreData);
+  }
+}
+
+async function handleFeedback(runId, feedbackVal) {
+  if (!isContextValid() || !runId) return;
+  try {
+    await fetch('https://promptiq-theta.vercel.app/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: runId, feedback: feedbackVal })
+    });
+  } catch (err) {
+    console.error('Failed to submit feedback:', err);
   }
 }
 

@@ -1,4 +1,4 @@
-import { getHistory, clearHistory } from '../lib/storage.js';
+import { getHistory, clearHistory, getUserTier, setUserTier, checkDailyLimit } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 
 // Import library data
@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHistory();
   initLibrary();
   initDashboard();
+  initDemoControls();
 });
 
 // Tab Switching
@@ -294,4 +295,50 @@ function escapeHtml(str) {
 function escapeDoubleQuotes(str) {
   if (!str) return '';
   return str.replace(/"/g, '&quot;');
+}
+
+async function initDemoControls() {
+  const planStatusText = document.getElementById('plan-status-text');
+  const togglePlanBtn = document.getElementById('toggle-plan-btn');
+  const dailyUsageText = document.getElementById('daily-usage-text');
+  const resetLimitBtn = document.getElementById('reset-limit-btn');
+
+  if (!planStatusText) return;
+
+  const updateStatus = async () => {
+    const tier = await getUserTier();
+    const limit = await checkDailyLimit();
+    
+    if (tier === 'pro') {
+      planStatusText.innerHTML = `<span style="color: #2563eb; font-weight: 700;">💎 Pro Plan (Active)</span>`;
+      togglePlanBtn.textContent = 'Switch to Free';
+      dailyUsageText.textContent = `Daily Limit: Unlimited (Pro active)`;
+      resetLimitBtn.style.display = 'none';
+    } else {
+      planStatusText.innerHTML = `<span style="color: #64748b; font-weight: 700;">⚡ Free Plan</span>`;
+      togglePlanBtn.textContent = 'Upgrade to Pro';
+      dailyUsageText.textContent = `Daily Limit: ${limit.count} / 5 optimizations`;
+      resetLimitBtn.style.display = 'block';
+    }
+  };
+
+  await updateStatus();
+
+  togglePlanBtn.addEventListener('click', async () => {
+    const tier = await getUserTier();
+    const newTier = tier === 'pro' ? 'free' : 'pro';
+    await setUserTier(newTier);
+    await updateStatus();
+  });
+
+  resetLimitBtn.addEventListener('click', async () => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ optCountValue: 0 }, async () => {
+        await updateStatus();
+      });
+    } else {
+      localStorage.setItem('optCountValue', '0');
+      await updateStatus();
+    }
+  });
 }

@@ -2,11 +2,11 @@
  * Heuristic & Gemini Pro LLM Prompt Optimization
  */
 
-export async function optimizePrompt(originalPrompt, platform) {
-  return optimizeWithGemini(originalPrompt, platform);
+export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, mode = null) {
+  return optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode);
 }
 
-async function optimizeWithGemini(originalPrompt, platform) {
+async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode) {
   const url = `https://promptiq-theta.vercel.app/api/optimize`;
 
   const response = await fetch(url, {
@@ -16,7 +16,10 @@ async function optimizeWithGemini(originalPrompt, platform) {
     },
     body: JSON.stringify({
       originalPrompt,
-      platform
+      platform,
+      locallyEnhancedPrompt,
+      detectedIntent,
+      mode
     })
   });
 

@@ -1,3 +1,115 @@
+function getSystemPrompt(platform, intent, mode) {
+  let intentInstructions = '';
+  switch (intent) {
+    case 'coding':
+      intentInstructions = `
+- Technical Rigor: Prioritize language-specific best practices, clean modular architecture, edge case handling, and security constraints.
+- Structure: Output well-commented code, explicit input/output descriptions, complexity limits (time/space), and detailed error-handling rules.
+- Tone: Technical, precise, logical, and direct.`;
+      break;
+    case 'marketing':
+      intentInstructions = `
+- Copywriting: Focus on conversion copywriting frameworks (AIDA, PAS), emotional resonance, hooks, and strong Calls-to-Action (CTAs).
+- Target Audience: Explicitly define and write for the core customer avatar or demographic.
+- Presentation: Use engaging formatting, bold accents, and high-impact key phrases.`;
+      break;
+    case 'research':
+      intentInstructions = `
+- Rigor: Require logical reasoning chains, multi-perspective analysis, citation frameworks, and source verification instructions.
+- Depth: Ask for comprehensive reviews, background context synthesis, and potential counterarguments or limitations.
+- Tone: Academic, analytical, unbiased, and objective.`;
+      break;
+    case 'business':
+      intentInstructions = `
+- Strategy: Emphasize business frameworks (SWOT, OKRs, KPI metrics, ROI), cost/benefit parameters, and decision-tree logic.
+- Stakeholders: Tailor the analysis to specific corporate roles (e.g., Executive, Product Manager, Financial Analyst).
+- Format: Organize with executive summaries, clear bullet lists, and structured tables.`;
+      break;
+    case 'creative':
+      intentInstructions = `
+- Style: Encourage rich descriptions, sensory vocabulary, narrative voices, analogies, and unique perspectives.
+- Open-endedness: Outline loose boundaries to allow creative exploration, brainstorming variations, and ideation.
+- Tone: Inspiring, imaginative, expressive, and stylistic.`;
+      break;
+    case 'writing':
+      intentInstructions = `
+- Prose: Emphasize readability, logical flow, word choice, syntactic variety, and tone consistency (formal/informal).
+- Editing: Set guidelines for length, style guidelines, passive voice reduction, and narrative flow.`;
+      break;
+    default:
+      intentInstructions = `
+- Clarity: Focus on a strong Role assignment, clear Objective, explicit Constraints, and detailed Context.
+- Formatting: Ensure output structures (headings, tables, lists) are well-defined.`;
+  }
+
+  let modeInstructions = '';
+  switch (mode) {
+    case 'turbo':
+      modeInstructions = `
+- Objective: Fast, direct, and concise improvement. 
+- Refinement: Retain the original draft length as much as possible, focusing only on correcting major instruction ambiguities.`;
+      break;
+    case 'professional':
+      modeInstructions = `
+- Objective: The gold standard for general prompt engineering.
+- Refinement: Integrate a clear role, explicit context, structured instruction hierarchy, and comprehensive output styling rules.`;
+      break;
+    case 'research':
+      modeInstructions = `
+- Objective: Maximum depth, reasoning, and structure.
+- Refinement: Inject explicit Chain-of-Thought (CoT) instructions (e.g., 'Analyze step-by-step...'), demand detailed justifications, and structure extensive context layers.`;
+      break;
+    case 'creative':
+      modeInstructions = `
+- Objective: Maximum creativity and ideation.
+- Refinement: Allow open brainstorming constraints, prompt for multiple alternative suggestions, and set stylistic descriptors.`;
+      break;
+    case 'coding':
+      modeInstructions = `
+- Objective: Extreme technical and debugging precision.
+- Refinement: Build rigorous algorithmic specifications, input/output boundary rules, syntax validation checks, and security requirements.`;
+      break;
+    case 'business':
+      modeInstructions = `
+- Objective: Strategic planning and ROI decision-making.
+- Refinement: Structure prompts around market analysis, financial implications, KPI targets, stakeholder alignment, and risk assessments.`;
+      break;
+    default:
+      modeInstructions = `
+- Objective: Balanced general prompt optimization.`;
+  }
+
+  return `You are PromptIQ, the world's best AI Prompt Optimizer. Your sole mission is to refine, polish, and validate text prompts to produce superior AI responses on ${platform}.
+
+Your task is to optimize the provided pre-structured draft using the following intent-specific and mode-specific directives:
+
+[INTENT DIRECTIVES (${intent.toUpperCase()})]
+${intentInstructions}
+
+[MODE DIRECTIVES (${mode.toUpperCase()})]
+${modeInstructions}
+
+[INSTRUCTION HIERARCHY RULES]
+- **Role Assignment:** Define a clear persona/role at the very beginning (e.g., "Act as an expert copywriter...").
+- **Task/Objective:** Frame the core task with precise action verbs.
+- **Context & Elaboration:** Synthesize background detail and target audience parameters.
+- **Explicit Constraints:** Add boundaries (e.g., "Do not include fluff", "Format strictly as...").
+- **Format Directive:** Specify markdown structure (tables, headers, etc.).
+
+Your response MUST be strict JSON matching this schema:
+{
+  "optimized": "The fully refined and optimized prompt text",
+  "changes": [
+    {
+      "type": "role|task|context|format|constraints|specificity",
+      "description": "Short explanation of what was changed and how it improves the prompt quality"
+    }
+  ]
+}
+
+Ensure the output is valid JSON. Do not wrap the JSON in markdown code blocks like \`\`\`json.`;
+}
+
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -19,7 +131,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { originalPrompt, platform } = req.body;
+    const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode } = req.body;
 
     if (!originalPrompt || !platform) {
       res.status(400).json({ error: 'Missing originalPrompt or platform parameter' });
@@ -32,23 +144,14 @@ export default async function handler(req, res) {
       return;
     }
 
-    const systemPrompt = `You are an expert prompt engineer. Your job is to optimize the user's prompt for ${platform}.
-Your response MUST be strict JSON matching this schema:
-{
-  "optimized": "The fully rewritten and optimized prompt text here",
-  "changes": [
-    {
-      "type": "role|task|context|format|constraints|specificity",
-      "description": "Short explanation of what was changed and why it improves the prompt"
-    }
-  ]
-}
-Do not include any markdown formatting (like \`\`\`json) around the JSON, just the raw JSON object. Ensure the optimized prompt includes context, a clear task, constraints, format, and role if applicable.`;
+    const intent = detectedIntent || 'general';
+    const optMode = mode || 'turbo';
+    const systemPrompt = getSystemPrompt(platform, intent, optMode);
 
     const payload = {
       contents: [{
         parts: [{
-          text: `${systemPrompt}\n\nUSER PROMPT TO OPTIMIZE:\n${originalPrompt}`
+          text: `${systemPrompt}\n\nUSER ORIGINAL PROMPT:\n${originalPrompt}\n\nLOCALLY ENHANCED BASE DRAFT:\n${locallyEnhancedPrompt || originalPrompt}`
         }]
       }],
       generationConfig: {

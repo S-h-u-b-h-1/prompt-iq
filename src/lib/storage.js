@@ -55,7 +55,7 @@ function generateUUID() {
 }
 
 // IndexedDB Actions
-export async function saveOptimization(original, optimized, scoreDelta, platform) {
+export async function saveOptimization(original, optimized, scoreDelta, platform, intent = null, mode = null, scoreOriginal = null, scoreOptimized = null) {
   try {
     // 1. Save locally
     const db = await initDB();
@@ -67,6 +67,10 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
       optimized,
       scoreDelta,
       platform,
+      intent,
+      mode,
+      scoreOriginal,
+      scoreOptimized,
       timestamp: Date.now()
     });
 
@@ -77,7 +81,7 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
 
     // 2. Save centrally on the Neon DB via Vercel Serverless Function
     const userId = await getUserId();
-    fetch(`${API_BASE}/api/save`, {
+    const response = await fetch(`${API_BASE}/api/save`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -87,13 +91,22 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
         optimized,
         scoreDelta,
         platform,
-        userId
+        userId,
+        intent,
+        mode,
+        scoreOriginal,
+        scoreOptimized
       })
-    }).catch(err => console.error('Failed to save to central server:', err));
-
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.data?.id;
+    }
   } catch (err) {
-    console.error('Failed to save history locally:', err);
+    console.error('Failed to save history:', err);
   }
+  return null;
 }
 
 export async function getHistory() {
@@ -158,3 +171,79 @@ export async function clearHistory() {
   }
 }
 
+
+
+export function getUserTier() {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get('userTier', (data) => {
+        resolve(data.userTier || 'free');
+      });
+    } else {
+      resolve(localStorage.getItem('userTier') || 'free');
+    }
+  });
+}
+
+export function setUserTier(tier) {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ userTier: tier }, () => resolve());
+    } else {
+      localStorage.setItem('userTier', tier);
+      resolve();
+    }
+  });
+}
+
+export function checkDailyLimit() {
+  return new Promise((resolve) => {
+    const today = new Date().toDateString();
+    
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
+        const savedDate = data.optCountDate;
+        let count = data.optCountValue || 0;
+        
+        if (savedDate !== today) {
+          count = 0;
+          chrome.storage.local.set({ optCountDate: today, optCountValue: 0 }, () => {
+            resolve({ allowed: true, count: 0 });
+          });
+        } else {
+          resolve({ allowed: count < 5, count });
+        }
+      });
+    } else {
+      const savedDate = localStorage.getItem('optCountDate');
+      let count = parseInt(localStorage.getItem('optCountValue') || '0', 10);
+      
+      if (savedDate !== today) {
+        count = 0;
+        localStorage.setItem('optCountDate', today);
+        localStorage.setItem('optCountValue', '0');
+        resolve({ allowed: true, count: 0 });
+      } else {
+        resolve({ allowed: count < 5, count });
+      }
+    }
+  });
+}
+
+export function incrementDailyOptimization() {
+  return new Promise((resolve) => {
+    const today = new Date().toDateString();
+    
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
+        let count = (data.optCountValue || 0) + 1;
+        chrome.storage.local.set({ optCountDate: today, optCountValue: count }, () => resolve(count));
+      });
+    } else {
+      let count = parseInt(localStorage.getItem('optCountValue') || '0', 10) + 1;
+      localStorage.setItem('optCountDate', today);
+      localStorage.setItem('optCountValue', count.toString());
+      resolve(count);
+    }
+  });
+}

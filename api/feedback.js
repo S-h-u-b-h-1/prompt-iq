@@ -24,33 +24,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { original, optimized, scoreDelta, platform, userId, intent, mode, scoreOriginal, scoreOptimized } = req.body;
+    const { id, feedback } = req.body;
 
-    if (!original || !optimized || scoreDelta === undefined || !platform || !userId) {
-      res.status(400).json({ error: 'Missing required fields' });
+    if (!id || !feedback) {
+      res.status(400).json({ error: 'Missing required parameters: id and feedback' });
+      return;
+    }
+
+    if (feedback !== 'helpful' && feedback !== 'unhelpful') {
+      res.status(400).json({ error: 'Invalid feedback value' });
       return;
     }
 
     const result = await sql`
-      INSERT INTO prompt_history (original, optimized, score_delta, platform, user_id, intent, mode, score_original, score_optimized, created_at)
-      VALUES (
-        ${original}, 
-        ${optimized}, 
-        ${parseInt(scoreDelta, 10)}, 
-        ${platform}, 
-        ${userId}, 
-        ${intent || null}, 
-        ${mode || null}, 
-        ${scoreOriginal !== undefined ? parseInt(scoreOriginal, 10) : null}, 
-        ${scoreOptimized !== undefined ? parseInt(scoreOptimized, 10) : null}, 
-        NOW()
-      )
-      RETURNING id, created_at;
+      UPDATE prompt_history
+      SET feedback = ${feedback}
+      WHERE id = ${parseInt(id, 10)}
+      RETURNING id, feedback;
     `;
+
+    if (result.length === 0) {
+      res.status(404).json({ error: 'Prompt history record not found' });
+      return;
+    }
 
     res.status(200).json({ success: true, data: result[0] });
   } catch (error) {
-    console.error('Error saving prompt:', error);
+    console.error('Error saving feedback:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }

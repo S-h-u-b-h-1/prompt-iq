@@ -25,7 +25,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'CALL_OPTIMIZER') {
-    optimizePrompt(message.originalPrompt, message.platform)
+    optimizePrompt(
+      message.originalPrompt, 
+      message.platform, 
+      message.locallyEnhancedPrompt, 
+      message.detectedIntent, 
+      message.mode
+    )
       .then(result => sendResponse({ success: true, result }))
       .catch(error => sendResponse({ success: false, error: error.message, status: error.status }));
     return true; // Keep message channel open for async response

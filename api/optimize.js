@@ -88,17 +88,27 @@ Do not include any markdown formatting (like \`\`\`json) around the JSON, just t
       });
     };
 
-    // Attempt 1: Try primary model (gemini-2.5-flash)
+    // Attempt 1: Try primary model (gemini-2.5-flash-lite)
     try {
-      response = await callApi('gemini-2.5-flash');
+      response = await callApi('gemini-2.5-flash-lite');
     } catch (err) {
       lastError = err;
     }
 
     // Attempt 2: If primary model returned 503/429 or threw a network error, retry with delay
     if (!response || response.status === 503 || response.status === 429) {
-      console.warn(`Primary model gemini-2.5-flash failed (status: ${response ? response.status : 'network error'}). Retrying in 1s...`);
+      console.warn(`Primary model gemini-2.5-flash-lite failed (status: ${response ? response.status : 'network error'}). Retrying in 1s...`);
       await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        response = await callApi('gemini-2.5-flash-lite');
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    // Attempt 3: If retry still fails with 503/429, fall back to gemini-2.5-flash
+    if (!response || response.status === 503 || response.status === 429) {
+      console.warn(`Primary model retry failed. Falling back to gemini-2.5-flash...`);
       try {
         response = await callApi('gemini-2.5-flash');
       } catch (err) {
@@ -106,9 +116,9 @@ Do not include any markdown formatting (like \`\`\`json) around the JSON, just t
       }
     }
 
-    // Attempt 3: If retry still fails with 503/429, fall back to gemini-1.5-flash
+    // Attempt 4: If gemini-2.5-flash also fails, fall back to stable gemini-1.5-flash
     if (!response || response.status === 503 || response.status === 429) {
-      console.warn(`Primary model retry failed. Falling back to stable gemini-1.5-flash...`);
+      console.warn(`Secondary fallback failed. Falling back to stable gemini-1.5-flash...`);
       try {
         response = await callApi('gemini-1.5-flash');
       } catch (err) {

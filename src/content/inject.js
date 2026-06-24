@@ -9,6 +9,34 @@ let currentInputEl = null;
 let panelApi = null;
 let adapter = null;
 let lastOptimizedPrompt = '';
+let observer = null;
+
+function isContextValid() {
+  if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id) {
+    cleanup();
+    return false;
+  }
+  return true;
+}
+
+function cleanup() {
+  try {
+    if (currentInputEl) {
+      currentInputEl.removeEventListener('input', handleInput);
+    }
+    if (observer) {
+      observer.disconnect();
+    }
+    window.removeEventListener('keydown', handleKeydown);
+    
+    const container = document.getElementById('promptiq-container');
+    if (container) {
+      container.remove();
+    }
+  } catch (err) {
+    // Silently fail during cleanup
+  }
+}
 
 async function init() {
   adapter = getAdapter();
@@ -27,6 +55,7 @@ async function init() {
 }
 
 function handleInput() {
+  if (!isContextValid()) return;
   if (!currentInputEl || !panelApi) return;
   const text = adapter.getText(currentInputEl);
   const scoreData = scorePrompt(text);
@@ -48,7 +77,8 @@ function updateActiveInput(el) {
 }
 
 function setupObserver() {
-  const observer = new MutationObserver(() => {
+  observer = new MutationObserver(() => {
+    if (!isContextValid()) return;
     const el = adapter.getInputElement();
     if (el && el !== currentInputEl) {
       updateActiveInput(el);
@@ -64,39 +94,48 @@ function ensurePanelInjected() {
   document.body.appendChild(panelApi.container);
 }
 
-function setupKeyboardShortcut() {
-  window.addEventListener('keydown', (e) => {
-    // Ctrl + Shift + P
-    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'p') {
-      e.preventDefault();
-      if (panelApi) {
-        panelApi.toggleVisibility();
-      }
+function handleKeydown(e) {
+  if (!isContextValid()) return;
+  // Ctrl + Shift + P
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'p') {
+    e.preventDefault();
+    if (panelApi) {
+      panelApi.toggleVisibility();
     }
-  });
+  }
+}
+
+function setupKeyboardShortcut() {
+  window.addEventListener('keydown', handleKeydown);
 }
 
 function setupMessageListeners() {
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'OPTIMIZE_SELECTION') {
-      if (panelApi) {
-        panelApi.toggleVisibility();
+  try {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (!isContextValid()) return;
+      if (message.action === 'OPTIMIZE_SELECTION') {
+        if (panelApi) {
+          panelApi.toggleVisibility();
+          if (currentInputEl) {
+            adapter.setText(currentInputEl, message.text);
+            handleOptimize();
+          }
+        }
+      } else if (message.action === 'INSERT_PROMPT') {
         if (currentInputEl) {
           adapter.setText(currentInputEl, message.text);
-          handleOptimize();
+          const scoreData = scorePrompt(message.text);
+          panelApi.updateScore(scoreData);
         }
       }
-    } else if (message.action === 'INSERT_PROMPT') {
-      if (currentInputEl) {
-        adapter.setText(currentInputEl, message.text);
-        const scoreData = scorePrompt(message.text);
-        panelApi.updateScore(scoreData);
-      }
-    }
-  });
+    });
+  } catch (err) {
+    // Context might already be invalid
+  }
 }
 
 async function handleOptimize() {
+  if (!isContextValid()) return;
   const text = (adapter.getText(currentInputEl) || '').trim();
   if (!text) {
     panelApi.showError(new Error('Prompt is empty.'));
@@ -142,6 +181,7 @@ async function handleOptimize() {
 }
 
 function handleUse(finalPrompt) {
+  if (!isContextValid()) return;
   const textToUse = finalPrompt || lastOptimizedPrompt;
   if (textToUse) {
     adapter.setText(currentInputEl, textToUse);

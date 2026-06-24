@@ -1,27 +1,36 @@
-import { getApiKey, setApiKey } from './storage.js';
+import { getSessionToken, setSessionToken, clearSessionToken } from './storage.js';
 import assert from 'assert';
 
-console.log('Running storage tests...');
+console.log('Running updated storage session tests...');
 
 // Mock localStorage for Node environment
 global.localStorage = {
   store: {},
   getItem(key) { return this.store[key] || null; },
   setItem(key, value) { this.store[key] = String(value); },
+  removeItem(key) { delete this.store[key]; },
   clear() { this.store = {}; }
 };
 
-async function testApiKey() {
-  await setApiKey('test-key-123');
-  const key = await getApiKey();
-  assert.strictEqual(key, 'test-key-123');
+async function testSessionToken() {
+  // Set token
+  await setSessionToken('mock-jwt-token-12345');
+  
+  // Get token
+  const token = await getSessionToken();
+  assert.strictEqual(token, 'mock-jwt-token-12345');
+  
+  // Clear token
+  await clearSessionToken();
+  const clearedToken = await getSessionToken();
+  assert.strictEqual(clearedToken, null);
 }
 
-testApiKey()
+testSessionToken()
   .then(() => {
-    console.log('All storage tests passed!');
+    console.log('All storage session tests passed!');
   })
   .catch(err => {
-    console.error('Storage test failed:', err);
+    console.error('Storage session test failed:', err);
     process.exit(1);
   });

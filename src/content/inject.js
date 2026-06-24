@@ -1,7 +1,7 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { saveOptimization, getUserTier, checkDailyLimit, incrementDailyOptimization } from '../lib/storage.js';
+import { saveOptimization, getUserTier, checkDailyLimit, incrementDailyOptimization, getSessionToken } from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
 import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.js';
@@ -61,7 +61,7 @@ function handleInput() {
   const text = adapter.getText(currentInputEl);
   const scoreData = scorePrompt(text);
   
-  // Local structure check to identify missing prompt elements (Phase 4)
+  // Local structure check to identify missing prompt elements
   const structure = checkStructure(text);
   scoreData.missing = structure.missing;
   
@@ -154,11 +154,18 @@ async function handleOptimize() {
     return;
   }
 
+  // 1. Authenticate check: Require valid token
+  const token = await getSessionToken();
+  if (!token) {
+    panelApi.showError(new Error('Please log in via the PromptIQ extension popup in your browser toolbar to optimize prompts.'));
+    return;
+  }
+
   const mode = panelApi.getMode() || 'turbo';
   const tier = await getUserTier();
   const limitCheck = await checkDailyLimit();
 
-  // Enforce monetization paywall checks (Phase 8)
+  // Local gate: client-side caching limits to prevent redundant API load
   if (tier === 'free') {
     if (!limitCheck.allowed) {
       panelApi.showPaywall('limit');
@@ -170,7 +177,6 @@ async function handleOptimize() {
     }
   }
 
-  // Phase 4: Local analysis & enhancement draft generation
   const localResult = analyzeAndEnhancePrompt(text);
 
   try {
@@ -180,14 +186,15 @@ async function handleOptimize() {
       platform: adapter.platform,
       locallyEnhancedPrompt: localResult.enhancedPrompt,
       detectedIntent: localResult.intent,
-      mode: mode
+      mode: mode,
+      token: token // Include the JWT session token
     });
 
     if (!response || !response.success) {
-      const err = new Error(response?.error || 'Failed to optimize prompt.');
-      if (response?.status) {
-        err.status = response.status;
-      }
+      const status = response?.status;
+      const errorMsg = response?.error || 'Failed to optimize prompt.';
+      const err = new Error(errorMsg);
+      err.status = status;
       throw err;
     }
 
@@ -208,7 +215,7 @@ async function handleOptimize() {
       newScore
     );
 
-    // If on Free plan, increment their usage count
+    // Increment local optimization counter
     if (tier === 'free') {
       await incrementDailyOptimization();
     }
@@ -219,7 +226,13 @@ async function handleOptimize() {
 
     panelApi.showResult(result.optimized, diffedTokens, explainedChanges, runId);
   } catch (err) {
-    if (err.message && err.message.includes('Extension context invalidated')) {
+    if (err.status === 403) {
+      panelApi.showPaywall('mode');
+    } else if (err.status === 429) {
+      panelApi.showPaywall('limit');
+    } else if (err.status === 401) {
+      panelApi.showError(new Error('Session expired. Please log in again via the PromptIQ popup.'));
+    } else if (err.message && err.message.includes('Extension context invalidated')) {
       const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');
       panelApi.showError(reloadErr);
     } else {
@@ -242,10 +255,14 @@ function handleUse(finalPrompt) {
 
 async function handleFeedback(runId, feedbackVal) {
   if (!isContextValid() || !runId) return;
+  const token = await getSessionToken();
+  if (!token) return;
+  
   try {
     await fetch('https://promptiq-theta.vercel.app/api/feedback', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ id: runId, feedback: feedbackVal })

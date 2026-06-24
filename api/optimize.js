@@ -1,3 +1,9 @@
+import { neon } from '@neondatabase/serverless';
+import { authenticate } from './utils/auth-helper.js';
+
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_GmxFb4Q9YZKP@ep-odd-bar-ajcs0l0q-pooler.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const sql = neon(DATABASE_URL);
+
 function getSystemPrompt(platform, intent, mode) {
   let intentInstructions = '';
   switch (intent) {
@@ -117,7 +123,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
 
   if (req.method === 'OPTIONS') {
@@ -131,6 +137,13 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 1. Authenticate user JWT session
+    const session = authenticate(req);
+    if (!session) {
+      res.status(401).json({ error: 'Unauthorized: Invalid or missing token' });
+      return;
+    }
+
     const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode } = req.body;
 
     if (!originalPrompt || !platform) {
@@ -144,8 +157,45 @@ export default async function handler(req, res) {
       return;
     }
 
-    const intent = detectedIntent || 'general';
+    const userId = session.userId;
+
+    // 2. Resolve plan dynamically in real-time from Neon DB
+    const users = await sql`
+      SELECT u.id, u.plan as base_plan, s.plan as sub_plan, s.status as sub_status
+      FROM users u
+      LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
+      WHERE u.id = ${parseInt(userId, 10)}
+    `;
+
+    if (users.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const user = users[0];
+    const resolvedPlan = user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan;
     const optMode = mode || 'turbo';
+
+    // 3. Enforce Pro mode locks on server
+    if (resolvedPlan === 'free' && optMode !== 'turbo') {
+      res.status(403).json({ error: 'Pro mode locked: Free users can only use Turbo mode' });
+      return;
+    }
+
+    // 4. Enforce daily usage count limits on server
+    const today = new Date().toISOString().split('T')[0];
+    const usage = await sql`
+      SELECT count FROM usage_events
+      WHERE user_id = ${userId.toString()} AND date = ${today}
+    `;
+
+    const dailyCount = usage.length > 0 ? usage[0].count : 0;
+    if (resolvedPlan === 'free' && dailyCount >= 5) {
+      res.status(429).json({ error: 'Daily limit reached: Free plan is limited to 5 optimizations per day' });
+      return;
+    }
+
+    const intent = detectedIntent || 'general';
     const systemPrompt = getSystemPrompt(platform, intent, optMode);
 
     const payload = {
@@ -256,6 +306,14 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Gemini returned invalid format.' });
       return;
     }
+
+    // 5. Success! Increment daily usage limits on the server
+    await sql`
+      INSERT INTO usage_events (user_id, date, count, created_at)
+      VALUES (${userId.toString()}, ${today}, 1, NOW())
+      ON CONFLICT (user_id, date)
+      DO UPDATE SET count = usage_events.count + 1, created_at = NOW();
+    `;
 
     res.status(200).json(parsed);
   } catch (error) {

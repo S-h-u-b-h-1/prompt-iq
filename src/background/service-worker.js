@@ -30,7 +30,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       message.platform, 
       message.locallyEnhancedPrompt, 
       message.detectedIntent, 
-      message.mode
+      message.mode,
+      message.token // Relay the JWT session token
     )
       .then(result => sendResponse({ success: true, result }))
       .catch(error => sendResponse({ success: false, error: error.message, status: error.status }));

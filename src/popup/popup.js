@@ -1,16 +1,157 @@
-import { getHistory, clearHistory, getUserTier, setUserTier, checkDailyLimit } from '../lib/storage.js';
+import { 
+  getHistory, 
+  clearHistory, 
+  getSessionToken, 
+  clearSessionToken, 
+  signupUser, 
+  loginUser, 
+  fetchUserProfile, 
+  checkoutSubscription 
+} from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 
 // Import library data
 import libraryPrompts from '../../data/library.json' with { type: 'json' };
 
-document.addEventListener('DOMContentLoaded', () => {
-  initTabs();
-  initHistory();
-  initLibrary();
-  initDashboard();
-  initDemoControls();
+let currentMode = 'login'; // login or signup
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await checkAuthStatus();
 });
+
+// Authentication Checker
+async function checkAuthStatus() {
+  const authContainer = document.getElementById('auth-container');
+  const authenticatedWrapper = document.getElementById('authenticated-wrapper');
+  
+  const token = await getSessionToken();
+  if (!token) {
+    authContainer.style.display = 'block';
+    authenticatedWrapper.style.display = 'none';
+    initAuthListeners();
+    return;
+  }
+
+  try {
+    // Verify token with server profile request
+    const user = await fetchUserProfile();
+    if (!user) {
+      throw new Error('Session invalid');
+    }
+
+    authContainer.style.display = 'none';
+    authenticatedWrapper.style.display = 'block';
+    
+    // Initialize authenticated layouts
+    initTabs();
+    initHistory();
+    initLibrary();
+    initDashboard(user);
+    initSignout();
+    initPayments();
+  } catch (err) {
+    console.warn('Session expired or server error:', err);
+    await clearSessionToken();
+    authContainer.style.display = 'block';
+    authenticatedWrapper.style.display = 'none';
+    initAuthListeners();
+  }
+}
+
+// Authentication Forms Handlers
+function initAuthListeners() {
+  const title = document.getElementById('auth-title');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const toggleLink = document.getElementById('auth-toggle-link');
+  const toggleMsg = document.getElementById('auth-toggle-msg');
+  const statusEl = document.getElementById('auth-status');
+  
+  statusEl.className = 'status-msg';
+  statusEl.style.display = 'none';
+
+  // Toggle Login/Signup
+  toggleLink.onclick = (e) => {
+    e.preventDefault();
+    if (currentMode === 'login') {
+      currentMode = 'signup';
+      title.textContent = 'Create Account';
+      submitBtn.textContent = 'Sign Up';
+      toggleMsg.textContent = 'Already have an account?';
+      toggleLink.textContent = 'Log In';
+    } else {
+      currentMode = 'login';
+      title.textContent = 'Log In';
+      submitBtn.textContent = 'Log In';
+      toggleMsg.textContent = 'New to PromptIQ?';
+      toggleLink.textContent = 'Create Account';
+    }
+    statusEl.style.display = 'none';
+  };
+
+  submitBtn.onclick = async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value.trim();
+    
+    if (!email || !password) {
+      statusEl.textContent = 'Email and password are required.';
+      statusEl.className = 'status-msg status-error';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = currentMode === 'login' ? 'Logging in...' : 'Registering...';
+    
+    try {
+      if (currentMode === 'login') {
+        await loginUser(email, password);
+      } else {
+        await signupUser(email, password);
+      }
+      // Successful authentication! Reload status checks
+      await checkAuthStatus();
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'status-msg status-error';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = currentMode === 'login' ? 'Log In' : 'Sign Up';
+    }
+  };
+}
+
+// Plan & Payments
+function initPayments() {
+  const upgradeBtn = document.getElementById('upgrade-pro-btn');
+  if (!upgradeBtn) return;
+
+  upgradeBtn.onclick = async () => {
+    upgradeBtn.disabled = true;
+    upgradeBtn.textContent = 'Redirecting...';
+    try {
+      const checkoutUrl = await checkoutSubscription();
+      // Redirect to Stripe checkout session
+      window.open(checkoutUrl, '_blank');
+    } catch (err) {
+      alert(`Checkout failed: ${err.message}`);
+    } finally {
+      upgradeBtn.disabled = false;
+      upgradeBtn.textContent = 'Upgrade to Pro';
+    }
+  };
+}
+
+// Sign Out Control
+function initSignout() {
+  const logoutBtn = document.getElementById('logout-btn');
+  if (!logoutBtn) return;
+
+  logoutBtn.onclick = async () => {
+    if (confirm('Are you sure you want to log out?')) {
+      await clearSessionToken();
+      await checkAuthStatus();
+    }
+  };
+}
 
 // Tab Switching
 function initTabs() {
@@ -18,7 +159,7 @@ function initTabs() {
   const contents = document.querySelectorAll('.tab-content');
 
   tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', async () => {
       tabs.forEach(t => t.classList.remove('active'));
       contents.forEach(c => c.classList.remove('active'));
 
@@ -30,18 +171,39 @@ function initTabs() {
       if (tab.dataset.tab === 'history') {
         renderHistory();
       } else if (tab.dataset.tab === 'dashboard') {
-        renderDashboard();
+        try {
+          const user = await fetchUserProfile();
+          renderDashboard(user);
+        } catch (err) {
+          // session expired, checkAuthStatus will handle it
+          await checkAuthStatus();
+        }
       }
     });
   });
 }
 
 // Dashboard View
-async function initDashboard() {
-  await renderDashboard();
+async function initDashboard(user) {
+  await renderDashboard(user);
 }
 
-async function renderDashboard() {
+async function renderDashboard(user) {
+  const planStatusText = document.getElementById('plan-status-text');
+  const loggedInUserText = document.getElementById('logged-in-user-text');
+  const upgradeBtn = document.getElementById('upgrade-pro-btn');
+  
+  if (user) {
+    loggedInUserText.textContent = `Logged in as: ${user.email}`;
+    if (user.plan === 'pro') {
+      planStatusText.innerHTML = `<span style="color: #2563eb; font-weight: 700;">💎 Pro Plan (Active)</span>`;
+      if (upgradeBtn) upgradeBtn.style.display = 'none';
+    } else {
+      planStatusText.innerHTML = `<span style="color: #64748b; font-weight: 700;">⚡ Free Plan</span>`;
+      if (upgradeBtn) upgradeBtn.style.display = 'block';
+    }
+  }
+
   const history = await getHistory();
   const avgScoreEl = document.getElementById('avg-score');
   const trendDescEl = document.getElementById('trend-desc');
@@ -77,9 +239,11 @@ async function renderDashboard() {
     totalNewScore += newAnalysis.score;
 
     // Track missing elements to identify weakest dimension
-    origAnalysis.missing.forEach(dim => {
-      missingCounts[dim] = (missingCounts[dim] || 0) + 1;
-    });
+    if (origAnalysis.missing) {
+      origAnalysis.missing.forEach(dim => {
+        missingCounts[dim] = (missingCounts[dim] || 0) + 1;
+      });
+    }
   });
 
   const avgOrig = Math.round(totalOrigScore / history.length);
@@ -118,13 +282,15 @@ async function renderDashboard() {
 // History Management
 function initHistory() {
   const clearBtn = document.getElementById('clear-history-btn');
-  clearBtn.addEventListener('click', async () => {
+  clearBtn.onclick = async () => {
     if (confirm('Are you sure you want to clear your optimization history? Your settings will not be affected.')) {
       await clearHistory();
       renderHistory();
-      renderDashboard();
+      // Reload profile to refresh stats
+      const user = await fetchUserProfile();
+      renderDashboard(user);
     }
-  });
+  };
 
   renderHistory();
 }
@@ -205,15 +371,17 @@ function initLibrary() {
   const searchInput = document.getElementById('library-search');
   const catContainer = document.getElementById('category-list');
 
-  // Load categories
-  const categories = new Set(libraryPrompts.map(p => p.category));
-  categories.forEach(cat => {
-    const tag = document.createElement('div');
-    tag.className = 'category-tag';
-    tag.dataset.category = cat;
-    tag.textContent = cat;
-    catContainer.appendChild(tag);
-  });
+  // Load categories if not already added
+  if (catContainer.children.length === 1) {
+    const categories = new Set(libraryPrompts.map(p => p.category));
+    categories.forEach(cat => {
+      const tag = document.createElement('div');
+      tag.className = 'category-tag';
+      tag.dataset.category = cat;
+      tag.textContent = cat;
+      catContainer.appendChild(tag);
+    });
+  }
 
   // Category tags click handlers
   const tags = catContainer.querySelectorAll('.category-tag');
@@ -279,8 +447,6 @@ function renderLibrary(prompts) {
   });
 }
 
-
-
 // Helpers
 function escapeHtml(str) {
   if (!str) return '';
@@ -295,50 +461,4 @@ function escapeHtml(str) {
 function escapeDoubleQuotes(str) {
   if (!str) return '';
   return str.replace(/"/g, '&quot;');
-}
-
-async function initDemoControls() {
-  const planStatusText = document.getElementById('plan-status-text');
-  const togglePlanBtn = document.getElementById('toggle-plan-btn');
-  const dailyUsageText = document.getElementById('daily-usage-text');
-  const resetLimitBtn = document.getElementById('reset-limit-btn');
-
-  if (!planStatusText) return;
-
-  const updateStatus = async () => {
-    const tier = await getUserTier();
-    const limit = await checkDailyLimit();
-    
-    if (tier === 'pro') {
-      planStatusText.innerHTML = `<span style="color: #2563eb; font-weight: 700;">💎 Pro Plan (Active)</span>`;
-      togglePlanBtn.textContent = 'Switch to Free';
-      dailyUsageText.textContent = `Daily Limit: Unlimited (Pro active)`;
-      resetLimitBtn.style.display = 'none';
-    } else {
-      planStatusText.innerHTML = `<span style="color: #64748b; font-weight: 700;">⚡ Free Plan</span>`;
-      togglePlanBtn.textContent = 'Upgrade to Pro';
-      dailyUsageText.textContent = `Daily Limit: ${limit.count} / 5 optimizations`;
-      resetLimitBtn.style.display = 'block';
-    }
-  };
-
-  await updateStatus();
-
-  togglePlanBtn.addEventListener('click', async () => {
-    const tier = await getUserTier();
-    const newTier = tier === 'pro' ? 'free' : 'pro';
-    await setUserTier(newTier);
-    await updateStatus();
-  });
-
-  resetLimitBtn.addEventListener('click', async () => {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ optCountValue: 0 }, async () => {
-        await updateStatus();
-      });
-    } else {
-      localStorage.setItem('optCountValue', '0');
-      await updateStatus();
-    }
-  });
 }

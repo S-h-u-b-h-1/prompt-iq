@@ -1,11 +1,11 @@
 import { neon } from '@neondatabase/serverless';
-import { authenticate } from './utils/auth-helper.js';
+import { authenticate } from '../utils/auth-helper.js';
 
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_GmxFb4Q9YZKP@ep-odd-bar-ajcs0l0q-pooler.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require';
 const sql = neon(DATABASE_URL);
 
 export default async function handler(req, res) {
-  // CORS Headers
+  // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -27,29 +27,36 @@ export default async function handler(req, res) {
   try {
     const session = authenticate(req);
     if (!session) {
-      res.status(401).json({ error: 'Unauthorized: Invalid token' });
+      res.status(401).json({ error: 'Unauthorized: Invalid or missing token' });
       return;
     }
 
-    const userId = session.userId.toString();
-
-    const history = await sql`
-      SELECT id, original, optimized, score_delta as "scoreDelta", platform, created_at as "timestamp"
-      FROM prompt_history
-      WHERE user_id = ${userId}
-      ORDER BY created_at DESC
-      LIMIT 100;
+    // Resolve real-time plan status from the database
+    const users = await sql`
+      SELECT u.id, u.email, u.plan as base_plan, s.plan as sub_plan, s.status as sub_status
+      FROM users u
+      LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
+      WHERE u.id = ${parseInt(session.userId, 10)}
     `;
 
-    // Map timestamp to milliseconds for JS client
-    const formatted = history.map(item => ({
-      ...item,
-      timestamp: new Date(item.timestamp).getTime()
-    }));
+    if (users.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
 
-    res.status(200).json(formatted);
+    const user = users[0];
+    const resolvedPlan = user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan;
+
+    res.status(200).json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        plan: resolvedPlan
+      }
+    });
   } catch (error) {
-    console.error('Error fetching history:', error);
+    console.error('Auth check error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }

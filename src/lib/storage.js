@@ -1,5 +1,5 @@
 /**
- * Chrome Storage Local & IndexedDB wrappers for PromptIQ
+ * Chrome Storage Local, IndexedDB & API wrappers for PromptIQ
  */
 
 const DB_NAME = 'PromptIQ_DB';
@@ -21,18 +21,134 @@ function initDB() {
   });
 }
 
-// Helper to get or generate unique User ID
+// Session Token Management
+export function getSessionToken() {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get('sessionToken', (data) => {
+        resolve(data.sessionToken || null);
+      });
+    } else {
+      resolve(localStorage.getItem('sessionToken') || null);
+    }
+  });
+}
+
+export function setSessionToken(token) {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ sessionToken: token }, () => resolve());
+    } else {
+      localStorage.setItem('sessionToken', token);
+      resolve();
+    }
+  });
+}
+
+export function clearSessionToken() {
+  return new Promise((resolve) => {
+    const keys = ['sessionToken', 'userTier', 'userEmail'];
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.remove(keys, () => resolve());
+    } else {
+      keys.forEach(k => localStorage.removeItem(k));
+      resolve();
+    }
+  });
+}
+
+// Auth Actions
+export async function signupUser(email, password) {
+  const response = await fetch(`${API_BASE}/api/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to sign up');
+  }
+
+  await setSessionToken(data.token);
+  await setUserTier(data.user.plan);
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.set({ userEmail: data.user.email });
+  } else {
+    localStorage.setItem('userEmail', data.user.email);
+  }
+  return data;
+}
+
+export async function loginUser(email, password) {
+  const response = await fetch(`${API_BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to log in');
+  }
+
+  await setSessionToken(data.token);
+  await setUserTier(data.user.plan);
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.set({ userEmail: data.user.email });
+  } else {
+    localStorage.setItem('userEmail', data.user.email);
+  }
+  return data;
+}
+
+export async function fetchUserProfile() {
+  const token = await getSessionToken();
+  if (!token) return null;
+
+  const response = await fetch(`${API_BASE}/api/auth/me`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    await clearSessionToken();
+    return null;
+  }
+
+  const data = await response.json();
+  await setUserTier(data.user.plan);
+  return data.user;
+}
+
+// Subscription Actions
+export async function checkoutSubscription() {
+  const token = await getSessionToken();
+  if (!token) throw new Error('You must be logged in to subscribe.');
+
+  const response = await fetch(`${API_BASE}/api/subscription/checkout`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to initiate checkout');
+  }
+  return data.url;
+}
+
+// User ID fallback (local tracking, unused for server auth)
 export function getUserId() {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get('userId', (data) => {
-        if (data.userId) {
-          resolve(data.userId);
-        } else {
+        if (data.userId) resolve(data.userId);
+        else {
           const newId = generateUUID();
-          chrome.storage.local.set({ userId: newId }, () => {
-            resolve(newId);
-          });
+          chrome.storage.local.set({ userId: newId }, () => resolve(newId));
         }
       });
     } else {
@@ -54,7 +170,7 @@ function generateUUID() {
   });
 }
 
-// IndexedDB Actions
+// IndexedDB Actions (Synchronized via JWT Authorization)
 export async function saveOptimization(original, optimized, scoreDelta, platform, intent = null, mode = null, scoreOriginal = null, scoreOptimized = null) {
   try {
     // 1. Save locally
@@ -79,29 +195,31 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
       tx.onerror = (e) => reject(e.target.error);
     });
 
-    // 2. Save centrally on the Neon DB via Vercel Serverless Function
-    const userId = await getUserId();
-    const response = await fetch(`${API_BASE}/api/save`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        original,
-        optimized,
-        scoreDelta,
-        platform,
-        userId,
-        intent,
-        mode,
-        scoreOriginal,
-        scoreOptimized
-      })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return data.data?.id;
+    // 2. Save centrally on Neon
+    const token = await getSessionToken();
+    if (token) {
+      const response = await fetch(`${API_BASE}/api/save`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          original,
+          optimized,
+          scoreDelta,
+          platform,
+          intent,
+          mode,
+          scoreOriginal,
+          scoreOptimized
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.data?.id;
+      }
     }
   } catch (err) {
     console.error('Failed to save history:', err);
@@ -111,19 +229,23 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
 
 export async function getHistory() {
   try {
-    const userId = await getUserId();
-    // 1. Try to fetch from server
-    try {
-      const response = await fetch(`${API_BASE}/api/history?userId=${userId}`);
-      if (response.ok) {
-        const serverHistory = await response.json();
-        return serverHistory;
+    const token = await getSessionToken();
+    if (token) {
+      // Try to fetch from server with JWT auth
+      try {
+        const response = await fetch(`${API_BASE}/api/history`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const serverHistory = await response.json();
+          return serverHistory;
+        }
+      } catch (serverErr) {
+        console.warn('Failed to fetch from central server, falling back to local database:', serverErr);
       }
-    } catch (serverErr) {
-      console.warn('Failed to fetch from central server, falling back to local database:', serverErr);
     }
 
-    // 2. Fallback to local IndexedDB
+    // Fallback to local IndexedDB
     const db = await initDB();
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
@@ -131,7 +253,6 @@ export async function getHistory() {
 
     return new Promise((resolve, reject) => {
       request.onsuccess = () => {
-        // Sort newest first
         const sorted = request.result.sort((a, b) => b.timestamp - a.timestamp);
         resolve(sorted);
       };
@@ -157,22 +278,19 @@ export async function clearHistory() {
     });
 
     // 2. Clear centrally
-    const userId = await getUserId();
-    fetch(`${API_BASE}/api/clear`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ userId })
-    }).catch(err => console.error('Failed to clear central history:', err));
-
+    const token = await getSessionToken();
+    if (token) {
+      fetch(`${API_BASE}/api/clear`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(err => console.error('Failed to clear central history:', err));
+    }
   } catch (err) {
     console.error('Failed to clear history locally:', err);
   }
 }
 
-
-
+// Local Cached Plan Status
 export function getUserTier() {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
@@ -196,17 +314,27 @@ export function setUserTier(tier) {
   });
 }
 
-export function checkDailyLimit() {
-  return new Promise((resolve) => {
-    const today = new Date().toDateString();
-    
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+// Client-side rate estimation (acts as a backup UI indicator; limits are strictly enforced on Vercel)
+export async function checkDailyLimit() {
+  const token = await getSessionToken();
+  if (token) {
+    try {
+      const profile = await fetchUserProfile();
+      if (profile && profile.plan === 'pro') {
+        return { allowed: true, count: 0 };
+      }
+    } catch (err) {
+      // Fallback to local
+    }
+  }
+
+  const today = new Date().toDateString();
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+    return new Promise((resolve) => {
       chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
         const savedDate = data.optCountDate;
         let count = data.optCountValue || 0;
-        
         if (savedDate !== today) {
-          count = 0;
           chrome.storage.local.set({ optCountDate: today, optCountValue: 0 }, () => {
             resolve({ allowed: true, count: 0 });
           });
@@ -214,26 +342,23 @@ export function checkDailyLimit() {
           resolve({ allowed: count < 5, count });
         }
       });
+    });
+  } else {
+    const savedDate = localStorage.getItem('optCountDate');
+    let count = parseInt(localStorage.getItem('optCountValue') || '0', 10);
+    if (savedDate !== today) {
+      localStorage.setItem('optCountDate', today);
+      localStorage.setItem('optCountValue', '0');
+      return { allowed: true, count: 0 };
     } else {
-      const savedDate = localStorage.getItem('optCountDate');
-      let count = parseInt(localStorage.getItem('optCountValue') || '0', 10);
-      
-      if (savedDate !== today) {
-        count = 0;
-        localStorage.setItem('optCountDate', today);
-        localStorage.setItem('optCountValue', '0');
-        resolve({ allowed: true, count: 0 });
-      } else {
-        resolve({ allowed: count < 5, count });
-      }
+      return { allowed: count < 5, count };
     }
-  });
+  }
 }
 
 export function incrementDailyOptimization() {
   return new Promise((resolve) => {
     const today = new Date().toDateString();
-    
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
         let count = (data.optCountValue || 0) + 1;

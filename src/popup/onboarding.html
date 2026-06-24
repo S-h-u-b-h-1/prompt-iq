@@ -35,40 +35,15 @@
     .feature-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: #0f172a; }
     .feature-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
     
-    .promo-box {
-      background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
-      color: white;
+    .free-promo {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe;
       border-radius: 16px;
       padding: 24px;
       margin-top: 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
-    .promo-content {
-      flex: 1;
-    }
-    .promo-title { font-weight: 800; font-size: 18px; margin: 0 0 6px 0; color: #f8fafc; }
-    .promo-desc { font-size: 13px; color: #cbd5e1; margin: 0; line-height: 1.5; }
-    .btn-upgrade {
-      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 24px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-    }
-    .btn-upgrade:hover {
-      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-      transform: translateY(-1px);
-    }
+    .free-title { font-weight: 800; font-size: 16px; margin: 0 0 6px 0; color: #1e3a8a; }
+    .free-desc { font-size: 13px; color: #1e3a8a; margin: 0; line-height: 1.5; }
     
     .get-started {
       margin-top: 32px;
@@ -112,12 +87,9 @@
       </div>
     </div>
 
-    <div class="promo-box">
-      <div class="promo-content">
-        <h3 class="promo-title">💎 Join our Premium Version</h3>
-        <p class="promo-desc">Unlock our advanced, state-of-the-art Gemini 2.5 Pro model for just <strong>₹100/month</strong>! Get maximum quality re-writing and unlimited daily optimizations.</p>
-      </div>
-      <button class="btn-upgrade" id="upgradeBtn">Upgrade to Premium</button>
+    <div class="free-promo">
+      <h3 class="free-title">⚡ 100% Free Gemini Optimization</h3>
+      <p class="free-desc">PromptIQ is completely free! All prompt optimizations are processed using the state-of-the-art <strong>Gemini 2.5 Flash</strong> model on our secure servers, providing lightning-fast, high-quality prompt refinement without any usage limits.</p>
     </div>
 
     <div class="get-started">

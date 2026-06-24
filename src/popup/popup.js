@@ -1,4 +1,4 @@
-import { getApiKey, setApiKey, getGeminiApiKey, setGeminiApiKey, getUserTier, setUserTier, getHistory, clearHistory } from '../lib/storage.js';
+import { getHistory, clearHistory } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 
 // Import library data
@@ -6,7 +6,6 @@ import libraryPrompts from '../../data/library.json' with { type: 'json' };
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
-  initSettings();
   initHistory();
   initLibrary();
   initDashboard();
@@ -39,16 +38,6 @@ function initTabs() {
 // Dashboard View
 async function initDashboard() {
   await renderDashboard();
-  
-  const upgradeBtn = document.getElementById('upgrade-cta-btn');
-  if (upgradeBtn) {
-    upgradeBtn.addEventListener('click', () => {
-      const settingsTab = document.querySelector('.nav-tab[data-tab="settings"]');
-      if (settingsTab) {
-        settingsTab.click();
-      }
-    });
-  }
 }
 
 async function renderDashboard() {
@@ -289,33 +278,7 @@ function renderLibrary(prompts) {
   });
 }
 
-// Settings & API Key Management
-async function initSettings() {
-  const tierSelect = document.getElementById('userTier');
-  const saveBtn = document.getElementById('saveKeyBtn');
-  const statusEl = document.getElementById('settings-status');
 
-  // Load saved settings
-  const savedTier = await getUserTier();
-  tierSelect.value = savedTier;
-
-  saveBtn.addEventListener('click', async () => {
-    const tier = tierSelect.value;
-    await setUserTier(tier);
-    
-    showStatus(statusEl, 'Settings saved successfully!', 'success');
-    renderDashboard();
-  });
-}
-
-function showStatus(element, message, type) {
-  element.textContent = message;
-  element.className = `status-msg status-${type}`;
-  element.style.display = 'block';
-  setTimeout(() => {
-    element.style.display = 'none';
-  }, 3500);
-}
 
 // Helpers
 function escapeHtml(str) {

@@ -1,5 +1,4 @@
 import { optimizePrompt } from '../lib/optimizer.js';
-import { getUserTier, getGeminiApiKey } from '../lib/storage.js';
 
 chrome.runtime.onInstalled.addListener((details) => {
   // Create context menu
@@ -26,10 +25,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'CALL_OPTIMIZER') {
-    getUserTier()
-      .then((tier) => {
-        return optimizePrompt(tier, message.originalPrompt, message.platform);
-      })
+    optimizePrompt(message.originalPrompt, message.platform)
       .then(result => sendResponse({ success: true, result }))
       .catch(error => sendResponse({ success: false, error: error.message, status: error.status }));
     return true; // Keep message channel open for async response

@@ -424,7 +424,6 @@
     <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
     <div class="nav-tab" data-tab="library">Library</div>
     <div class="nav-tab" data-tab="history">History</div>
-    <div class="nav-tab" data-tab="settings">Settings</div>
   </div>
 
   <!-- Dashboard Tab -->
@@ -433,24 +432,15 @@
     <div class="welcome-card">
       <div class="welcome-badge">PromptIQ Family</div>
       <h2 class="welcome-title">Welcome to the PromptIQ Family! 🚀</h2>
-      <p class="welcome-desc">Your ultimate companion to elevate prompts to state-of-the-art quality in real-time.</p>
+      <p class="welcome-desc">Your ultimate companion to elevate prompts to state-of-the-art quality in real-time, powered by advanced AI.</p>
       
-      <div class="benefits-title">Core Benefits:</div>
+      <div class="benefits-title">Core Features:</div>
       <ul class="benefits-list">
         <li>📊 <strong>Live Quality Scoring:</strong> Real-time 0–100 quality indicator as you type.</li>
-        <li>🧠 <strong>Context Aware:</strong> Automatically tailors templates to the target AI.</li>
+        <li>🧠 <strong>AI-Powered Refinement:</strong> Advanced optimization using Gemini 2.5 Flash.</li>
         <li>📖 <strong>Explanation Layer:</strong> Highlights and explains all optimization changes.</li>
         <li>⚡ <strong>One-Click Apply:</strong> Instant injection directly into the text area.</li>
       </ul>
-      
-      <div class="upgrade-promo">
-        <div class="upgrade-icon">💎</div>
-        <div class="upgrade-text-container">
-          <div class="upgrade-title">Join our Premium Version</div>
-          <div class="upgrade-desc">Get the advanced Gemini 2.5 Pro model for just <strong>₹100/month</strong>!</div>
-        </div>
-        <button class="upgrade-btn" id="upgrade-cta-btn">Upgrade Now</button>
-      </div>
     </div>
 
     <!-- Stats Section -->
@@ -499,23 +489,7 @@
     </div>
   </div>
 
-  <!-- Settings Tab -->
-  <div class="tab-content" id="tab-settings">
-    <div class="form-group">
-      <label for="userTier">User Tier</label>
-      <select id="userTier">
-        <option value="free">Free (Template-based Heuristics)</option>
-        <option value="premium">Premium (Gemini Pro LLM)</option>
-      </select>
-    </div>
 
-    <button class="btn" id="saveKeyBtn">Save Settings</button>
-    <div class="status-msg" id="settings-status"></div>
-    
-    <div style="margin-top: 24px; font-size: 12px; color: #64748b; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 12px;">
-      <strong>Security & Privacy:</strong> Premium optimization requests are processed securely using PromptIQ's pre-configured Gemini developer key. No user API keys are required.
-    </div>
-  </div>
 
   <script type="module" src="./popup.js"></script>
 </body>

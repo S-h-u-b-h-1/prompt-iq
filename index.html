@@ -7,80 +7,892 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-LES4YYHSWN');
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PromptIQ Server</title>
+  <title>PromptIQ — Professional AI Prompts Instantly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-      text-align: center;
-      padding: 20px;
+    :root {
+      --bg-color: #030712;
+      --card-bg: rgba(15, 23, 42, 0.45);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+    }
+
+    * {
       box-sizing: border-box;
     }
-    .card {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 24px;
-      padding: 40px;
-      max-width: 500px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.6;
     }
-    h1 {
-      margin: 0 0 10px 0;
-      font-size: 32px;
+
+    /* Three.js Background Canvas */
+    #three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Background glow overlays */
+    .glow-overlay-1 {
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    .glow-overlay-2 {
+      position: fixed;
+      bottom: -10%;
+      right: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 8%;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      font-size: 28px;
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
       font-weight: 800;
+      font-size: 24px;
       background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
     }
-    p {
-      color: #94a3b8;
-      font-size: 16px;
-      line-height: 1.5;
-      margin: 0 0 24px 0;
-    }
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      color: #34d399;
-      padding: 6px 14px;
+
+    .btn-nav-install {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      padding: 10px 20px;
       border-radius: 9999px;
       font-size: 14px;
       font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
     }
-    .dot {
-      width: 8px;
-      height: 8px;
-      background-color: #10b981;
+
+    .btn-nav-install:hover {
+      background: var(--text-primary);
+      color: var(--bg-color);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -10px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1000px;
+      margin: 40px auto 100px auto;
+      padding: 0 24px;
+      width: 100%;
+    }
+
+    /* Main Card */
+    .main-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--card-border);
+      border-radius: 32px;
+      padding: 56px 48px;
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Accent top border effect */
+    .main-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--accent-blue), var(--accent-purple), transparent);
+    }
+
+    /* Hero Section */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      color: #a78bfa;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 48px;
+      font-weight: 800;
+      margin: 0 0 16px 0;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 20px;
+      color: var(--text-primary);
+      margin: 0 0 24px 0;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .intro-text {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 36px 0;
+      max-width: 800px;
+    }
+
+    /* Call To Action Buttons */
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+      border: none;
+      color: white;
+      padding: 16px 36px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.6);
+      filter: brightness(1.1);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      padding: 16px 30px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Before / After Showcase */
+    .comparison-section {
+      margin-bottom: 56px;
+    }
+
+    .comparison-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .before-after-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .before-after-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ba-card {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .ba-badge {
+      align-self: flex-start;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+
+    .badge-before {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.18);
+    }
+
+    .badge-after {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+    }
+
+    .ba-prompt-text {
+      font-size: 14px;
+      font-family: monospace;
+      color: var(--text-secondary);
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .ba-card-after .ba-prompt-text {
+      color: var(--text-primary);
+    }
+
+    .comparison-summary {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-emerald);
+      margin-top: 16px;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--card-border);
+      margin: 56px 0;
+    }
+
+    /* Section Title */
+    .section-title-container {
+      margin-bottom: 36px;
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .feature-icon {
+      font-size: 22px;
+    }
+
+    .feature-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* Premium Plan */
+    .premium-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.07) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 24px;
+      padding: 40px;
+      margin: 56px 0;
+      position: relative;
+    }
+
+    .premium-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(to right, #3b82f6, #8b5cf6);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .premium-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+    }
+
+    .premium-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin: 0 0 24px 0;
+    }
+
+    .premium-benefits {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 600px) {
+      .premium-benefits {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .premium-benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .premium-benefit-bullet {
+      color: var(--accent-purple);
+      font-weight: 800;
+    }
+
+    /* Onboarding Steps */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--accent-blue);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .step-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin: 0;
+      padding-top: 5px;
+    }
+
+    .step-text strong {
+      color: var(--text-primary);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      padding-top: 32px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.35);
+      margin: 0;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>PromptIQ API Server</h1>
-    <p>This is the production backend server for the PromptIQ Chrome Extension. Telemetry and prompt history endpoints are active and healthy.</p>
-    <div class="status">
-      <span class="dot"></span>
-      <span>All Systems Operational</span>
+
+  <!-- Three.js Background Canvas -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- Glowing background elements -->
+  <div class="glow-overlay-1"></div>
+  <div class="glow-overlay-2"></div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo-container">
+      <span class="logo-icon">🚀</span>
+      <span class="logo-text">PromptIQ</span>
     </div>
-  </div>
+    <a href="https://chrome.google.com/webstore" class="btn-nav-install" target="_blank">Install Chrome Extension</a>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="container">
+    <div class="main-card">
+      
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <div class="hero-badge">🚀 Welcome to PromptIQ</div>
+        <h1>Stop Guessing How To Write AI Prompts.</h1>
+        <p class="tagline">Write normally. PromptIQ turns your idea into a professional AI prompt in one click.</p>
+        <p class="intro-text">
+          PromptIQ works directly inside <strong>ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek</strong> — so you can improve your prompt before sending it, without switching tabs or learning prompt engineering.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="cta-group">
+          <a href="https://chrome.google.com/webstore" class="btn-primary" target="_blank">
+            <span>Add to Chrome (Free)</span>
+          </a>
+          <a href="#premium-section" class="btn-secondary">
+            <span>Upgrade to Premium</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Before / After Showcase -->
+      <div class="comparison-section">
+        <div class="comparison-title">Same Idea. Much Better AI Output.</div>
+        <div class="before-after-grid">
+          <div class="ba-card">
+            <span class="ba-badge badge-before">Before</span>
+            <p class="ba-prompt-text">Write a marketing campaign for my startup.</p>
+          </div>
+          <div class="ba-card ba-card-after">
+            <span class="ba-badge badge-after">After</span>
+            <p class="ba-prompt-text">Act as a senior B2B SaaS growth strategist.
+
+Create a multi-channel marketing campaign for a startup targeting founders and SMB decision makers.
+
+Include:
+• Positioning & Messaging
+• LinkedIn & Email strategies
+• Budget allocation & Success metrics
+
+Format the response as an actionable 30-day execution plan.</p>
+          </div>
+        </div>
+        <div class="comparison-summary">✨ Instantly upgraded into detailed, professional instructions</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Core Features Grid -->
+      <section class="features-section">
+        <div class="section-title-container">
+          <div class="section-subtitle">Features</div>
+          <h2 class="section-title">Outcome-Driven Optimization</h2>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon-title">
+              <span class="feature-icon">📊</span>
+              <h3 class="feature-title">Live Prompt Score</h3>
+            </div>
+            <p class="feature-desc">See a 0–100 prompt quality score as you type, so you know when your prompt is too vague.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-title">
+              <span class="feature-icon">⚡</span>
+              <h3 class="feature-title">One-Click Optimization</h3>
+            </div>
+            <p class="feature-desc">Turn unclear prompts into structured, detailed, high-quality prompts instantly.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-title">
+              <span class="feature-icon">🧠</span>
+              <h3 class="feature-title">AI-Aware Rewriting</h3>
+            </div>
+            <p class="feature-desc">PromptIQ adapts the rewrite based on the AI tool you are using, so prompts work better across ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-title">
+              <span class="feature-icon">📖</span>
+              <h3 class="feature-title">Before/After Explanations</h3>
+            </div>
+            <p class="feature-desc">See what changed and why, so you can understand how your prompt became stronger.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Premium Pricing Section -->
+      <section class="premium-section" id="premium-section">
+        <div class="premium-card">
+          <div class="premium-badge">💎 PromptIQ Premium</div>
+          <h2 class="premium-title">Upgrade to Premium</h2>
+          <p class="premium-desc">Get access to state-of-the-art optimization models, advanced custom modes, and priority enhancement speed.</p>
+          
+          <div class="premium-benefits">
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-bullet">✓</span>
+              <span>Advanced AI-Powered Rewriting</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-bullet">✓</span>
+              <span>Premium Optimization Modes (Creative, Code, Business)</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-bullet">✓</span>
+              <span>Higher/Unlimited daily optimization limits</span>
+            </div>
+            <div class="premium-benefit-item">
+              <span class="premium-benefit-bullet">✓</span>
+              <span>Priority prompt-quality enhancement latency</span>
+            </div>
+          </div>
+
+          <a href="#" class="btn-primary" id="premium-upgrade-cta">Upgrade to Premium</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- How to get started -->
+      <section class="get-started-section">
+        <div class="section-title-container">
+          <div class="section-subtitle">Installation</div>
+          <h2 class="section-title">🏁 How to Get Started</h2>
+        </div>
+
+        <ol class="steps-list">
+          <li class="step-item">
+            <span class="step-number">1</span>
+            <p class="step-text">Open <strong>ChatGPT, Claude, Gemini, Perplexity, Copilot, or DeepSeek</strong>.</p>
+          </li>
+          <li class="step-item">
+            <span class="step-number">2</span>
+            <p class="step-text">Start typing your prompt naturally in the text input box.</p>
+          </li>
+          <li class="step-item">
+            <span class="step-number">3</span>
+            <p class="step-text">Click the floating <strong>PromptIQ badge</strong> in the bottom-right corner of the chat input.</p>
+          </li>
+          <li class="step-item">
+            <span class="step-number">4</span>
+            <p class="step-text">Review the optimized rewrite and the breakdown score.</p>
+          </li>
+          <li class="step-item">
+            <span class="step-number">5</span>
+            <p class="step-text">Insert it back with <strong>one click</strong> and get dramatically better AI responses!</p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-links">
+          <a href="/privacy.html" class="footer-link">Privacy Policy</a>
+          <a href="https://chrome.google.com/webstore" class="footer-link" target="_blank">Chrome Web Store</a>
+        </div>
+        <p class="footer-text">© 2026 PromptIQ. All rights reserved. Elevating human-AI communication.</p>
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Three.js Interactive Constellation Particle Field
+    const canvas = document.getElementById('three-canvas');
+    const scene = new THREE.Scene();
+    
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 25;
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Particle nodes configuration
+    const particleCount = 140;
+    const posArr = new Float32Array(particleCount * 3);
+    const velocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      // Place randomly in a 3D box
+      posArr[i * 3] = (Math.random() - 0.5) * 45;
+      posArr[i * 3 + 1] = (Math.random() - 0.5) * 45;
+      posArr[i * 3 + 2] = (Math.random() - 0.5) * 45;
+      
+      // Floating movement velocities
+      velocities.push({
+        x: (Math.random() - 0.5) * 0.02,
+        y: (Math.random() - 0.5) * 0.02,
+        z: (Math.random() - 0.5) * 0.02
+      });
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+
+    // Glowing point material
+    const material = new THREE.PointsMaterial({
+      size: 0.55,
+      color: 0x8b5cf6, // Purple nodes
+      transparent: true,
+      opacity: 0.8,
+      sizeAttenuation: true
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    // Neural connection lines material
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: 0x3b82f6, // Blue lines
+      transparent: true,
+      opacity: 0.18
+    });
+
+    let lineSegments = null;
+
+    function renderConnectionLines() {
+      if (lineSegments) {
+        scene.remove(lineSegments);
+      }
+
+      const connectionPoints = [];
+      const currentPos = geometry.attributes.position.array;
+
+      for (let i = 0; i < particleCount; i++) {
+        for (let j = i + 1; j < particleCount; j++) {
+          const dx = currentPos[i * 3] - currentPos[j * 3];
+          const dy = currentPos[i * 3 + 1] - currentPos[j * 3 + 1];
+          const dz = currentPos[i * 3 + 2] - currentPos[j * 3 + 2];
+          const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+          // If nodes are close enough, draw a connection link
+          if (dist < 9) {
+            connectionPoints.push(
+              currentPos[i * 3], currentPos[i * 3 + 1], currentPos[i * 3 + 2],
+              currentPos[j * 3], currentPos[j * 3 + 1], currentPos[j * 3 + 2]
+            );
+          }
+        }
+      }
+
+      const lineGeometry = new THREE.BufferGeometry();
+      lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionPoints, 3));
+      lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
+      scene.add(lineSegments);
+    }
+
+    // Interactive mouse tracking
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX - window.innerWidth / 2) * 0.008;
+      mouseY = (e.clientY - window.innerHeight / 2) * 0.008;
+    });
+
+    // Animation frames update loop
+    function updateFrame() {
+      requestAnimationFrame(updateFrame);
+
+      const positions = geometry.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] += velocities[i].x;
+        positions[i * 3 + 1] += velocities[i].y;
+        positions[i * 3 + 2] += velocities[i].z;
+
+        // Bounce boundaries
+        if (Math.abs(positions[i * 3]) > 22) velocities[i].x *= -1;
+        if (Math.abs(positions[i * 3 + 1]) > 22) velocities[i].y *= -1;
+        if (Math.abs(positions[i * 3 + 2]) > 22) velocities[i].z *= -1;
+      }
+      geometry.attributes.position.needsUpdate = true;
+
+      renderConnectionLines();
+
+      // Smooth camera mouse follow latency
+      targetX += (mouseX - targetX) * 0.04;
+      targetY += (mouseY - targetY) * 0.04;
+
+      camera.position.x = targetX;
+      camera.position.y = -targetY;
+      camera.lookAt(scene.position);
+
+      // Slow idle rotation
+      particles.rotation.y += 0.0006;
+      if (lineSegments) {
+        lineSegments.rotation.y += 0.0006;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    updateFrame();
+
+    // Responsive aspect ratio handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Premium upgrade redirection handler
+    document.getElementById('premium-upgrade-cta').addEventListener('click', async (e) => {
+      e.preventDefault();
+      // Open the Chrome Web Store extension installation or details info
+      window.open('https://chrome.google.com/webstore', '_blank');
+    });
+  </script>
 </body>
 </html>

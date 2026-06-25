@@ -71,7 +71,7 @@ export function clearSessionToken() {
 
 // Auth Actions
 export async function signupUser(email, password) {
-  const response = await fetch(`${API_BASE}/api/auth/signup`, {
+  const response = await fetch(`${API_BASE}/api/auth?action=signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -93,7 +93,7 @@ export async function signupUser(email, password) {
 }
 
 export async function loginUser(email, password) {
-  const response = await fetch(`${API_BASE}/api/auth/login`, {
+  const response = await fetch(`${API_BASE}/api/auth?action=login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -118,7 +118,7 @@ export async function fetchUserProfile() {
   const token = await getSessionToken();
   if (!token) return null;
 
-  const response = await fetch(`${API_BASE}/api/auth/me`, {
+  const response = await fetch(`${API_BASE}/api/auth?action=me`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
 
@@ -254,7 +254,7 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
     // 2. Save centrally on Neon
     const token = await getSessionToken();
     if (token) {
-      const response = await fetch(`${API_BASE}/api/save`, {
+      const response = await fetch(`${API_BASE}/api/history`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -336,8 +336,8 @@ export async function clearHistory() {
     // 2. Clear centrally
     const token = await getSessionToken();
     if (token) {
-      fetch(`${API_BASE}/api/clear`, {
-        method: 'POST',
+      fetch(`${API_BASE}/api/history`, {
+        method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       }).catch(err => console.error('Failed to clear central history:', err));
     }

@@ -547,3 +547,13 @@ function escapeDoubleQuotes(str) {
   if (!str) return '';
   return str.replace(/"/g, '&quot;');
 }
+
+// Onboarding page launcher
+document.addEventListener('DOMContentLoaded', () => {
+  document.body.addEventListener('click', (e) => {
+    if (e.target && e.target.classList.contains('view-onboarding-link')) {
+      e.preventDefault();
+      chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/onboarding.html') });
+    }
+  });
+});

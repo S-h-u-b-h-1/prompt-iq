@@ -4,47 +4,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PromptIQ Popup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #030712;
+      --card-bg: rgba(15, 23, 42, 0.6);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #22d3ee;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --pi-primary-gradient: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       width: 480px;
       margin: 0;
       padding: 0;
-      color: #0f172a;
-      background-color: #f8fafc;
+      color: var(--text-primary);
+      background-color: var(--bg-color);
       overflow-x: hidden;
     }
     
     .navbar {
       display: flex;
-      background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--card-border);
       padding: 0 12px;
       position: sticky;
       top: 0;
       z-index: 10;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .nav-tab {
       padding: 14px 16px;
       font-size: 13px;
-      font-weight: 600;
-      color: #64748b;
+      font-weight: 700;
+      color: var(--text-secondary);
       cursor: pointer;
       border-bottom: 2px solid transparent;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
     .nav-tab:hover {
-      color: #0f172a;
+      color: var(--text-primary);
     }
     .nav-tab.active {
-      color: #2563eb;
-      border-bottom-color: #2563eb;
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
     }
     
     .tab-content {
       display: none;
-      padding: 16px;
-      min-height: 350px;
+      padding: 20px;
+      min-height: 400px;
       box-sizing: border-box;
     }
     .tab-content.active {
@@ -55,304 +74,374 @@
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 14px;
       margin-bottom: 16px;
     }
     .stat-card {
-      background: #ffffff;
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     .stat-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     .stat-value {
       font-size: 24px;
-      font-weight: 700;
-      color: #0f172a;
+      font-weight: 800;
+      color: var(--text-primary);
     }
     .stat-desc {
       font-size: 11px;
-      color: #10b981;
-      margin-top: 4px;
-      font-weight: 500;
+      color: var(--accent-green);
+      margin-top: 6px;
+      font-weight: 600;
     }
     .stat-desc.negative {
-      color: #ef4444;
+      color: var(--accent-red);
     }
     .alert-card {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 12px 16px;
+      background: rgba(59, 130, 246, 0.04);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 14px;
+      padding: 14px 16px;
       margin-bottom: 16px;
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
     }
     .alert-icon { font-size: 20px; }
-    .alert-text { font-size: 13px; color: #1e3a8a; line-height: 1.4; }
+    .alert-text { font-size: 12.5px; color: #93c5fd; line-height: 1.45; }
     
-    /* Settings Styles */
+    /* Settings / Auth Styles */
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     label {
       display: block;
-      font-weight: 600;
-      font-size: 13px;
+      font-weight: 700;
+      font-size: 12px;
       margin-bottom: 6px;
-      color: #334155;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
     }
     input[type="password"], input[type="text"], select {
       width: 100%;
-      padding: 10px;
+      padding: 10px 14px;
       box-sizing: border-box;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
       font-size: 13px;
-      color: #334155;
-      background: #ffffff;
-      transition: border-color 0.2s;
+      color: var(--text-primary);
+      background: rgba(15, 23, 42, 0.7);
+      transition: all 0.2s ease;
     }
     input:focus, select:focus {
       outline: none;
-      border-color: #2563eb;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
     .btn {
       display: inline-flex;
       justify-content: center;
       align-items: center;
       width: 100%;
-      padding: 10px;
-      background: #2563eb;
-      color: white;
+      padding: 11px;
+      background: var(--pi-primary-gradient);
+      color: #030712;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-      transition: background 0.2s;
+      font-weight: 700;
+      font-size: 13.5px;
+      transition: all 0.2s ease;
       box-sizing: border-box;
+      box-shadow: 0 4px 14px rgba(34, 211, 238, 0.2);
     }
     .btn:hover {
-      background: #1d4ed8;
+      filter: brightness(1.15);
+      box-shadow: 0 6px 18px rgba(34, 211, 238, 0.3);
     }
     .btn-danger {
-      background: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      box-shadow: none;
     }
     .btn-danger:hover {
-      background: #dc2626;
+      background: rgba(239, 68, 68, 0.18);
+      filter: none;
+      box-shadow: none;
     }
     .status-msg {
       margin-top: 10px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       text-align: center;
       display: none;
     }
-    .status-success { color: #10b981; display: block; }
-    .status-error { color: #ef4444; display: block; }
+    .status-success { color: var(--accent-green); display: block; }
+    .status-error { color: var(--accent-red); display: block; }
     
     /* History Tab */
     .history-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     .history-list {
       max-height: 380px;
       overflow-y: auto;
     }
     .history-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
     .history-item:hover {
-      border-color: #cbd5e1;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+      transform: translateY(-1px);
     }
     .history-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .history-platform {
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      background: #f1f5f9;
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: #475569;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      border: 1px solid var(--card-border);
     }
     .history-delta {
-      font-size: 12px;
-      font-weight: 600;
-      color: #10b981;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent-green);
     }
-    .history-delta.negative { color: #ef4444; }
+    .history-delta.negative { color: var(--accent-red); }
     .history-prompt {
-      font-size: 12px;
-      color: #475569;
+      font-size: 12.5px;
+      color: var(--text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .history-expanded {
       display: none;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #f1f5f9;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--card-border);
     }
     .history-expanded.visible {
       display: block;
     }
     .history-detail-box {
-      font-size: 11px;
-      background: #f8fafc;
-      padding: 8px;
-      border-radius: 6px;
-      margin-bottom: 8px;
+      font-size: 11.5px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
       white-space: pre-wrap;
-      max-height: 100px;
+      max-height: 120px;
       overflow-y: auto;
+      color: var(--text-primary);
+      font-family: monospace;
     }
     .history-actions {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       justify-content: flex-end;
     }
     
     /* Library Tab */
     .search-box {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .search-box input {
+      font-family: inherit;
     }
     .category-filter {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       overflow-x: auto;
       padding-bottom: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .category-tag {
       flex-shrink: 0;
       font-size: 11px;
-      font-weight: 600;
-      padding: 4px 10px;
-      background: #e2e8f0;
-      color: #475569;
+      font-weight: 700;
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
       border-radius: 9999px;
       cursor: pointer;
       user-select: none;
+      border: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+    }
+    .category-tag:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
     }
     .category-tag.active {
-      background: #2563eb;
+      background: var(--accent-blue);
       color: white;
+      border-color: var(--accent-blue);
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
     }
     .library-list {
       max-height: 320px;
       overflow-y: auto;
     }
     .library-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
     }
     .library-title {
-      font-weight: 600;
-      font-size: 13px;
+      font-weight: 700;
+      font-size: 13.5px;
       margin-bottom: 4px;
+      color: var(--text-primary);
     }
     .library-category {
       font-size: 10px;
-      color: #2563eb;
+      color: var(--accent-cyan);
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 8px;
+      letter-spacing: 0.05em;
     }
     .library-prompt-text {
       font-size: 12px;
-      color: #475569;
-      background: #f8fafc;
-      padding: 8px;
-      border-radius: 6px;
+      color: var(--text-secondary);
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 8px;
       white-space: pre-wrap;
-      max-height: 80px;
+      max-height: 100px;
       overflow-y: auto;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      font-family: monospace;
     }
     
     /* Welcome landing styles */
     .welcome-card {
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-      border: 1px solid #e2e8f0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+    .welcome-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
     }
     .welcome-badge {
       display: inline-block;
       font-size: 10px;
       font-weight: 800;
-      color: #2563eb;
-      background: #eff6ff;
-      padding: 4px 8px;
+      color: var(--accent-cyan);
+      background: rgba(34, 211, 238, 0.08);
+      padding: 4.5px 10px;
       border-radius: 9999px;
-      margin-bottom: 10px;
-      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      letter-spacing: 0.06em;
+      border: 1px solid rgba(34, 211, 238, 0.15);
+      text-transform: uppercase;
     }
     .welcome-title {
       font-size: 18px;
       font-weight: 800;
-      color: #0f172a;
-      margin: 0 0 6px 0;
+      color: var(--text-primary);
+      margin: 0 0 8px 0;
       line-height: 1.25;
+      letter-spacing: -0.02em;
     }
     .welcome-desc {
-      font-size: 12px;
-      color: #475569;
-      margin: 0 0 16px 0;
-      line-height: 1.4;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin: 0 0 18px 0;
+      line-height: 1.5;
     }
     .benefits-title {
       font-size: 11px;
-      font-weight: 700;
-      color: #0f172a;
+      font-weight: 800;
+      color: var(--text-primary);
       text-transform: uppercase;
-      letter-spacing: 0.03em;
-      margin-bottom: 8px;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
     }
     .benefits-list {
-      margin: 0 0 20px 0;
+      margin: 0 0 24px 0;
       padding: 0;
       list-style-type: none;
     }
     .benefits-list li {
-      font-size: 12px;
-      color: #475569;
-      margin-bottom: 8px;
-      line-height: 1.4;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      line-height: 1.45;
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .benefits-list li strong {
+      color: var(--text-primary);
+    }
+    .benefits-list li::before {
+      content: '⚡';
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
@@ -360,14 +449,14 @@
 
   <!-- Auth Screen Container -->
   <div class="auth-container" id="auth-container" style="display: none; padding: 24px; min-height: 400px; box-sizing: border-box;">
-    <div class="welcome-card" style="text-align: center; margin-bottom: 16px;">
+    <div class="welcome-card" style="text-align: center; margin-bottom: 20px;">
       <div class="welcome-badge">PromptIQ Secure</div>
       <h2 class="welcome-title">PromptIQ</h2>
-      <p class="welcome-desc">Sign in or create an account to optimize prompts and securely track telemetry.</p>
+      <p class="welcome-desc" style="margin-bottom: 0;">Sign in or create an account to optimize prompts and securely track telemetry.</p>
     </div>
     
     <div id="auth-form-wrapper">
-      <h3 style="margin-top: 0; margin-bottom: 14px;" id="auth-title">Log In</h3>
+      <h3 style="margin-top: 0; margin-bottom: 14px; font-weight: 800; letter-spacing: -0.02em;" id="auth-title">Log In</h3>
       
       <div class="form-group">
         <label for="auth-email">Email Address</label>
@@ -381,9 +470,9 @@
       
       <button class="btn" id="auth-submit-btn" style="margin-top: 6px;">Log In</button>
       
-      <div style="text-align: center; margin-top: 14px; font-size: 12px;">
+      <div style="text-align: center; margin-top: 16px; font-size: 12.5px;">
         <span id="auth-toggle-msg">New to PromptIQ?</span>
-        <a href="#" id="auth-toggle-link" style="color: #2563eb; text-decoration: none; font-weight: 600; margin-left: 4px;">Create Account</a>
+        <a href="#" id="auth-toggle-link" style="color: var(--accent-cyan); text-decoration: none; font-weight: 700; margin-left: 4px;">Create Account</a>
       </div>
       
       <div class="status-msg" id="auth-status" style="margin-top: 12px; text-align: center;"></div>
@@ -403,43 +492,43 @@
       <!-- Welcome landing experience -->
       <div class="welcome-card">
         <div class="welcome-badge">PromptIQ Active</div>
-        <h2 class="welcome-title">Stop Guessing How To Write AI Prompts.</h2>
-        <p class="welcome-desc" style="font-weight: 600; color: #1e293b; margin-top: 8px;">Write normally. PromptIQ turns your idea into a professional prompt in one click.</p>
+        <h2 class="welcome-title">Write normally. PromptIQ makes it AI-ready.</h2>
+        <p class="welcome-desc" style="color: var(--text-secondary); margin-top: 8px;">Optimize your prompts in one click directly inside your favorite chat interfaces.</p>
         
-        <div class="benefits-title">Core Benefits:</div>
+        <div class="benefits-title">Core Features:</div>
         <ul class="benefits-list">
-          <li>⚡ <strong>Instant Prompt Upgrade:</strong> Turn vague prompts into professional instructions directly where you type.</li>
-          <li>🧠 <strong>AI-Aware Optimization:</strong> Automatically optimized differently for ChatGPT, Claude, Gemini, and more.</li>
-          <li>📂 <strong>Prompt History:</strong> Never lose a great prompt again with automated local history.</li>
+          <li><strong>Instant Upgrade:</strong> Refines structure, parameters, and roles instantly.</li>
+          <li><strong>AI-Aware Tuning:</strong> Calibrates outputs differently for ChatGPT, Claude, and Gemini.</li>
+          <li><strong>Integrated Scorer:</strong> Analyze missing dimensions like Constraints and Role in real-time.</li>
         </ul>
         
         <!-- Live plan details and authentic controls -->
-        <div style="margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+        <div style="margin-top: 18px; border-top: 1px solid var(--card-border); padding-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 13px; font-weight: 600; color: #334155;">Plan Status: <strong id="plan-status-text">Free Plan</strong></span>
-            <button class="btn" id="upgrade-pro-btn" style="width: auto; padding: 6px 12px; font-size: 11px; background: #2563eb;">Upgrade to Pro</button>
+            <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">Plan Status: <strong id="plan-status-text" style="color: var(--accent-cyan);">Free Plan</strong></span>
+            <button class="btn" id="upgrade-pro-btn" style="width: auto; padding: 6px 14px; font-size: 11px; background: var(--pi-primary-gradient); color: #030712; font-weight: 800;">Upgrade to Pro</button>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
-            <span style="font-size: 12px; color: #64748b;" id="logged-in-user-text">Logged in as: -</span>
-            <button class="btn" id="logout-btn" style="width: auto; padding: 4px 8px; font-size: 11px; background: #64748b;">Log Out</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;" id="logged-in-user-text">Logged in as: -</span>
+            <button class="btn" id="logout-btn" style="width: auto; padding: 5px 10px; font-size: 11px; background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--card-border); box-shadow: none;">Log Out</button>
           </div>
         </div>
       </div>
 
       <!-- In-Product Research Survey Card -->
-      <div id="survey-card" class="welcome-card" style="display: none; background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%); border-color: #bbf7d0; margin-top: 12px; position: relative;">
-        <button id="close-survey-btn" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #94a3b8;">×</button>
-        <div class="welcome-badge" style="color: #166534; background: #dcfce7; margin-bottom: 8px;">User Research</div>
+      <div id="survey-card" class="welcome-card" style="display: none; background: rgba(16, 185, 129, 0.02); border-color: rgba(16, 185, 129, 0.2); margin-top: 12px; position: relative;">
+        <button id="close-survey-btn" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);">×</button>
+        <div class="welcome-badge" style="color: var(--accent-green); background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.15); margin-bottom: 8px;">User Research</div>
         <h3 class="welcome-title" style="font-size: 14px; margin: 0 0 12px 0;">Help Us Improve (Optional)</h3>
         
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">1. Why did you install PromptIQ?</label>
-          <input type="text" id="survey-q1" placeholder="e.g. Save time, learn prompting" style="padding: 6px; font-size: 12px; border-color: #86efac;" />
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">1. Why did you install PromptIQ?</label>
+          <input type="text" id="survey-q1" placeholder="e.g. Save time, learn prompting" style="padding: 8px; font-size: 12px;" />
         </div>
         
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">2. What AI tool do you use most?</label>
-          <select id="survey-q2" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">2. What AI tool do you use most?</label>
+          <select id="survey-q2" style="padding: 8px; font-size: 12px; height: 36px;">
             <option value="chatgpt">ChatGPT</option>
             <option value="claude">Claude</option>
             <option value="gemini">Gemini</option>
@@ -448,9 +537,9 @@
           </select>
         </div>
         
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">3. How often do you optimize prompts?</label>
-          <select id="survey-q3" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">3. How often do you optimize prompts?</label>
+          <select id="survey-q3" style="padding: 8px; font-size: 12px; height: 36px;">
             <option value="multiple_daily">Multiple times a day</option>
             <option value="daily">Once a day</option>
             <option value="weekly">Few times a week</option>
@@ -458,14 +547,14 @@
           </select>
         </div>
         
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">4. What would make PromptIQ worth paying for?</label>
-          <input type="text" id="survey-q4" placeholder="e.g. Team features, auto-sync" style="padding: 6px; font-size: 12px; border-color: #86efac;" />
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">4. What features would you pay for?</label>
+          <input type="text" id="survey-q4" placeholder="e.g. Custom templates, team share" style="padding: 8px; font-size: 12px;" />
         </div>
         
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">5. What is your profession?</label>
-          <select id="survey-q5" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">5. What is your profession?</label>
+          <select id="survey-q5" style="padding: 8px; font-size: 12px; height: 36px;">
             <option value="developer">Developer</option>
             <option value="marketer">Marketer</option>
             <option value="content_creator">Content Creator</option>
@@ -478,18 +567,18 @@
           </select>
         </div>
 
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">6. Would you pay for PromptIQ?</label>
-          <select id="survey-pay-willingness" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">6. Would you pay for PromptIQ?</label>
+          <select id="survey-pay-willingness" style="padding: 8px; font-size: 12px; height: 36px;">
             <option value="no">No</option>
             <option value="maybe">Maybe</option>
             <option value="yes">Yes</option>
           </select>
         </div>
 
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">7. How much would you pay monthly?</label>
-          <select id="survey-pay-amount" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">7. How much would you pay monthly?</label>
+          <select id="survey-pay-amount" style="padding: 8px; font-size: 12px; height: 36px;">
             <option value="1">$1</option>
             <option value="5">$5</option>
             <option value="10">$10</option>
@@ -497,9 +586,9 @@
           </select>
         </div>
 
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">8. What is the main value you receive?</label>
-          <select id="survey-core-value" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">8. What is the main value you receive?</label>
+          <select id="survey-core-value" style="padding: 8px; font-size: 12px; height: 36px;">
             <option value="better_outputs">Better outputs</option>
             <option value="faster_outputs">Faster outputs</option>
             <option value="better_coding">Better coding</option>
@@ -509,7 +598,7 @@
           </select>
         </div>
         
-        <button class="btn" id="survey-submit-btn" style="background: #166534; font-size: 12px; padding: 8px;">Submit Responses</button>
+        <button class="btn" id="survey-submit-btn" style="background: var(--accent-green); color: #030712; font-size: 12.5px; padding: 10px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);">Submit Responses</button>
       </div>
 
       <!-- Stats Section -->
@@ -550,8 +639,8 @@
     <!-- History Tab -->
     <div class="tab-content" id="tab-history">
       <div class="history-header">
-        <span style="font-size: 13px; font-weight: 600; color: #64748b;" id="history-summary">0 saved runs</span>
-        <button class="btn btn-danger" id="clear-history-btn" style="padding: 4px 8px; font-size: 11px; width: auto;">Clear All</button>
+        <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary);" id="history-summary">0 saved runs</span>
+        <button class="btn btn-danger" id="clear-history-btn" style="padding: 6px 12px; font-size: 11px; width: auto;">Clear All</button>
       </div>
       <div class="history-list" id="history-container">
         No history yet. Get started by optimizing your prompts inline!

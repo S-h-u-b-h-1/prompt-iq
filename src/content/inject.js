@@ -62,10 +62,14 @@ async function init() {
 
   ensurePanelInjected();
 
-  // Sync initial logged state
+  // Sync initial logged state and user tier
   const token = await getSessionToken();
   if (panelApi) {
     panelApi.setLoggedState(!!token);
+    try {
+      const tier = await getUserTier();
+      panelApi.setTier(tier);
+    } catch (e) {}
   }
 
   const el = adapter.getInputElement();
@@ -197,6 +201,7 @@ async function handleOptimize() {
 
   const mode = panelApi.getMode() || 'turbo';
   const tier = await getUserTier();
+  if (panelApi) panelApi.setTier(tier);
   const limitCheck = await checkDailyLimit();
 
   // Local gate: client-side caching limits to prevent redundant API load

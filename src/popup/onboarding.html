@@ -18,6 +18,7 @@
       --accent-pink: #ec4899;
       --accent-green: #10b981;
       --accent-red: #ef4444;
+      --pi-primary-gradient: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
     }
 
     * {
@@ -27,13 +28,13 @@
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      max-width: 800px;
-      margin: 60px auto;
+      max-width: 840px;
+      margin: 40px auto;
       padding: 20px;
       color: var(--text-primary);
       background-color: var(--bg-color);
       line-height: 1.6;
-      min-height: 95vh;
+      min-height: 100vh;
       position: relative;
       overflow-x: hidden;
     }
@@ -76,10 +77,10 @@
 
     .blob-3 {
       background: radial-gradient(circle, var(--accent-pink) 0%, transparent 80%);
-      top: 40%;
-      left: 30%;
-      width: 400px;
-      height: 400px;
+      top: 45%;
+      left: 25%;
+      width: 450px;
+      height: 450px;
       animation-delay: -15s;
       opacity: 0.08;
     }
@@ -90,17 +91,17 @@
       100% { transform: translate(-30px, 40px) scale(0.9); }
     }
 
-    /* Main Card Container */
+    /* Main Container */
     .card {
       background: var(--card-bg);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
       border: 1px solid var(--card-border);
-      padding: 56px;
+      padding: 56px 48px;
       border-radius: 32px;
       box-shadow: 
         0 30px 60px -15px rgba(0, 0, 0, 0.8),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
       position: relative;
     }
 
@@ -116,40 +117,100 @@
       border-top-right-radius: 32px;
     }
 
-    /* Typography */
+    /* Hero Section */
+    .hero-section {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
     h1 {
       margin-top: 0;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       color: var(--text-primary);
-      font-size: 42px;
+      font-size: 40px;
       font-weight: 800;
       letter-spacing: -0.04em;
-      line-height: 1.15;
+      line-height: 1.2;
       background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue) 40%, var(--accent-purple) 75%, var(--accent-pink));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .tagline {
-      font-size: 19px;
+    .subheading {
+      font-size: 18px;
       color: var(--text-secondary);
-      margin-bottom: 40px;
+      max-width: 680px;
+      margin: 0 auto 36px auto;
       font-weight: 500;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
-    .tagline strong {
-      color: var(--text-primary);
-      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    /* Button styles */
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .cta-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 28px;
+      border-radius: 12px;
       font-weight: 700;
+      font-size: 15px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .cta-primary {
+      background: var(--pi-primary-gradient);
+      color: #030712;
+      box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(34, 211, 238, 0.4);
+      filter: brightness(1.15);
+    }
+
+    .cta-secondary {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+
+    .cta-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+      margin-top: 64px;
+      margin-bottom: 28px;
+      letter-spacing: -0.02em;
+      position: relative;
     }
 
     /* Social Proof / Platforms */
     .social-proof {
-      margin: 32px 0 48px 0;
+      margin: 40px 0;
     }
 
     .social-proof-title {
@@ -193,7 +254,7 @@
       background: rgba(2, 6, 23, 0.6);
       border: 1px solid var(--card-border);
       border-radius: 20px;
-      margin: 40px 0;
+      margin: 40px 0 20px 0;
       overflow: hidden;
       box-shadow: 
         0 15px 35px -10px rgba(0, 0, 0, 0.6),
@@ -230,14 +291,13 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin: 0 auto;
-      transform: translateX(-25px); /* Offset dot-margin to center title */
+      transform: translateX(-25px);
     }
 
     /* Before / After Grid */
     .before-after-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      divide-x: 1px solid var(--card-border);
     }
 
     @media (max-width: 700px) {
@@ -301,7 +361,7 @@
       font-size: 14.5px;
       font-weight: 700;
       color: var(--accent-cyan);
-      margin-top: -24px;
+      margin-top: 12px;
       margin-bottom: 44px;
       text-shadow: 0 0 15px rgba(34, 211, 238, 0.35);
     }
@@ -311,7 +371,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
-      margin: 44px 0;
+      margin-bottom: 40px;
     }
 
     @media (max-width: 650px) {
@@ -363,7 +423,7 @@
     .feature-title {
       font-weight: 700;
       font-size: 17px;
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
       color: var(--text-primary);
     }
 
@@ -374,66 +434,7 @@
       line-height: 1.55;
     }
 
-    /* Why Section */
-    .why-section {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%);
-      border: 1px solid rgba(139, 92, 246, 0.15);
-      border-radius: 24px;
-      padding: 32px;
-      margin: 44px 0;
-      position: relative;
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-    }
-
-    .why-title {
-      font-weight: 800;
-      font-size: 19px;
-      margin: 0 0 12px 0;
-      color: var(--accent-purple);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .why-desc {
-      font-size: 14.5px;
-      color: var(--text-secondary);
-      margin: 0;
-      line-height: 1.65;
-    }
-
-    /* Pricing Promo */
-    .pricing-promo {
-      text-align: center;
-      margin-top: 48px;
-      padding-top: 32px;
-      border-top: 1px solid var(--card-border);
-    }
-
-    .pricing-text {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 0;
-    }
-
-    .pricing-text strong {
-      color: var(--text-primary);
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-    }
-
-    /* Get Started - Interactive Steps */
-    .get-started {
-      margin-top: 44px;
-    }
-
-    .get-started-title {
-      font-weight: 800;
-      font-size: 20px;
-      color: var(--text-primary);
-      margin-top: 0;
-      margin-bottom: 24px;
-    }
-
+    /* Timeline Stepper */
     .step-list {
       display: flex;
       flex-direction: column;
@@ -500,6 +501,135 @@
       text-decoration: none;
     }
 
+    /* Pricing Section */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 650px) {
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pricing-card {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s;
+    }
+
+    .pricing-card.premium {
+      border-color: rgba(139, 92, 246, 0.4);
+      background: linear-gradient(180deg, rgba(139, 92, 246, 0.03) 0%, rgba(255, 255, 255, 0.015) 100%);
+      box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.15);
+    }
+
+    .pricing-card.premium::before {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .pricing-card h3 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .price {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: baseline;
+    }
+
+    .price span {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pricing-features li {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pricing-features li::before {
+      content: '✓';
+      color: var(--accent-green);
+      font-weight: 800;
+    }
+
+    .pricing-card.premium .pricing-features li::before {
+      color: var(--accent-purple);
+    }
+
+    /* Privacy and Trust Note */
+    .privacy-note {
+      display: flex;
+      gap: 20px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.12);
+      border-radius: 20px;
+      padding: 24px;
+      align-items: flex-start;
+      margin-top: 48px;
+    }
+
+    .privacy-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .privacy-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin: 0 0 6px 0;
+      color: var(--text-primary);
+    }
+
+    .privacy-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.6;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
@@ -527,15 +657,21 @@
 
   <div class="card">
     <!-- Hero Section -->
-    <h1>Stop Guessing How To Write AI Prompts.</h1>
-    <div class="tagline">
-      PromptIQ instantly upgrades your prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek. 
-      <strong>Write naturally—PromptIQ handles the prompt engineering.</strong>
+    <div class="hero-section">
+      <h1>Write normally. PromptIQ turns your idea into a professional AI prompt.</h1>
+      <p class="subheading">
+        Upgrade prompts instantly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
+      </p>
+      
+      <div class="cta-group">
+        <a href="https://chatgpt.com" target="_blank" class="cta-btn cta-primary">Start Using PromptIQ</a>
+        <a href="#how-it-works" class="cta-btn cta-secondary">See How It Works</a>
+      </div>
     </div>
     
     <!-- Social Proof -->
     <div class="social-proof">
-      <div class="social-proof-title">Works natively inside your chat workspace:</div>
+      <div class="social-proof-title">Optimizes Native Input Fields In:</div>
       <div class="platforms">
         <span class="platform-tag">ChatGPT</span>
         <span class="platform-tag">Claude</span>
@@ -547,7 +683,7 @@
     </div>
 
     <!-- Before / After mockup window -->
-    <div class="window-container">
+    <div class="window-container" id="comparison">
       <div class="window-header">
         <div class="window-dots">
           <span class="window-dot dot-red"></span>
@@ -580,11 +716,12 @@ Format as an actionable 30-day timeline.</p>
       Same concept. Dramatically superior AI outputs.
     </div>
 
-    <!-- Features -->
+    <!-- Key Benefits -->
+    <h2 class="section-title">Why PromptIQ?</h2>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">⚡</span>
-        <h3 class="feature-title">Instant Prompt Upgrades</h3>
+        <h3 class="feature-title">Instant Upgrades</h3>
         <p class="feature-desc">Convert single-line instructions into professional prompts with context, goals, and structure in one click.</p>
       </div>
       <div class="feature-card">
@@ -600,55 +737,75 @@ Format as an actionable 30-day timeline.</p>
       <div class="feature-card">
         <span class="feature-icon">📂</span>
         <h3 class="feature-title">Smart Prompt History</h3>
-        <p class="feature-desc">Save your best prompts, tracks score improvement over time, and recall past versions instantly.</p>
+        <p class="feature-desc">Save your best prompts, track score improvement over time, and recall past versions instantly.</p>
       </div>
     </div>
 
-    <!-- Why Section -->
-    <div class="why-section">
-      <h3 class="why-title">💡 Why PromptIQ?</h3>
-      <p class="why-desc">
-        AIs are incredibly smart, but they require precise instructions to shine. PromptIQ bridges the gap by acting as a real-time prompt engineer that sits directly inside your favorite chat interfaces, giving you elite results without the learning curve.
-      </p>
-    </div>
-
     <!-- How to get started -->
-    <div class="get-started">
-      <h3 class="get-started-title">🏁 Ready to get started? Follow these simple steps:</h3>
-      <ul class="step-list">
-        <li class="step-item">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            Open any supported AI platform (e.g., <a href="https://chatgpt.com" target="_blank">ChatGPT</a>, <a href="https://claude.ai" target="_blank">Claude</a>, or <a href="https://gemini.google.com" target="_blank">Gemini</a>).
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            You will find the floating <strong>PromptIQ badge</strong> sitting right next to the chat input area.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            As you type, the badge analyzes your prompt quality score. Click the badge to open the optimization panel, preview the optimized layout, and hit <strong>"Use Prompt"</strong> to run it.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-number">4</div>
-          <div class="step-content">
-            Click the extension icon in your browser toolbar to access history, settings, and subscription info.
-          </div>
-        </li>
-      </ul>
+    <h2 class="section-title" id="how-it-works">How It Works</h2>
+    <ul class="step-list">
+      <li class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          Open any supported AI platform (e.g., <a href="https://chatgpt.com" target="_blank">ChatGPT</a>, <a href="https://claude.ai" target="_blank">Claude</a>, or <a href="https://gemini.google.com" target="_blank">Gemini</a>).
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          You will find the floating <strong>PromptIQ badge</strong> sitting right next to the chat input area.
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          As you type, the badge analyzes your prompt quality score. Click the badge to open the optimization panel, preview the optimized layout, and hit <strong>"Use Prompt"</strong> to run it.
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          Click the extension icon in your browser toolbar to access history, settings, and subscription info.
+        </div>
+      </li>
+    </ul>
+
+    <!-- Free vs Premium -->
+    <h2 class="section-title">Choose Your Power</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free Tier</h3>
+        <div class="price">₹0</div>
+        <ul class="pricing-features">
+          <li>5 Daily Optimizations</li>
+          <li>Turbo Optimization Mode</li>
+          <li>Standard Scorer Checks</li>
+          <li>Local Prompt History</li>
+        </ul>
+      </div>
+      <div class="pricing-card premium">
+        <h3>PromptIQ Pro</h3>
+        <div class="price">₹99<span>/mo</span></div>
+        <ul class="pricing-features">
+          <li>Unlimited Optimizations</li>
+          <li>All Advanced Rewrite Modes</li>
+          <li>Deep Model-Specific Customizations</li>
+          <li>Priority Cloud Features & Sync</li>
+        </ul>
+      </div>
     </div>
 
-    <!-- Pricing Promo -->
-    <div class="pricing-promo">
-      <p class="pricing-text">
-        <strong>PromptIQ is free to start.</strong> Upgrade anytime to unlock advanced modes.
-      </p>
+    <!-- Privacy and Trust Note -->
+    <div class="privacy-note">
+      <div class="privacy-icon">🔒</div>
+      <div>
+        <h4 class="privacy-title">Secure & Private by Design</h4>
+        <p class="privacy-desc">
+          Your prompts are optimized securely and never stored. No data is shared with third parties or used for training other models.
+        </p>
+      </div>
     </div>
+
   </div>
 
   <script type="module" src="./onboarding.js"></script>

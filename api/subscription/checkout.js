@@ -33,10 +33,7 @@ export default async function handler(req, res) {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
 
     if (!stripeKey) {
-      // Stripe is not configured: Fallback to simulated checkout for testing and grading
-      console.warn('STRIPE_SECRET_KEY is not set. Generating simulated checkout link...');
-      const simulateUrl = `https://promptiq-theta.vercel.app/api/subscription/status?mock_success=true&token=${token}`;
-      res.status(200).json({ url: simulateUrl, simulated: true });
+      res.status(500).json({ error: 'STRIPE_SECRET_KEY environment variable is not configured' });
       return;
     }
 

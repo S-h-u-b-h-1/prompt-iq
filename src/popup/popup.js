@@ -6,7 +6,9 @@ import {
   signupUser, 
   loginUser, 
   fetchUserProfile, 
-  checkoutSubscription 
+  checkoutSubscription,
+  logTelemetryEvent,
+  submitSurveyResponses
 } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 
@@ -128,6 +130,8 @@ function initPayments() {
     upgradeBtn.disabled = true;
     upgradeBtn.textContent = 'Redirecting...';
     try {
+      // Log telemetry event
+      await logTelemetryEvent('upgrade_click');
       const checkoutUrl = await checkoutSubscription();
       // Redirect to Stripe checkout session
       window.open(checkoutUrl, '_blank');
@@ -277,6 +281,87 @@ async function renderDashboard(user) {
   } else {
     weakDimensionTipEl.textContent = "Great job! Your prompts score well across all dimensions. Keep up the high standard!";
   }
+
+  // Handle optional survey status
+  initSurvey(user);
+}
+
+function initSurvey(user) {
+  const surveyCard = document.getElementById('survey-card');
+  if (!surveyCard) return;
+
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['survey_completed_date'], (result) => {
+      if (!result.survey_completed_date && user && user.plan === 'free') {
+        surveyCard.style.display = 'block';
+        initSurveyListeners();
+      } else {
+        surveyCard.style.display = 'none';
+      }
+    });
+  } else {
+    surveyCard.style.display = 'none';
+  }
+}
+
+function initSurveyListeners() {
+  const submitBtn = document.getElementById('survey-submit-btn');
+  const closeBtn = document.getElementById('close-survey-btn');
+  const surveyCard = document.getElementById('survey-card');
+
+  if (!submitBtn || !closeBtn) return;
+
+  closeBtn.onclick = (e) => {
+    e.preventDefault();
+    surveyCard.style.display = 'none';
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ survey_completed_date: new Date().toISOString() });
+    }
+  };
+
+  submitBtn.onclick = async (e) => {
+    e.preventDefault();
+    const q1 = document.getElementById('survey-q1').value.trim();
+    const q2 = document.getElementById('survey-q2').value;
+    const q3 = document.getElementById('survey-q3').value;
+    const q4 = document.getElementById('survey-q4').value.trim();
+    const q5 = document.getElementById('survey-q5').value;
+    const payWillingness = document.getElementById('survey-pay-willingness').value;
+    const payAmount = document.getElementById('survey-pay-amount').value;
+    const coreValue = document.getElementById('survey-core-value').value;
+
+    if (!q1 || !q4) {
+      alert('Please answer all questions so we can validate PromptIQ.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      await submitSurveyResponses({
+        q1_reason: q1,
+        q2_tool: q2,
+        q3_frequency: q3,
+        q4_value: q4,
+        q5_profession: q5,
+        pay_willingness: payWillingness,
+        pay_amount: payAmount,
+        core_value: coreValue
+      });
+
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ survey_completed_date: new Date().toISOString() });
+      }
+      surveyCard.style.display = 'none';
+      alert('Thank you for helping us improve PromptIQ!');
+    } catch (err) {
+      alert(`Failed to submit survey: ${err.message}`);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Responses';
+    }
+  };
 }
 
 // History Management

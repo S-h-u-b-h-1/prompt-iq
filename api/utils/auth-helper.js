@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'promptiq-secret-jwt-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
 
 export function signToken(payload, expiresInSeconds = 86400) {
   const header = { alg: 'HS256', typ: 'JWT' };

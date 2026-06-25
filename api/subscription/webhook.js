@@ -1,7 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_GmxFb4Q9YZKP@ep-odd-bar-ajcs0l0q-pooler.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
 const sql = neon(DATABASE_URL);
 
 export const config = {
@@ -31,39 +34,43 @@ export default async function handler(req, res) {
 
     let event;
 
-    if (webhookSecret && signature) {
-      // 1. Verify Stripe Webhook Signature Natively
-      try {
-        const headerParts = signature.split(',');
-        const tPart = headerParts.find(p => p.startsWith('t='));
-        const v1Part = headerParts.find(p => p.startsWith('v1='));
+    if (!webhookSecret) {
+      res.status(500).json({ error: 'STRIPE_WEBHOOK_SECRET is not configured on the server' });
+      return;
+    }
 
-        if (!tPart || !v1Part) {
-          throw new Error('Invalid signature format');
-        }
+    if (!signature) {
+      res.status(400).json({ error: 'Missing stripe-signature header' });
+      return;
+    }
 
-        const t = tPart.split('=')[1];
-        const v1 = v1Part.split('=')[1];
+    // Verify Stripe Webhook Signature Natively
+    try {
+      const headerParts = signature.split(',');
+      const tPart = headerParts.find(p => p.startsWith('t='));
+      const v1Part = headerParts.find(p => p.startsWith('v1='));
 
-        const computedSignature = crypto
-          .createHmac('sha256', webhookSecret)
-          .update(`${t}.${rawBody}`)
-          .digest('hex');
-
-        if (computedSignature !== v1) {
-          throw new Error('Signature mismatch');
-        }
-
-        event = JSON.parse(rawBody);
-      } catch (err) {
-        console.error('Webhook signature verification failed:', err);
-        res.status(400).json({ error: `Signature verification failed: ${err.message}` });
-        return;
+      if (!tPart || !v1Part) {
+        throw new Error('Invalid signature format');
       }
-    } else {
-      // 2. Fallback for Local Testing
-      console.warn('STRIPE_WEBHOOK_SECRET is not configured or stripe-signature header is missing. Parsing body directly.');
+
+      const t = tPart.split('=')[1];
+      const v1 = v1Part.split('=')[1];
+
+      const computedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(`${t}.${rawBody}`)
+        .digest('hex');
+
+      if (computedSignature !== v1) {
+        throw new Error('Signature mismatch');
+      }
+
       event = JSON.parse(rawBody);
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err);
+      res.status(400).json({ error: `Signature verification failed: ${err.message}` });
+      return;
     }
 
     const { type, data } = event;

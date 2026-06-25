@@ -140,6 +140,46 @@ export async function checkoutSubscription() {
   return data.url;
 }
 
+export async function logTelemetryEvent(eventType) {
+  const token = await getSessionToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/telemetry`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ event_type: eventType })
+    });
+    return response.ok;
+  } catch (err) {
+    console.error('Telemetry logging failed:', err);
+    return false;
+  }
+}
+
+export async function submitSurveyResponses(surveyData) {
+  const token = await getSessionToken();
+  if (!token) throw new Error('You must be logged in to submit a survey.');
+
+  const response = await fetch(`${API_BASE}/api/survey`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(surveyData)
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to submit survey responses');
+  }
+  return true;
+}
+
 // User ID fallback (local tracking, unused for server auth)
 export function getUserId() {
   return new Promise((resolve) => {

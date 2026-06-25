@@ -426,6 +426,92 @@
         </div>
       </div>
 
+      <!-- In-Product Research Survey Card -->
+      <div id="survey-card" class="welcome-card" style="display: none; background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%); border-color: #bbf7d0; margin-top: 12px; position: relative;">
+        <button id="close-survey-btn" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #94a3b8;">×</button>
+        <div class="welcome-badge" style="color: #166534; background: #dcfce7; margin-bottom: 8px;">User Research</div>
+        <h3 class="welcome-title" style="font-size: 14px; margin: 0 0 12px 0;">Help Us Improve (Optional)</h3>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">1. Why did you install PromptIQ?</label>
+          <input type="text" id="survey-q1" placeholder="e.g. Save time, learn prompting" style="padding: 6px; font-size: 12px; border-color: #86efac;" />
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">2. What AI tool do you use most?</label>
+          <select id="survey-q2" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+            <option value="chatgpt">ChatGPT</option>
+            <option value="claude">Claude</option>
+            <option value="gemini">Gemini</option>
+            <option value="perplexity">Perplexity</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">3. How often do you optimize prompts?</label>
+          <select id="survey-q3" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+            <option value="multiple_daily">Multiple times a day</option>
+            <option value="daily">Once a day</option>
+            <option value="weekly">Few times a week</option>
+            <option value="rarely">Rarely</option>
+          </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">4. What would make PromptIQ worth paying for?</label>
+          <input type="text" id="survey-q4" placeholder="e.g. Team features, auto-sync" style="padding: 6px; font-size: 12px; border-color: #86efac;" />
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">5. What is your profession?</label>
+          <select id="survey-q5" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+            <option value="developer">Developer</option>
+            <option value="marketer">Marketer</option>
+            <option value="content_creator">Content Creator</option>
+            <option value="researcher">Researcher</option>
+            <option value="student">Student</option>
+            <option value="founder">Founder</option>
+            <option value="consultant">Consultant</option>
+            <option value="designer">Designer</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">6. Would you pay for PromptIQ?</label>
+          <select id="survey-pay-willingness" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+            <option value="no">No</option>
+            <option value="maybe">Maybe</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">7. How much would you pay monthly?</label>
+          <select id="survey-pay-amount" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+            <option value="1">$1</option>
+            <option value="5">$5</option>
+            <option value="10">$10</option>
+            <option value="20">$20+</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size: 11px; font-weight: 600; color: #14532d; margin-bottom: 4px;">8. What is the main value you receive?</label>
+          <select id="survey-core-value" style="padding: 6px; font-size: 12px; border-color: #86efac; height: 32px;">
+            <option value="better_outputs">Better outputs</option>
+            <option value="faster_outputs">Faster outputs</option>
+            <option value="better_coding">Better coding</option>
+            <option value="better_writing">Better writing</option>
+            <option value="better_research">Better research</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <button class="btn" id="survey-submit-btn" style="background: #166534; font-size: 12px; padding: 8px;">Submit Responses</button>
+      </div>
+
       <!-- Stats Section -->
       <div class="dashboard-grid">
         <div class="stat-card">

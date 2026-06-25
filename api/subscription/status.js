@@ -1,7 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 import { verifyToken } from '../utils/auth-helper.js';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_GmxFb4Q9YZKP@ep-odd-bar-ajcs0l0q-pooler.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
 const sql = neon(DATABASE_URL);
 
 export default async function handler(req, res) {
@@ -15,7 +18,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { stripe_session_id, mock_success, token, cancel } = req.query;
+  const { stripe_session_id, token, cancel } = req.query;
 
   // Handle cancellation redirect
   if (cancel === 'true') {
@@ -44,7 +47,11 @@ export default async function handler(req, res) {
     let success = false;
     let message = 'Subscription updated successfully.';
 
-    if (stripe_session_id && process.env.STRIPE_SECRET_KEY) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('Stripe is not configured on this server.');
+    }
+
+    if (stripe_session_id) {
       // Real Stripe Checkout Verification
       const response = await fetch(`https://api.stripe.com/v1/checkout/sessions/${stripe_session_id}`, {
         headers: {
@@ -81,23 +88,6 @@ export default async function handler(req, res) {
       } else {
         message = 'Stripe checkout session has not completed payment yet.';
       }
-    } else if (mock_success === 'true') {
-      // Simulated Checkout Validation
-      await sql`
-        INSERT INTO subscriptions (user_id, status, plan, stripe_customer_id, stripe_subscription_id, updated_at)
-        VALUES (${userId.toString()}, 'active', 'pro', 'mock_cust_123', 'mock_sub_123', NOW())
-        ON CONFLICT (user_id)
-        DO UPDATE SET status = 'active', plan = 'pro', updated_at = NOW();
-      `;
-
-      await sql`
-        UPDATE users
-        SET plan = 'pro'
-        WHERE id = ${parseInt(userId, 10)};
-      `;
-
-      success = true;
-      message = 'Simulated checkout completed successfully. Your mock Pro account is now active!';
     } else {
       message = 'Invalid checkout query parameters.';
     }

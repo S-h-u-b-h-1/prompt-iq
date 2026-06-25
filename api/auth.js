@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
-import { signToken, authenticate } from './utils/auth-helper.js';
+import { signToken, authenticate } from './_utils/auth-helper.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {

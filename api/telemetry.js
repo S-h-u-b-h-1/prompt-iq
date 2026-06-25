@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless';
-import { authenticate } from './utils/auth-helper.js';
+import { authenticate } from './_utils/auth-helper.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {

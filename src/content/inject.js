@@ -1,7 +1,7 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { saveOptimization, getUserTier, checkDailyLimit, incrementDailyOptimization, getSessionToken } from '../lib/storage.js';
+import { saveOptimization, getUserTier, checkDailyLimit, incrementDailyOptimization, getSessionToken, clearSessionToken } from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
 import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.js';
@@ -39,11 +39,34 @@ function cleanup() {
   }
 }
 
+function setupStorageListener() {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === 'local' && changes.sessionToken) {
+          const newToken = changes.sessionToken.newValue;
+          if (panelApi) {
+            panelApi.setLoggedState(!!newToken);
+          }
+        }
+      });
+    }
+  } catch (err) {
+    // Context invalidated
+  }
+}
+
 async function init() {
   adapter = getAdapter();
   if (!adapter) return;
 
   ensurePanelInjected();
+
+  // Sync initial logged state
+  const token = await getSessionToken();
+  if (panelApi) {
+    panelApi.setLoggedState(!!token);
+  }
 
   const el = adapter.getInputElement();
   if (el) {
@@ -53,6 +76,7 @@ async function init() {
   setupObserver();
   setupKeyboardShortcut();
   setupMessageListeners();
+  setupStorageListener();
 }
 
 function handleInput() {
@@ -97,10 +121,18 @@ function setupObserver() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+async function handleLogout() {
+  await clearSessionToken();
+  if (panelApi) {
+    panelApi.setLoggedState(false);
+    panelApi.showError(new Error('Logged out. Please log in via the PromptIQ popup in your browser toolbar.'));
+  }
+}
+
 function ensurePanelInjected() {
   if (document.getElementById('promptiq-container')) return;
 
-  panelApi = createPanel(handleOptimize, handleUse, handleFeedback);
+  panelApi = createPanel(handleOptimize, handleUse, handleFeedback, handleLogout);
   document.body.appendChild(panelApi.container);
 }
 
@@ -157,9 +189,11 @@ async function handleOptimize() {
   // 1. Authenticate check: Require valid token
   const token = await getSessionToken();
   if (!token) {
+    if (panelApi) panelApi.setLoggedState(false);
     panelApi.showError(new Error('Please log in via the PromptIQ extension popup in your browser toolbar to optimize prompts.'));
     return;
   }
+  if (panelApi) panelApi.setLoggedState(true);
 
   const mode = panelApi.getMode() || 'turbo';
   const tier = await getUserTier();
@@ -231,6 +265,7 @@ async function handleOptimize() {
     } else if (err.status === 429) {
       panelApi.showPaywall('limit');
     } else if (err.status === 401) {
+      if (panelApi) panelApi.setLoggedState(false);
       panelApi.showError(new Error('Session expired. Please log in again via the PromptIQ popup.'));
     } else if (err.message && err.message.includes('Extension context invalidated')) {
       const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');

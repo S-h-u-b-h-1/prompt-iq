@@ -3,232 +3,539 @@
 <head>
   <meta charset="UTF-8">
   <title>Welcome to PromptIQ!</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: rgba(255, 255, 255, 0.03);
-      --card-border: rgba(255, 255, 255, 0.08);
+      --bg-color: #030712;
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --card-border: rgba(255, 255, 255, 0.06);
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
+      --text-muted: #64748b;
       --accent-blue: #3b82f6;
+      --accent-cyan: #22d3ee;
       --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
       --accent-green: #10b981;
+      --accent-red: #ef4444;
     }
+
+    * {
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      max-width: 720px;
-      margin: 40px auto;
+      max-width: 800px;
+      margin: 60px auto;
       padding: 20px;
       color: var(--text-primary);
-      background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+      background-color: var(--bg-color);
       line-height: 1.6;
-      min-height: 90vh;
+      min-height: 95vh;
+      position: relative;
+      overflow-x: hidden;
     }
+
+    /* Glow background blobs */
+    .glow-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.15;
+      mix-blend-mode: screen;
+      animation: float 25s infinite alternate ease-in-out;
+    }
+
+    .blob-1 {
+      background: radial-gradient(circle, var(--accent-blue) 0%, transparent 80%);
+      top: -10%;
+      right: -10%;
+    }
+
+    .blob-2 {
+      background: radial-gradient(circle, var(--accent-purple) 0%, transparent 80%);
+      bottom: -10%;
+      left: -15%;
+      animation-delay: -8s;
+    }
+
+    .blob-3 {
+      background: radial-gradient(circle, var(--accent-pink) 0%, transparent 80%);
+      top: 40%;
+      left: 30%;
+      width: 400px;
+      height: 400px;
+      animation-delay: -15s;
+      opacity: 0.08;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, -80px) scale(1.15); }
+      100% { transform: translate(-30px, 40px) scale(0.9); }
+    }
+
+    /* Main Card Container */
     .card {
       background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       border: 1px solid var(--card-border);
-      padding: 48px;
-      border-radius: 28px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      padding: 56px;
+      border-radius: 32px;
+      box-shadow: 
+        0 30px 60px -15px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      position: relative;
     }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      border-top-left-radius: 32px;
+      border-top-right-radius: 32px;
+    }
+
+    /* Typography */
     h1 {
       margin-top: 0;
+      margin-bottom: 16px;
       color: var(--text-primary);
-      font-size: 36px;
+      font-size: 42px;
       font-weight: 800;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.04em;
       line-height: 1.15;
-      background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue) 40%, var(--accent-purple) 75%, var(--accent-pink));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .tagline {
-      font-size: 18px;
+      font-size: 19px;
       color: var(--text-secondary);
-      margin-bottom: 32px;
-      font-weight: 600;
-      line-height: 1.4;
+      margin-bottom: 40px;
+      font-weight: 500;
+      line-height: 1.5;
     }
+
+    .tagline strong {
+      color: var(--text-primary);
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
+    /* Social Proof / Platforms */
     .social-proof {
-      margin: 24px 0 36px 0;
-      text-align: center;
+      margin: 32px 0 48px 0;
     }
+
     .social-proof-title {
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-secondary);
-      margin-bottom: 16px;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      text-align: center;
     }
+
     .platforms {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 12px 24px;
+      gap: 12px 18px;
     }
+
     .platform-tag {
       font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 18px;
       border-radius: 9999px;
       border: 1px solid var(--card-border);
+      transition: all 0.3s ease;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
     }
-    
+
+    .platform-tag:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -6px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Mock Window Container */
+    .window-container {
+      background: rgba(2, 6, 23, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      margin: 40px 0;
+      overflow: hidden;
+      box-shadow: 
+        0 15px 35px -10px rgba(0, 0, 0, 0.6),
+        0 0 25px -5px rgba(139, 92, 246, 0.05);
+    }
+
+    .window-header {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 8px;
+      margin-right: 20px;
+    }
+
+    .window-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot-red { background-color: var(--accent-red); opacity: 0.85; }
+    .dot-yellow { background-color: #eab308; opacity: 0.85; }
+    .dot-green { background-color: var(--accent-green); opacity: 0.85; }
+
+    .window-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0 auto;
+      transform: translateX(-25px); /* Offset dot-margin to center title */
+    }
+
+    /* Before / After Grid */
     .before-after-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin: 36px 0;
+      divide-x: 1px solid var(--card-border);
     }
-    @media (max-width: 600px) {
+
+    @media (max-width: 700px) {
       .before-after-grid {
         grid-template-columns: 1fr;
       }
     }
-    .ba-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
+
+    .ba-pane {
+      padding: 28px;
+      position: relative;
     }
+
+    .ba-pane:first-child {
+      border-right: 1px solid var(--card-border);
+    }
+
+    @media (max-width: 700px) {
+      .ba-pane:first-child {
+        border-right: none;
+        border-bottom: 1px solid var(--card-border);
+      }
+    }
+
     .ba-badge {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
-      margin-bottom: 12px;
-      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      letter-spacing: 0.08em;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     }
-    .badge-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+
+    .badge-red { 
+      background: rgba(239, 68, 68, 0.12); 
+      color: #f87171; 
+      border: 1px solid rgba(239, 68, 68, 0.2); 
+    }
+    
+    .badge-green { 
+      background: rgba(16, 185, 129, 0.12); 
+      color: #34d399; 
+      border: 1px solid rgba(16, 185, 129, 0.2); 
+    }
+
     .ba-text {
-      font-size: 13px;
+      font-size: 13.5px;
       color: var(--text-secondary);
-      font-family: monospace;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
       white-space: pre-wrap;
-      margin: 0;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin: 36px 0;
-    }
-    @media (max-width: 600px) {
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    .feature-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      transition: all 0.3s ease;
-    }
-    .feature-card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateY(-2px);
-    }
-    .feature-title {
-      font-weight: 800;
-      font-size: 16px;
-      margin: 0 0 8px 0;
-      color: var(--text-primary);
-    }
-    .feature-desc {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    .why-section {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-      border: 1px solid rgba(139, 92, 246, 0.2);
-      border-radius: 20px;
-      padding: 28px;
-      margin: 36px 0;
-    }
-    .why-title {
-      font-weight: 800;
-      font-size: 18px;
-      margin: 0 0 10px 0;
-      color: var(--accent-purple);
-    }
-    .why-desc {
-      font-size: 14px;
-      color: var(--text-secondary);
       margin: 0;
       line-height: 1.6;
     }
 
-    .pricing-promo {
+    .highlight-glow {
       text-align: center;
-      margin-top: 36px;
-      padding-top: 24px;
-      border-top: 1px solid var(--card-border);
-    }
-    .pricing-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-top: -24px;
+      margin-bottom: 44px;
+      text-shadow: 0 0 15px rgba(34, 211, 238, 0.35);
     }
 
-    .get-started {
-      margin-top: 36px;
-      background: rgba(255, 255, 255, 0.01);
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 44px 0;
+    }
+
+    @media (max-width: 650px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.015);
       border: 1px solid var(--card-border);
       border-radius: 20px;
       padding: 28px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
-    .get-started-title {
-      font-weight: 800;
-      color: var(--text-primary);
-      margin-top: 0;
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-4px);
+      box-shadow: 
+        0 15px 30px -10px rgba(0, 0, 0, 0.6),
+        0 0 20px -5px rgba(59, 130, 246, 0.1);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      font-size: 24px;
       margin-bottom: 16px;
+      display: inline-block;
     }
-    .get-started-steps {
-      padding-left: 20px;
-      font-size: 14px;
+
+    .feature-title {
+      font-weight: 700;
+      font-size: 17px;
+      margin: 0 0 10px 0;
+      color: var(--text-primary);
+    }
+
+    .feature-desc {
+      font-size: 13.5px;
       color: var(--text-secondary);
       margin: 0;
+      line-height: 1.55;
     }
-    .get-started-steps li {
-      margin-bottom: 10px;
+
+    /* Why Section */
+    .why-section {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.15);
+      border-radius: 24px;
+      padding: 32px;
+      margin: 44px 0;
+      position: relative;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     }
-    a {
-      color: var(--accent-blue);
+
+    .why-title {
+      font-weight: 800;
+      font-size: 19px;
+      margin: 0 0 12px 0;
+      color: var(--accent-purple);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .why-desc {
+      font-size: 14.5px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.65;
+    }
+
+    /* Pricing Promo */
+    .pricing-promo {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .pricing-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 0;
+    }
+
+    .pricing-text strong {
+      color: var(--text-primary);
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Get Started - Interactive Steps */
+    .get-started {
+      margin-top: 44px;
+    }
+
+    .get-started-title {
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--card-border);
+      padding: 24px;
+      border-radius: 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      align-items: flex-start;
+    }
+
+    .step-item:hover {
+      background: rgba(255, 255, 255, 0.025);
+      border-color: rgba(59, 130, 246, 0.35);
+      transform: translateX(6px);
+      box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: white;
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+    }
+
+    .step-content {
+      font-size: 14.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .step-content strong {
+      color: var(--text-primary);
+    }
+
+    .step-content a {
+      color: var(--accent-cyan);
       text-decoration: none;
       font-weight: 600;
+      border-bottom: 1px dashed rgba(34, 211, 238, 0.4);
+      transition: all 0.2s ease;
     }
-    a:hover {
-      text-decoration: underline;
+
+    .step-content a:hover {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
 <body>
 
+  <!-- Glow Background blobs -->
+  <div class="glow-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
   <div class="card">
     <!-- Hero Section -->
     <h1>Stop Guessing How To Write AI Prompts.</h1>
     <div class="tagline">
-      PromptIQ instantly upgrades your prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.<br>
-      <span style="color: var(--text-primary); font-weight: 800;">Write naturally. PromptIQ makes it AI-ready.</span>
+      PromptIQ instantly upgrades your prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek. 
+      <strong>Write naturally—PromptIQ handles the prompt engineering.</strong>
     </div>
     
     <!-- Social Proof -->
     <div class="social-proof">
-      <div class="social-proof-title">Works seamlessly with:</div>
+      <div class="social-proof-title">Works natively inside your chat workspace:</div>
       <div class="platforms">
         <span class="platform-tag">ChatGPT</span>
         <span class="platform-tag">Claude</span>
@@ -239,75 +546,108 @@
       </div>
     </div>
 
-    <!-- Before / After -->
-    <div class="before-after-grid">
-      <div class="ba-card">
-        <span class="ba-badge badge-red">Before</span>
-        <p class="ba-text">Write a marketing campaign for my startup.</p>
+    <!-- Before / After mockup window -->
+    <div class="window-container">
+      <div class="window-header">
+        <div class="window-dots">
+          <span class="window-dot dot-red"></span>
+          <span class="window-dot dot-yellow"></span>
+          <span class="window-dot dot-green"></span>
+        </div>
+        <div class="window-title">Prompt Optimization Model</div>
       </div>
-      <div class="ba-card">
-        <span class="ba-badge badge-green">After</span>
-        <p class="ba-text">Act as a senior B2B SaaS growth strategist.
+      <div class="before-after-grid">
+        <div class="ba-pane">
+          <span class="ba-badge badge-red">Your Original Draft</span>
+          <p class="ba-text">Write a marketing campaign for my startup.</p>
+        </div>
+        <div class="ba-pane">
+          <span class="ba-badge badge-green">PromptIQ Optimized</span>
+          <p class="ba-text">Act as a senior B2B SaaS growth strategist.
 
 Create a multi-channel marketing campaign for a startup targeting founders and SMB decision makers.
 
 Include:
-• Positioning & Messaging
-• LinkedIn & Email strategies
-• Budget & Success metrics
+• Positioning & Messaging guidelines
+• LinkedIn & Email outbound strategies
+• Budget allocation & Success metrics
 
-Format as an actionable 30-day plan.</p>
+Format as an actionable 30-day timeline.</p>
+        </div>
       </div>
     </div>
-    <div style="text-align: center; font-size: 14px; font-weight: 800; color: var(--accent-green); margin-top: -16px; margin-bottom: 36px;">
-      Same idea. Dramatically better AI outputs.
+    <div class="highlight-glow">
+      Same concept. Dramatically superior AI outputs.
     </div>
 
     <!-- Features -->
     <div class="features-grid">
       <div class="feature-card">
-        <h3 class="feature-title">⚡ Instant Prompt Upgrade</h3>
-        <p class="feature-desc">Turn vague, one-line ideas into professional, context-rich instructions in one click.</p>
+        <span class="feature-icon">⚡</span>
+        <h3 class="feature-title">Instant Prompt Upgrades</h3>
+        <p class="feature-desc">Convert single-line instructions into professional prompts with context, goals, and structure in one click.</p>
       </div>
       <div class="feature-card">
-        <h3 class="feature-title">🧠 AI-Aware Optimization</h3>
-        <p class="feature-desc">Automatically formatted differently for ChatGPT, Claude, Gemini, and other target models.</p>
+        <span class="feature-icon">🧠</span>
+        <h3 class="feature-title">Model-Specific Tuning</h3>
+        <p class="feature-desc">Tailored automatically for the nuances of ChatGPT, Claude, Gemini, and other target models.</p>
       </div>
       <div class="feature-card">
-        <h3 class="feature-title">🎯 Direct Workflow</h3>
-        <p class="feature-desc">No copy-pasting between browser tabs. Enhance and run prompts directly in your chat input area.</p>
+        <span class="feature-icon">🎨</span>
+        <h3 class="feature-title">Inline Floating Controls</h3>
+        <p class="feature-desc">No context switching. Optimize, diff, and use prompts directly in the active text input box.</p>
       </div>
       <div class="feature-card">
-        <h3 class="feature-title">📂 Prompt History</h3>
-        <p class="feature-desc">Never lose a great instruction again. Automatically logs optimized inputs to your local list.</p>
+        <span class="feature-icon">📂</span>
+        <h3 class="feature-title">Smart Prompt History</h3>
+        <p class="feature-desc">Save your best prompts, tracks score improvement over time, and recall past versions instantly.</p>
       </div>
     </div>
 
     <!-- Why Section -->
     <div class="why-section">
-      <h3 class="why-title">Why PromptIQ Exists</h3>
+      <h3 class="why-title">💡 Why PromptIQ?</h3>
       <p class="why-desc">
-        Most people don't get poor AI results because AI is bad. They get poor results because their prompts are vague. 
-        PromptIQ fixes that instantly. No prompt engineering tutorials, no syntax learning curves—just better prompts and better answers.
-      </p>
-    </div>
-
-    <!-- Pricing Promo -->
-    <div class="pricing-promo">
-      <p class="pricing-text">
-        <strong style="color: var(--text-primary);">Free to get started.</strong> Upgrade when you need more power.
+        AIs are incredibly smart, but they require precise instructions to shine. PromptIQ bridges the gap by acting as a real-time prompt engineer that sits directly inside your favorite chat interfaces, giving you elite results without the learning curve.
       </p>
     </div>
 
     <!-- How to get started -->
     <div class="get-started">
-      <h3 class="get-started-title">🏁 How to Get Started:</h3>
-      <ol class="get-started-steps">
-        <li>Open your favorite AI platform (like <a href="https://chatgpt.com" target="_blank">ChatGPT</a>, <a href="https://claude.ai" target="_blank">Claude</a>, or <a href="https://gemini.google.com" target="_blank">Gemini</a>).</li>
-        <li>You will see a floating <strong>PromptIQ badge</strong> in the bottom-right corner next to the chat input area.</li>
-        <li>As you type, the badge will score your prompt. Click the badge to open the optimization panel, refine it, and insert it back!</li>
-        <li>Click the extension icon in your browser toolbar to access history, pricing, and settings.</li>
-      </ol>
+      <h3 class="get-started-title">🏁 Ready to get started? Follow these simple steps:</h3>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            Open any supported AI platform (e.g., <a href="https://chatgpt.com" target="_blank">ChatGPT</a>, <a href="https://claude.ai" target="_blank">Claude</a>, or <a href="https://gemini.google.com" target="_blank">Gemini</a>).
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            You will find the floating <strong>PromptIQ badge</strong> sitting right next to the chat input area.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            As you type, the badge analyzes your prompt quality score. Click the badge to open the optimization panel, preview the optimized layout, and hit <strong>"Use Prompt"</strong> to run it.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            Click the extension icon in your browser toolbar to access history, settings, and subscription info.
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Pricing Promo -->
+    <div class="pricing-promo">
+      <p class="pricing-text">
+        <strong>PromptIQ is free to start.</strong> Upgrade anytime to unlock advanced modes.
+      </p>
     </div>
   </div>
 

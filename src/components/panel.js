@@ -1,6 +1,6 @@
 import { setUserTier } from '../lib/storage.js';
 
-export function createPanel(onOptimize, onUse, onFeedback) {
+export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   const container = document.createElement('div');
   container.id = 'promptiq-container';
   container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 999999; font-family: system-ui, -apple-system, sans-serif;';
@@ -439,7 +439,10 @@ export function createPanel(onOptimize, onUse, onFeedback) {
   panel.innerHTML = `
     <div class="header">
       <div class="title">PromptIQ</div>
-      <button class="btn btn-secondary" id="close-btn" style="padding: 6px 12px; font-size: 12px;">Close</button>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button class="btn btn-secondary" id="logout-sidebar-btn" style="padding: 4px 8px; font-size: 11px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); display: none;">Log Out</button>
+        <button class="btn btn-secondary" id="close-btn" style="padding: 6px 12px; font-size: 12px;">Close</button>
+      </div>
     </div>
     
     <div class="mode-selector-wrapper">
@@ -527,6 +530,13 @@ export function createPanel(onOptimize, onUse, onFeedback) {
   shadow.getElementById('close-btn').addEventListener('click', () => {
     panel.classList.remove('visible');
     container.classList.remove('panel-open');
+  });
+
+  const logoutSidebarBtn = shadow.getElementById('logout-sidebar-btn');
+  logoutSidebarBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to log out of PromptIQ?')) {
+      onLogout();
+    }
   });
 
   shadow.getElementById('optimize-btn').addEventListener('click', async () => {
@@ -619,6 +629,9 @@ export function createPanel(onOptimize, onUse, onFeedback) {
   // API exposed to inject.js
   return {
     container,
+    setLoggedState: (isLoggedIn) => {
+      logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
+    },
     toggleVisibility: () => {
       const isVisible = panel.classList.toggle('visible');
       container.classList.toggle('panel-open', isVisible);

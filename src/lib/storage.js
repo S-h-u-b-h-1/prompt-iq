@@ -24,36 +24,48 @@ function initDB() {
 // Session Token Management
 export function getSessionToken() {
   return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get('sessionToken', (data) => {
-        resolve(data.sessionToken || null);
-      });
-    } else {
-      resolve(localStorage.getItem('sessionToken') || null);
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get('sessionToken', (data) => {
+          resolve(data.sessionToken || null);
+        });
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
     }
+    resolve(localStorage.getItem('sessionToken') || null);
   });
 }
 
 export function setSessionToken(token) {
   return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ sessionToken: token }, () => resolve());
-    } else {
-      localStorage.setItem('sessionToken', token);
-      resolve();
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ sessionToken: token }, () => resolve());
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
     }
+    localStorage.setItem('sessionToken', token);
+    resolve();
   });
 }
 
 export function clearSessionToken() {
   return new Promise((resolve) => {
     const keys = ['sessionToken', 'userTier', 'userEmail'];
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.remove(keys, () => resolve());
-    } else {
-      keys.forEach(k => localStorage.removeItem(k));
-      resolve();
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.remove(keys, () => resolve());
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
     }
+    keys.forEach(k => localStorage.removeItem(k));
+    resolve();
   });
 }
 
@@ -183,22 +195,26 @@ export async function submitSurveyResponses(surveyData) {
 // User ID fallback (local tracking, unused for server auth)
 export function getUserId() {
   return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get('userId', (data) => {
-        if (data.userId) resolve(data.userId);
-        else {
-          const newId = generateUUID();
-          chrome.storage.local.set({ userId: newId }, () => resolve(newId));
-        }
-      });
-    } else {
-      let localId = localStorage.getItem('userId');
-      if (!localId) {
-        localId = generateUUID();
-        localStorage.setItem('userId', localId);
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get('userId', (data) => {
+          if (data.userId) resolve(data.userId);
+          else {
+            const newId = generateUUID();
+            chrome.storage.local.set({ userId: newId }, () => resolve(newId));
+          }
+        });
+        return;
       }
-      resolve(localId);
+    } catch (e) {
+      // Context invalidated
     }
+    let localId = localStorage.getItem('userId');
+    if (!localId) {
+      localId = generateUUID();
+      localStorage.setItem('userId', localId);
+    }
+    resolve(localId);
   });
 }
 
@@ -333,24 +349,32 @@ export async function clearHistory() {
 // Local Cached Plan Status
 export function getUserTier() {
   return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get('userTier', (data) => {
-        resolve(data.userTier || 'free');
-      });
-    } else {
-      resolve(localStorage.getItem('userTier') || 'free');
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get('userTier', (data) => {
+          resolve(data.userTier || 'free');
+        });
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
     }
+    resolve(localStorage.getItem('userTier') || 'free');
   });
 }
 
 export function setUserTier(tier) {
   return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ userTier: tier }, () => resolve());
-    } else {
-      localStorage.setItem('userTier', tier);
-      resolve();
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ userTier: tier }, () => resolve());
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
     }
+    localStorage.setItem('userTier', tier);
+    resolve();
   });
 }
 
@@ -369,46 +393,58 @@ export async function checkDailyLimit() {
   }
 
   const today = new Date().toDateString();
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-    return new Promise((resolve) => {
-      chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
-        const savedDate = data.optCountDate;
-        let count = data.optCountValue || 0;
-        if (savedDate !== today) {
-          chrome.storage.local.set({ optCountDate: today, optCountValue: 0 }, () => {
-            resolve({ allowed: true, count: 0 });
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+      return new Promise((resolve) => {
+        try {
+          chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
+            const savedDate = data.optCountDate;
+            let count = data.optCountValue || 0;
+            if (savedDate !== today) {
+              chrome.storage.local.set({ optCountDate: today, optCountValue: 0 }, () => {
+                resolve({ allowed: true, count: 0 });
+              });
+            } else {
+              resolve({ allowed: count < 5, count });
+            }
           });
-        } else {
-          resolve({ allowed: count < 5, count });
+        } catch (e) {
+          resolve({ allowed: true, count: 0 });
         }
       });
-    });
-  } else {
-    const savedDate = localStorage.getItem('optCountDate');
-    let count = parseInt(localStorage.getItem('optCountValue') || '0', 10);
-    if (savedDate !== today) {
-      localStorage.setItem('optCountDate', today);
-      localStorage.setItem('optCountValue', '0');
-      return { allowed: true, count: 0 };
-    } else {
-      return { allowed: count < 5, count };
     }
+  } catch (e) {
+    // Context invalidated
+  }
+
+  const savedDate = localStorage.getItem('optCountDate');
+  let count = parseInt(localStorage.getItem('optCountValue') || '0', 10);
+  if (savedDate !== today) {
+    localStorage.setItem('optCountDate', today);
+    localStorage.setItem('optCountValue', '0');
+    return { allowed: true, count: 0 };
+  } else {
+    return { allowed: count < 5, count };
   }
 }
 
 export function incrementDailyOptimization() {
   return new Promise((resolve) => {
     const today = new Date().toDateString();
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
-        let count = (data.optCountValue || 0) + 1;
-        chrome.storage.local.set({ optCountDate: today, optCountValue: count }, () => resolve(count));
-      });
-    } else {
-      let count = parseInt(localStorage.getItem('optCountValue') || '0', 10) + 1;
-      localStorage.setItem('optCountDate', today);
-      localStorage.setItem('optCountValue', count.toString());
-      resolve(count);
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
+          let count = (data.optCountValue || 0) + 1;
+          chrome.storage.local.set({ optCountDate: today, optCountValue: count }, () => resolve(count));
+        });
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
     }
+    let count = parseInt(localStorage.getItem('optCountValue') || '0', 10) + 1;
+    localStorage.setItem('optCountDate', today);
+    localStorage.setItem('optCountValue', count.toString());
+    resolve(count);
   });
 }

@@ -8,16 +8,28 @@
 PromptIQ
 
 **Short Description**
-Score your prompts, optimize them on popular AI platforms in real-time, and learn prompt engineering as you type.
+Write normally. PromptIQ turns your idea into a professional AI prompt in one click.
 
 **Detailed Description**
-PromptIQ is your ultimate inline companion to elevate your prompts to state-of-the-art quality in real-time. It integrates seamlessly into your generative AI environments to give you instant feedback and re-writes.
+Stop Guessing How To Write AI Prompts.
 
-Core Features:
-* Live Quality Scoring: Displays a real-time 0–100 quality indicator next to your chat inputs as you type, highlighting missing elements (such as role, context, specificity, and constraints).
-* Context-Aware Refinement: Automatically optimizes prompts depending on the generative AI platform you are currently using.
-* Explanation Layer: Teaches you prompt engineering by highlighting exactly what changed and explaining why it improves the prompt.
-* One-Click Injection: Inject optimized prompts directly back into the chatbox with a single click.
+PromptIQ instantly upgrades your prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
+
+Write naturally. PromptIQ makes it AI-ready.
+
+Same idea. Much better AI output.
+
+Core Benefits:
+* Instant Prompt Upgrade: Turn vague prompts into professional instructions.
+* AI-Aware Optimization: Optimized differently for ChatGPT, Claude, Gemini, and other models.
+* One Click Workflow: No copy-pasting between websites. Optimize directly where you work.
+* Prompt History: Never lose a great prompt again.
+
+Why PromptIQ Exists:
+Most people don't get poor AI results because AI is bad. They get poor results because their prompts are vague. PromptIQ fixes that instantly. No prompt engineering, no tutorials, no learning curve. Just better prompts and better answers.
+
+Pricing:
+Free to get started. Upgrade when you need more power.
 
 How to Use:
 1. Open your preferred generative AI chat platform.

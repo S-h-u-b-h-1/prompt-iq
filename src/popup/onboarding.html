@@ -3,102 +3,310 @@
 <head>
   <meta charset="UTF-8">
   <title>Welcome to PromptIQ!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 680px;
-      margin: 60px auto;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
       padding: 20px;
-      color: #0f172a;
-      background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+      color: var(--text-primary);
+      background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
       line-height: 1.6;
-      min-height: 80vh;
+      min-height: 90vh;
     }
     .card {
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      padding: 48px;
+      border-radius: 28px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
-    h1 { margin-top: 0; color: #1e3a8a; font-size: 32px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .subtitle { font-size: 16px; color: #475569; margin-bottom: 24px; }
-    .features { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 32px 0; }
-    .feature-card {
-      background: #f8fafc;
-      padding: 20px;
-      border-radius: 14px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    h1 {
+      margin-top: 0;
+      color: var(--text-primary);
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .feature-icon { font-size: 28px; margin-bottom: 12px; }
-    .feature-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: #0f172a; }
-    .feature-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+    .tagline {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .social-proof {
+      margin: 24px 0 36px 0;
+      text-align: center;
+    }
+    .social-proof-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    .platforms {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+    }
+    .platform-tag {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid var(--card-border);
+    }
     
-    .free-promo {
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      border: 1px solid #bfdbfe;
+    .before-after-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 36px 0;
+    }
+    @media (max-width: 600px) {
+      .before-after-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .ba-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .ba-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .ba-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 36px 0;
+    }
+    @media (max-width: 600px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .feature-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 24px;
-      margin-top: 32px;
+      transition: all 0.3s ease;
     }
-    .free-title { font-weight: 800; font-size: 16px; margin: 0 0 6px 0; color: #1e3a8a; }
-    .free-desc { font-size: 13px; color: #1e3a8a; margin: 0; line-height: 1.5; }
-    
-    .get-started {
-      margin-top: 32px;
-      border-top: 1px solid #e2e8f0;
+    .feature-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    .feature-title {
+      font-weight: 800;
+      font-size: 16px;
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .why-section {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 20px;
+      padding: 28px;
+      margin: 36px 0;
+    }
+    .why-title {
+      font-weight: 800;
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      color: var(--accent-purple);
+    }
+    .why-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .pricing-promo {
+      text-align: center;
+      margin-top: 36px;
       padding-top: 24px;
+      border-top: 1px solid var(--card-border);
     }
-    .get-started-title { font-weight: 700; color: #0f172a; margin-top: 0; }
+    .pricing-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .get-started {
+      margin-top: 36px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+    .get-started-title {
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
     .get-started-steps {
       padding-left: 20px;
       font-size: 14px;
-      color: #475569;
+      color: var(--text-secondary);
+      margin: 0;
     }
     .get-started-steps li {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h1>🚀 Welcome to the PromptIQ Family!</h1>
-    <div class="subtitle">Your ultimate companion to elevate prompts to state-of-the-art level in real-time.</div>
+    <!-- Hero Section -->
+    <h1>Stop Guessing How To Write AI Prompts.</h1>
+    <div class="tagline">
+      PromptIQ instantly upgrades your prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.<br>
+      <span style="color: var(--text-primary); font-weight: 800;">Write naturally. PromptIQ makes it AI-ready.</span>
+    </div>
     
-    <p>PromptIQ works automatically in the background on your favorite AI tools: <strong>ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek</strong>. No complex setup or API key entry is required!</p>
-    
-    <div class="features">
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <div class="feature-title">Live Scoring</div>
-        <div class="feature-desc">See a 0–100 quality score update dynamically as you type, highlighting missing elements.</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🧠</div>
-        <div class="feature-title">Context Aware</div>
-        <div class="feature-desc">Optimizations are dynamically customized depending on which target AI you are currently using.</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📖</div>
-        <div class="feature-title">Explanation Layer</div>
-        <div class="feature-desc">Learn prompt engineering over time as we highlight differences and explain the changes.</div>
+    <!-- Social Proof -->
+    <div class="social-proof">
+      <div class="social-proof-title">Works seamlessly with:</div>
+      <div class="platforms">
+        <span class="platform-tag">ChatGPT</span>
+        <span class="platform-tag">Claude</span>
+        <span class="platform-tag">Gemini</span>
+        <span class="platform-tag">Perplexity</span>
+        <span class="platform-tag">Copilot</span>
+        <span class="platform-tag">DeepSeek</span>
       </div>
     </div>
 
-    <div class="free-promo">
-      <h3 class="free-title">⚡ 100% Free Gemini Optimization</h3>
-      <p class="free-desc">PromptIQ is completely free! All prompt optimizations are processed using the state-of-the-art <strong>Gemini 2.5 Flash</strong> model on our secure servers, providing lightning-fast, high-quality prompt refinement without any usage limits.</p>
+    <!-- Before / After -->
+    <div class="before-after-grid">
+      <div class="ba-card">
+        <span class="ba-badge badge-red">Before</span>
+        <p class="ba-text">Write a marketing campaign for my startup.</p>
+      </div>
+      <div class="ba-card">
+        <span class="ba-badge badge-green">After</span>
+        <p class="ba-text">Act as a senior B2B SaaS growth strategist.
+
+Create a multi-channel marketing campaign for a startup targeting founders and SMB decision makers.
+
+Include:
+• Positioning & Messaging
+• LinkedIn & Email strategies
+• Budget & Success metrics
+
+Format as an actionable 30-day plan.</p>
+      </div>
+    </div>
+    <div style="text-align: center; font-size: 14px; font-weight: 800; color: var(--accent-green); margin-top: -16px; margin-bottom: 36px;">
+      Same idea. Dramatically better AI outputs.
     </div>
 
+    <!-- Features -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <h3 class="feature-title">⚡ Instant Prompt Upgrade</h3>
+        <p class="feature-desc">Turn vague, one-line ideas into professional, context-rich instructions in one click.</p>
+      </div>
+      <div class="feature-card">
+        <h3 class="feature-title">🧠 AI-Aware Optimization</h3>
+        <p class="feature-desc">Automatically formatted differently for ChatGPT, Claude, Gemini, and other target models.</p>
+      </div>
+      <div class="feature-card">
+        <h3 class="feature-title">🎯 Direct Workflow</h3>
+        <p class="feature-desc">No copy-pasting between browser tabs. Enhance and run prompts directly in your chat input area.</p>
+      </div>
+      <div class="feature-card">
+        <h3 class="feature-title">📂 Prompt History</h3>
+        <p class="feature-desc">Never lose a great instruction again. Automatically logs optimized inputs to your local list.</p>
+      </div>
+    </div>
+
+    <!-- Why Section -->
+    <div class="why-section">
+      <h3 class="why-title">Why PromptIQ Exists</h3>
+      <p class="why-desc">
+        Most people don't get poor AI results because AI is bad. They get poor results because their prompts are vague. 
+        PromptIQ fixes that instantly. No prompt engineering tutorials, no syntax learning curves—just better prompts and better answers.
+      </p>
+    </div>
+
+    <!-- Pricing Promo -->
+    <div class="pricing-promo">
+      <p class="pricing-text">
+        <strong style="color: var(--text-primary);">Free to get started.</strong> Upgrade when you need more power.
+      </p>
+    </div>
+
+    <!-- How to get started -->
     <div class="get-started">
       <h3 class="get-started-title">🏁 How to Get Started:</h3>
       <ol class="get-started-steps">
-        <li>Open your favorite AI platform (e.g. <a href="https://chatgpt.com" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none;">ChatGPT</a>, <a href="https://claude.ai" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none;">Claude</a>, or <a href="https://gemini.google.com" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: none;">Gemini</a>).</li>
+        <li>Open your favorite AI platform (like <a href="https://chatgpt.com" target="_blank">ChatGPT</a>, <a href="https://claude.ai" target="_blank">Claude</a>, or <a href="https://gemini.google.com" target="_blank">Gemini</a>).</li>
         <li>You will see a floating <strong>PromptIQ badge</strong> in the bottom-right corner next to the chat input area.</li>
-        <li>As you type, the badge will live-score your prompt. Click the badge to open the sidebar, optimize it, and insert it back with one click!</li>
-        <li>Click the extension icon in your browser toolbar to access your library, history logs, and settings.</li>
+        <li>As you type, the badge will score your prompt. Click the badge to open the optimization panel, refine it, and insert it back!</li>
+        <li>Click the extension icon in your browser toolbar to access history, pricing, and settings.</li>
       </ol>
     </div>
   </div>

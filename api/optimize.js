@@ -6,6 +6,11 @@ if (!DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 const sql = neon(DATABASE_URL);
+const OPTIMIZER_UNAVAILABLE_MESSAGE = 'PromptIQ optimization is temporarily unavailable. Please try again shortly.';
+
+function sendJsonError(res, status, code, message) {
+  res.status(status).json({ error: message, code });
+}
 
 function getSystemPrompt(platform, intent, mode) {
   let intentInstructions = '';
@@ -135,7 +140,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    sendJsonError(res, 405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
     return;
   }
 
@@ -143,20 +148,23 @@ export default async function handler(req, res) {
     // 1. Authenticate user JWT session
     const session = authenticate(req);
     if (!session) {
-      res.status(401).json({ error: 'Unauthorized: Invalid or missing token' });
+      sendJsonError(res, 401, 'AUTH_REQUIRED', 'Your session expired. Please log in again.');
       return;
     }
 
     const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode } = req.body;
 
     if (!originalPrompt || !platform) {
-      res.status(400).json({ error: 'Missing originalPrompt or platform parameter' });
+      sendJsonError(res, 400, 'BAD_REQUEST', 'Missing originalPrompt or platform parameter');
       return;
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      res.status(500).json({ error: 'Gemini API Key is not configured on the server' });
+      console.error('Gemini configuration missing', {
+        hasGeminiKey: false
+      });
+      sendJsonError(res, 503, 'GEMINI_CONFIG_MISSING', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -171,7 +179,7 @@ export default async function handler(req, res) {
     `;
 
     if (users.length === 0) {
-      res.status(404).json({ error: 'User not found' });
+      sendJsonError(res, 404, 'USER_NOT_FOUND', 'User not found');
       return;
     }
 
@@ -181,7 +189,7 @@ export default async function handler(req, res) {
 
     // 3. Enforce Pro mode locks on server
     if (resolvedPlan === 'free' && optMode !== 'turbo') {
-      res.status(403).json({ error: 'Pro mode locked: Free users can only use Turbo mode' });
+      sendJsonError(res, 403, 'PRO_MODE_LOCKED', 'This mode is available on PromptIQ Premium.');
       return;
     }
 
@@ -194,7 +202,7 @@ export default async function handler(req, res) {
 
     const dailyCount = usage.length > 0 ? usage[0].count : 0;
     if (resolvedPlan === 'free' && dailyCount >= 5) {
-      res.status(429).json({ error: 'Daily limit reached: Free plan is limited to 5 optimizations per day' });
+      sendJsonError(res, 429, 'DAILY_LIMIT_REACHED', 'You have reached your daily optimization limit.');
       return;
     }
 
@@ -232,8 +240,10 @@ export default async function handler(req, res) {
 
     let response;
     let lastError = null;
+    let activeModel = 'gemini-2.5-flash-lite';
 
     const callApi = async (model) => {
+      activeModel = model;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       return fetch(url, {
         method: 'POST',
@@ -283,20 +293,32 @@ export default async function handler(req, res) {
     }
 
     if (!response) {
-      res.status(500).json({ error: `Failed to contact Gemini API: ${lastError ? lastError.message : 'Unknown error'}` });
+      console.error('Gemini API network failure', {
+        model: activeModel,
+        error: lastError ? lastError.message : 'Unknown error'
+      });
+      sendJsonError(res, 503, 'GEMINI_NETWORK_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const message = errorData.error?.message || response.statusText;
-      res.status(response.status).json({ error: `Gemini API error: ${response.status} ${message}` });
+      console.error('Gemini API request failed', {
+        model: activeModel,
+        status: response.status,
+        message
+      });
+      sendJsonError(res, 503, 'GEMINI_UPSTREAM_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
 
     const data = await response.json();
     if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
-      res.status(500).json({ error: 'Gemini API returned an empty response.' });
+      console.error('Gemini API returned an empty response', {
+        model: activeModel
+      });
+      sendJsonError(res, 503, 'GEMINI_EMPTY_RESPONSE', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -305,8 +327,11 @@ export default async function handler(req, res) {
     try {
       parsed = JSON.parse(content.trim());
     } catch (err) {
-      console.error('Failed to parse Gemini response:', content, err);
-      res.status(500).json({ error: 'Gemini returned invalid format.' });
+      console.error('Failed to parse Gemini response', {
+        model: activeModel,
+        error: err.message
+      });
+      sendJsonError(res, 503, 'GEMINI_INVALID_FORMAT', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -321,6 +346,6 @@ export default async function handler(req, res) {
     res.status(200).json(parsed);
   } catch (error) {
     console.error('Error optimizing prompt:', error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    sendJsonError(res, 500, 'OPTIMIZE_INTERNAL_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
   }
 }

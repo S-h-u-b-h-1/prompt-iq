@@ -1,5 +1,3 @@
-import { setUserTier } from '../lib/storage.js';
-
 export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   const container = document.createElement('div');
   container.id = 'promptiq-container';
@@ -20,34 +18,51 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   }
 
   const shadow = container.attachShadow({ mode: 'open' });
+  const openPromptIqPopup = () => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+        window.open(chrome.runtime.getURL('src/popup/popup.html'), '_blank', 'noopener,noreferrer');
+        return;
+      }
+    } catch (err) {
+      // Fall through to the generic extension hint.
+    }
+    window.alert('Open the PromptIQ extension from your browser toolbar.');
+  };
   
   const style = document.createElement('style');
   style.textContent = `
     :host {
       --pi-bg: #ffffff;
       --pi-card: #f8fafc;
-      --pi-border: #e2e8f0;
+      --pi-elevated: rgba(255, 255, 255, 0.88);
+      --pi-border: #dbe3ee;
       --pi-text: #0f172a;
       --pi-muted: #64748b;
       --pi-primary: #2563eb;
+      --pi-primary-strong: #1d4ed8;
       --pi-success: #10b981;
       --pi-warning: #f59e0b;
       --pi-danger: #ef4444;
+      --pi-pro: #7c3aed;
       --pi-glow: rgba(37, 99, 235, 0.08);
       --pi-shadow: rgba(0, 0, 0, 0.06);
-      --pi-radius: 20px;
+      --pi-radius: 18px;
     }
     :host(.dark-mode) {
-      --pi-bg: #0f172a;
-      --pi-card: #1e293b;
-      --pi-border: #334155;
+      --pi-bg: rgba(9, 14, 26, 0.94);
+      --pi-card: rgba(18, 27, 44, 0.82);
+      --pi-elevated: rgba(15, 23, 42, 0.94);
+      --pi-border: rgba(148, 163, 184, 0.18);
       --pi-text: #f8fafc;
       --pi-muted: #94a3b8;
-      --pi-primary: #3b82f6;
+      --pi-primary: #38bdf8;
+      --pi-primary-strong: #0ea5e9;
       --pi-success: #34d399;
       --pi-warning: #fbbf24;
       --pi-danger: #f87171;
-      --pi-glow: rgba(59, 130, 246, 0.15);
+      --pi-pro: #a78bfa;
+      --pi-glow: rgba(56, 189, 248, 0.18);
       --pi-shadow: rgba(0, 0, 0, 0.35);
     }
 
@@ -55,9 +70,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 18px;
+      padding: 9px 16px;
       border-radius: 9999px;
-      background: var(--pi-bg);
+      background: var(--pi-elevated);
       border: 1px solid var(--pi-border);
       color: var(--pi-text);
       font-size: 13px;
@@ -98,18 +113,18 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       top: 24px;
       right: 24px;
       bottom: 24px;
-      width: 390px;
+      width: 382px;
       max-width: calc(100vw - 48px);
       background: var(--pi-bg);
       border: 1px solid var(--pi-border);
       border-radius: var(--pi-radius);
-      box-shadow: 0 25px 50px -12px var(--pi-shadow);
-      padding: 24px;
+      box-shadow: 0 28px 60px -18px var(--pi-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      padding: 18px;
       color: var(--pi-text);
       box-sizing: border-box;
       z-index: 1000000;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px) saturate(120%);
+      -webkit-backdrop-filter: blur(24px) saturate(120%);
       overflow: hidden;
       
       transform: translateX(calc(100% + 48px));
@@ -139,7 +154,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       font-weight: 800; 
       font-size: 17px; 
       color: var(--pi-text); 
-      letter-spacing: -0.03em; 
+      letter-spacing: 0;
     }
     .status-badge {
       font-size: 9px;
@@ -153,9 +168,32 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       color: var(--pi-muted);
     }
     .status-pro {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15));
-      color: var(--accent-purple);
+      background: rgba(124, 58, 237, 0.14);
+      color: var(--pi-pro);
       border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+    .signin-card {
+      display: none;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+      color: var(--pi-text);
+    }
+    .signin-card.visible {
+      display: block;
+    }
+    .signin-title {
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .signin-copy {
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: var(--pi-muted);
+      margin-bottom: 10px;
     }
     
     .mode-selector-wrapper {
@@ -190,7 +228,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
 
     /* Visual Score Progress Area */
     .score-area {
-      background: var(--pi-card);
+      background: linear-gradient(180deg, var(--pi-card), transparent);
       border: 1px solid var(--pi-border);
       border-radius: 16px;
       padding: 16px;
@@ -291,14 +329,22 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       justify-content: center;
       align-items: center;
       gap: 6px;
+      font-family: inherit;
+    }
+    .btn:focus-visible,
+    .feedback-btn:focus-visible,
+    .badge:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid var(--pi-primary);
+      outline-offset: 2px;
     }
     .btn-primary {
-      background: var(--pi-primary);
-      color: white;
+      background: linear-gradient(135deg, var(--pi-primary), var(--pi-primary-strong));
+      color: #ffffff;
       box-shadow: 0 4px 12px var(--pi-glow);
     }
     .btn-primary:hover {
-      background: #1d4ed8;
       transform: translateY(-1px);
       box-shadow: 0 6px 16px var(--pi-glow);
     }
@@ -315,6 +361,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     .btn-secondary:hover {
       background: var(--pi-border);
     }
+    .btn-ghost {
+      background: transparent;
+      color: var(--pi-muted);
+      border-color: var(--pi-border);
+    }
     
     .result-section {
       display: none;
@@ -323,6 +374,33 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       border-top: 1px solid var(--pi-border);
       overflow-y: auto;
       flex: 1;
+    }
+    .success-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      background: rgba(16, 185, 129, 0.07);
+    }
+    .success-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--pi-text);
+    }
+    .success-copy {
+      font-size: 11.5px;
+      color: var(--pi-muted);
+      margin-top: 2px;
+    }
+    .score-delta {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--pi-success);
+      white-space: nowrap;
     }
     
     /* Mock Editor Window */
@@ -362,6 +440,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       font-family: inherit;
       color: var(--pi-text);
       box-sizing: border-box;
+      max-height: 240px;
     }
     .optimized-textarea:focus {
       outline: none;
@@ -395,6 +474,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       margin-bottom: 10px;
       cursor: pointer;
       user-select: none;
+    }
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
     }
     .changes-title {
       font-weight: 700;
@@ -525,7 +610,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       font-size: 18px;
       margin-bottom: 8px;
       color: var(--pi-text);
-      letter-spacing: -0.02em;
+      letter-spacing: 0;
     }
     .paywall-desc {
       font-size: 12.5px;
@@ -585,11 +670,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     /* Error and Authentication states */
     .error-panel {
       display: none;
-      background: rgba(239, 68, 68, 0.04);
-      border: 1px solid rgba(239, 68, 68, 0.15);
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.03));
+      border: 1px solid rgba(239, 68, 68, 0.18);
       border-radius: 16px;
-      padding: 24px;
-      text-align: center;
+      padding: 18px;
+      text-align: left;
       margin-top: 18px;
     }
     .error-icon {
@@ -598,7 +683,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     }
     .error-title {
       font-weight: 800;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--pi-danger);
       margin-bottom: 6px;
     }
@@ -606,6 +691,22 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       font-size: 12px;
       color: var(--pi-text);
       line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 520px) {
+      .panel-wrapper {
+        top: auto;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+        max-width: none;
+        max-height: calc(100vh - 24px);
+        padding: 16px;
+      }
+      .action-row {
+        grid-template-columns: 1fr;
+      }
     }
   `;
   shadow.appendChild(style);
@@ -613,6 +714,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   // Floating Badge (closed state overlay)
   const badge = document.createElement('div');
   badge.className = 'badge';
+  badge.tabIndex = 0;
+  badge.setAttribute('role', 'button');
+  badge.setAttribute('aria-label', 'Open PromptIQ optimizer');
   badge.innerHTML = `<div class="score-dot" id="score-dot"></div><span id="score-text">PromptIQ: 0</span>`;
   shadow.appendChild(badge);
 
@@ -626,8 +730,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         <div class="status-badge status-free" id="header-pro-badge">FREE</div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="btn btn-secondary" id="logout-sidebar-btn" style="padding: 4px 8px; font-size: 10px; background: rgba(239, 68, 68, 0.08); color: var(--pi-danger); border-color: rgba(239, 68, 68, 0.12); display: none;">Log Out</button>
-        <button class="btn btn-secondary" id="close-btn" style="padding: 6px 12px; font-size: 11px;">Close</button>
+        <button class="btn btn-secondary" id="logout-sidebar-btn" aria-label="Log out of PromptIQ" style="padding: 4px 8px; font-size: 10px; background: rgba(239, 68, 68, 0.08); color: var(--pi-danger); border-color: rgba(239, 68, 68, 0.12); display: none;">Log Out</button>
+        <button class="btn btn-secondary" id="close-btn" aria-label="Close PromptIQ optimizer" style="padding: 6px 12px; font-size: 11px;">Close</button>
       </div>
     </div>
     
@@ -642,6 +746,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         <option value="coding">🔒 Coding (Pro)</option>
         <option value="business">🔒 Business (Pro)</option>
       </select>
+    </div>
+
+    <div class="signin-card" id="signin-card">
+      <div class="signin-title">Sign in required</div>
+      <div class="signin-copy">Open the PromptIQ popup to log in, then return here to optimize prompts inline.</div>
+      <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ popup" style="width: 100%; padding: 8px 10px; font-size: 12px;">Open PromptIQ Popup</button>
     </div>
 
     <!-- Visual Score Circle & Info -->
@@ -669,7 +779,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       <div class="chip chip-missing" data-dimension="specificity"><span class="chip-icon">✗</span> Specificity</div>
     </div>
     
-    <button class="btn btn-primary" id="optimize-btn" style="width: 100%;">Optimize Prompt</button>
+    <button class="btn btn-primary" id="optimize-btn" aria-label="Optimize prompt" style="width: 100%;">Optimize Prompt</button>
     
     <!-- Shimmer Loader State -->
     <div class="loader-shimmer" id="loader-shimmer">
@@ -682,36 +792,44 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
 
     <!-- Error/Auth card panel -->
     <div class="error-panel" id="error-panel">
-      <div class="error-icon" id="error-panel-icon">⚠️</div>
+      <div class="error-icon" id="error-panel-icon">!</div>
       <div class="error-title" id="error-panel-title">Optimization Failed</div>
       <div class="error-message" id="error-panel-message">Please try refreshing the page.</div>
+      <button class="btn btn-secondary" id="error-open-popup-btn" aria-label="Open PromptIQ popup" style="width: 100%;">Open PromptIQ Popup</button>
     </div>
     
     <!-- Paywall Overlay -->
     <div class="paywall-overlay" id="paywall-overlay">
       <div class="paywall-card">
-        <div class="paywall-icon" id="paywall-icon">💎</div>
+        <div class="paywall-icon" id="paywall-icon">PRO</div>
         <div class="paywall-title" id="paywall-title">Unlock PromptIQ Pro</div>
         <div class="paywall-desc" id="paywall-desc">Unlock advanced modes and unlimited daily optimizations.</div>
-        <button class="btn btn-primary" id="paywall-upgrade-btn" style="width: 100%;">Upgrade for ₹99/mo</button>
-        <button class="btn btn-secondary" id="paywall-close-btn" style="width: 100%; margin-top: 8px;">Back</button>
+        <button class="btn btn-primary" id="paywall-upgrade-btn" aria-label="Open PromptIQ popup to upgrade" style="width: 100%;">Open Upgrade Options</button>
+        <button class="btn btn-secondary" id="paywall-close-btn" aria-label="Close upgrade message" style="width: 100%; margin-top: 8px;">Back</button>
       </div>
     </div>
     
     <!-- Result Editor Area -->
     <div class="result-section" id="result-section">
+      <div class="success-summary">
+        <div>
+          <div class="success-title">Prompt is ready</div>
+          <div class="success-copy">Review it, copy it, or send it back to the chat box.</div>
+        </div>
+        <div class="score-delta" id="score-delta">Improved</div>
+      </div>
       <div class="editor-card">
         <div class="editor-header">
           <span class="editor-title" id="editor-view-title">Optimized Draft</span>
-          <button class="btn btn-secondary" id="toggle-edit-btn" style="padding: 4px 10px; font-size: 11px;">Edit Text</button>
+          <button class="btn btn-secondary" id="toggle-edit-btn" aria-label="Edit optimized prompt text" style="padding: 4px 10px; font-size: 11px;">Edit</button>
         </div>
         <div class="diff-view" id="diff-view"></div>
         <textarea class="optimized-textarea" id="optimized-text" style="display: none;"></textarea>
       </div>
       
       <div class="changes-header" id="changes-header">
-        <span class="changes-title">🔍 Changes Explained</span>
-        <span style="font-size: 12px; color: var(--pi-primary); font-weight: 700;" id="toggle-changes-label">Hide</span>
+        <span class="changes-title">Changes Explained</span>
+        <span style="font-size: 12px; color: var(--pi-primary); font-weight: 700;" id="toggle-changes-label">Show Changes</span>
       </div>
       <ul class="changes-list" id="changes-list"></ul>
       
@@ -725,7 +843,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         <div class="feedback-thanks" id="feedback-thanks">Thank you! Your feedback helps us improve.</div>
       </div>
       
-      <button class="btn btn-primary" id="use-btn" style="width: 100%;">Use Optimized Prompt</button>
+      <div class="action-row">
+        <button class="btn btn-secondary" id="copy-btn" aria-label="Copy optimized prompt">Copy</button>
+        <button class="btn btn-ghost" id="retry-btn" aria-label="Retry optimization">Retry</button>
+      </div>
+      <button class="btn btn-primary" id="use-btn" aria-label="Use optimized prompt" style="width: 100%;">Use Prompt</button>
     </div>
   `;
   shadow.appendChild(panel);
@@ -742,11 +864,22 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   const optimizeBtn = shadow.getElementById('optimize-btn');
   const loaderShimmer = shadow.getElementById('loader-shimmer');
   const errorPanel = shadow.getElementById('error-panel');
+  const signInCard = shadow.getElementById('signin-card');
+  const copyBtn = shadow.getElementById('copy-btn');
+  const retryBtn = shadow.getElementById('retry-btn');
   
   // Event Listeners
-  badge.addEventListener('click', () => {
+  const togglePanel = () => {
     const isVisible = panel.classList.toggle('visible');
     container.classList.toggle('panel-open', isVisible);
+  };
+
+  badge.addEventListener('click', togglePanel);
+  badge.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      togglePanel();
+    }
   });
   
   shadow.getElementById('close-btn').addEventListener('click', () => {
@@ -760,6 +893,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       onLogout();
     }
   });
+
+  shadow.getElementById('signin-open-popup-btn').addEventListener('click', openPromptIqPopup);
+  shadow.getElementById('error-open-popup-btn').addEventListener('click', openPromptIqPopup);
 
   optimizeBtn.addEventListener('click', async () => {
     loaderShimmer.style.display = 'block';
@@ -786,7 +922,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       // Revert select back to turbo
       modeSelect.value = 'turbo';
       // Open paywall
-      api.showPaywall('mode');
+      api.showPaywall('mode', selectedMode);
     }
   });
 
@@ -802,7 +938,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     } else {
       diffView.style.display = 'block';
       textarea.style.display = 'none';
-      toggleEditBtn.textContent = 'Edit Text';
+      toggleEditBtn.textContent = 'Edit';
       viewTitle.textContent = 'Optimized Draft';
     }
   });
@@ -811,8 +947,17 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   changesHeader.addEventListener('click', () => {
     changesList.classList.toggle('expanded');
     const isExpanded = changesList.classList.contains('expanded');
-    toggleChangesLabel.textContent = isExpanded ? 'Hide' : 'Show';
+    toggleChangesLabel.textContent = isExpanded ? 'Hide' : 'Show Changes';
   });
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   shadow.getElementById('use-btn').addEventListener('click', () => {
     const finalPrompt = textarea.style.display === 'none' ? diffView.textContent : textarea.value;
@@ -821,32 +966,30 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     container.classList.remove('panel-open');
   });
 
+  copyBtn.addEventListener('click', async () => {
+    const finalPrompt = textarea.style.display === 'none' ? diffView.textContent : textarea.value;
+    try {
+      await navigator.clipboard.writeText(finalPrompt);
+      copyBtn.textContent = 'Copied';
+    } catch (err) {
+      copyBtn.textContent = 'Copy failed';
+    }
+    setTimeout(() => {
+      copyBtn.textContent = 'Copy';
+    }, 1600);
+  });
+
+  retryBtn.addEventListener('click', () => {
+    optimizeBtn.click();
+  });
+
   // Paywall Actions
   shadow.getElementById('paywall-close-btn').addEventListener('click', () => {
     paywallOverlay.classList.remove('active');
   });
 
-  shadow.getElementById('paywall-upgrade-btn').addEventListener('click', async () => {
-    await setUserTier('pro');
-    
-    shadow.getElementById('paywall-title').textContent = "Unlocked! 🎉";
-    shadow.getElementById('paywall-desc').textContent = "PromptIQ Pro tier is now active! Try optimizing your prompt again.";
-    shadow.getElementById('paywall-upgrade-btn').style.display = 'none';
-    shadow.getElementById('paywall-close-btn').style.display = 'none';
-    shadow.getElementById('paywall-icon').textContent = "🚀";
-    
-    // Set UI state to pro
-    api.setTier('pro');
-    
-    setTimeout(() => {
-      paywallOverlay.classList.remove('active');
-      // Restore buttons for next time
-      shadow.getElementById('paywall-upgrade-btn').style.display = 'block';
-      shadow.getElementById('paywall-close-btn').style.display = 'block';
-      shadow.getElementById('paywall-icon').textContent = "💎";
-      shadow.getElementById('paywall-title').textContent = "Unlock PromptIQ Pro";
-      shadow.getElementById('paywall-desc').textContent = "Unlock advanced modes and unlimited daily optimizations.";
-    }, 2000);
+  shadow.getElementById('paywall-upgrade-btn').addEventListener('click', () => {
+    openPromptIqPopup();
   });
 
   // Feedback Event Listeners
@@ -870,6 +1013,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     container,
     setLoggedState: (isLoggedIn) => {
       logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
+      signInCard.classList.toggle('visible', !isLoggedIn);
     },
     toggleVisibility: () => {
       const isVisible = panel.classList.toggle('visible');
@@ -904,7 +1048,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         modeSelect.options[5].text = '🔒 Business (Pro)';
       }
     },
-    showPaywall: (type) => {
+    showPaywall: (type, lockedMode = null) => {
       loaderShimmer.style.display = 'none';
       optimizeBtn.disabled = false;
       
@@ -913,10 +1057,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       
       if (type === 'limit') {
         titleEl.textContent = "Daily Limit Reached";
-        descEl.textContent = "Unlock unlimited optimizations and advanced rewrite modes. Upgrade to PromptIQ Pro for only ₹99/mo!";
+        descEl.textContent = "Unlock unlimited optimizations and advanced rewrite modes with PromptIQ Pro.";
       } else if (type === 'mode') {
         titleEl.textContent = "Pro Mode Locked";
-        const selectedModeText = modeSelect.options[modeSelect.selectedIndex].text.replace('🔒 ', '').split(' (')[0];
+        const selectedModeText = lockedMode
+          ? lockedMode.charAt(0).toUpperCase() + lockedMode.slice(1)
+          : modeSelect.options[modeSelect.selectedIndex].text.replace('🔒 ', '').split(' (')[0];
         descEl.textContent = `The ${selectedModeText} mode is locked. Unlock advanced rewrite modes and unlimited optimizations with PromptIQ Pro!`;
       }
       
@@ -932,8 +1078,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       const scoreGradeEl = shadow.getElementById('score-grade');
       
       const score = Math.max(0, Math.min(100, scoreData.score || 0));
+      let displayGrade = 'Empty';
+      if (score >= 76) displayGrade = 'Strong';
+      else if (score >= 46) displayGrade = 'Good';
+      else if (score > 0) displayGrade = 'Weak';
       scoreValEl.textContent = score;
-      scoreGradeEl.textContent = scoreData.grade || 'Empty';
+      scoreGradeEl.textContent = displayGrade;
       
       text.textContent = `PromptIQ: ${score}`;
       
@@ -949,18 +1099,14 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       let scoreThemeClass = '';
       let scoreThemeStroke = 'var(--pi-muted)';
       
-      if (score > 85) {
+      if (score >= 76) {
         scoreThemeClass = 'score-excellent';
         scoreThemeStroke = 'var(--pi-success)';
         scoreGradeEl.style.color = 'var(--pi-success)';
-      } else if (score > 60) {
+      } else if (score >= 46) {
         scoreThemeClass = 'score-good';
         scoreThemeStroke = 'var(--pi-warning)';
         scoreGradeEl.style.color = 'var(--pi-warning)';
-      } else if (score > 30) {
-        scoreThemeClass = 'score-fair';
-        scoreThemeStroke = '#f97316';
-        scoreGradeEl.style.color = '#f97316';
       } else if (score > 0) {
         scoreThemeClass = 'score-weak';
         scoreThemeStroke = 'var(--pi-danger)';
@@ -984,10 +1130,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         }
       });
     },
-    showResult: (optimizedText, diffedTokens, explainedChanges, runId) => {
+    showResult: (optimizedText, diffedTokens, explainedChanges, runId, scoreSummary = null) => {
       currentRunId = runId;
       errorPanel.style.display = 'none';
       shadow.getElementById('result-section').style.display = 'block';
+      optimizeBtn.textContent = 'Optimize Prompt';
       
       // Reset feedback display
       shadow.getElementById('feedback-buttons-wrapper').style.display = 'flex';
@@ -995,34 +1142,43 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
 
       // Set values
       textarea.value = optimizedText;
+      const scoreDeltaEl = shadow.getElementById('score-delta');
+      if (scoreSummary && Number.isFinite(scoreSummary.originalScore) && Number.isFinite(scoreSummary.newScore)) {
+        const delta = scoreSummary.newScore - scoreSummary.originalScore;
+        scoreDeltaEl.textContent = delta >= 0
+          ? `+${delta} pts`
+          : `${delta} pts`;
+      } else {
+        scoreDeltaEl.textContent = 'Improved';
+      }
       
       // Render Diff HTML
       diffView.innerHTML = diffedTokens.map(tok => {
         if (tok.added) {
-          return `<span class="diff-added">${tok.text}</span>`;
+          return `<span class="diff-added">${escapeHtml(tok.text)}</span>`;
         }
-        return tok.text;
+        return escapeHtml(tok.text);
       }).join('');
 
       // Render Changes with Icons & Labels
       changesList.innerHTML = explainedChanges.map(change => `
         <li class="change-item">
-          <span class="change-icon">${change.icon}</span>
+          <span class="change-icon">${escapeHtml(change.icon)}</span>
           <div class="change-content">
-            <span class="change-label">${change.label}:</span>
-            <span>${change.description}</span>
+            <span class="change-label">${escapeHtml(change.label)}:</span>
+            <span>${escapeHtml(change.description)}</span>
           </div>
         </li>
       `).join('');
       
-      // Expand explanations by default on first load
-      changesList.classList.add('expanded');
-      toggleChangesLabel.textContent = 'Hide';
+      // Keep the panel compact by default; users can expand details when needed.
+      changesList.classList.remove('expanded');
+      toggleChangesLabel.textContent = 'Show Changes';
       
       // Default to showing diff view first
       diffView.style.display = 'block';
       textarea.style.display = 'none';
-      toggleEditBtn.textContent = 'Edit Text';
+      toggleEditBtn.textContent = 'Edit';
       shadow.getElementById('editor-view-title').textContent = 'Optimized Draft';
     },
     showError: (err) => {
@@ -1035,13 +1191,13 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       const errorMessage = shadow.getElementById('error-panel-message');
       
       if (err.status === 401 || err.message.toLowerCase().includes('log in') || err.message.toLowerCase().includes('session')) {
-        errorIcon.textContent = '🔑';
-        errorTitle.textContent = 'Authentication Required';
-        errorMessage.innerHTML = `Please log in to your PromptIQ account.<br><span style="font-size: 11.5px; opacity: 0.85; margin-top: 8px; display: block; font-weight: 500;">Click the extension icon (🧩) in your browser toolbar to log in.</span>`;
+        errorIcon.textContent = '!';
+        errorTitle.textContent = 'Optimization failed';
+        errorMessage.textContent = 'Please log in again or try refreshing the page.';
       } else {
-        errorIcon.textContent = '⚠️';
-        errorTitle.textContent = 'Optimization Failed';
-        errorMessage.textContent = err.message || 'Please try refreshing the page or try again.';
+        errorIcon.textContent = '!';
+        errorTitle.textContent = 'Optimization failed';
+        errorMessage.textContent = err.message || 'Please log in again or try refreshing the page.';
       }
       
       errorPanel.style.display = 'block';

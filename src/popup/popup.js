@@ -43,7 +43,7 @@ async function checkAuthStatus() {
 
     authContainer.style.display = 'none';
     authenticatedWrapper.style.display = 'block';
-    
+
     // Initialize authenticated layouts
     initTabs();
     initHistory();
@@ -93,7 +93,7 @@ function initAuthListeners() {
   submitBtn.onclick = async () => {
     const email = document.getElementById('auth-email').value.trim();
     const password = document.getElementById('auth-password').value.trim();
-    
+
     if (!email || !password) {
       statusEl.textContent = 'Email and password are required.';
       statusEl.className = 'status-msg status-error';
@@ -162,26 +162,40 @@ function initTabs() {
   const tabs = document.querySelectorAll('.nav-tab');
   const contents = document.querySelectorAll('.tab-content');
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', async () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      contents.forEach(c => c.classList.remove('active'));
+  const activateTab = async (tab) => {
+    tabs.forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
+    contents.forEach(c => c.classList.remove('active'));
 
-      tab.classList.add('active');
-      const activeTabId = `tab-${tab.dataset.tab}`;
-      document.getElementById(activeTabId).classList.add('active');
-      
-      // Refresh views on tab change
-      if (tab.dataset.tab === 'history') {
-        renderHistory();
-      } else if (tab.dataset.tab === 'dashboard') {
-        try {
-          const user = await fetchUserProfile();
-          renderDashboard(user);
-        } catch (err) {
-          // session expired, checkAuthStatus will handle it
-          await checkAuthStatus();
-        }
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    const activeTabId = `tab-${tab.dataset.tab}`;
+    document.getElementById(activeTabId).classList.add('active');
+
+    // Refresh views on tab change
+    if (tab.dataset.tab === 'history') {
+      renderHistory();
+    } else if (tab.dataset.tab === 'dashboard') {
+      try {
+        const user = await fetchUserProfile();
+        renderDashboard(user);
+      } catch (err) {
+        // session expired, checkAuthStatus will handle it
+        await checkAuthStatus();
+      }
+    }
+  };
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      activateTab(tab);
+    });
+    tab.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        activateTab(tab);
       }
     });
   });

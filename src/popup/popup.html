@@ -20,6 +20,15 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       --pi-primary-gradient: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      --pi-bg: var(--bg-color);
+      --pi-card: var(--card-bg);
+      --pi-border: var(--card-border);
+      --pi-text: var(--text-primary);
+      --pi-muted: var(--text-secondary);
+      --pi-primary: var(--accent-blue);
+      --pi-success: var(--accent-green);
+      --pi-warning: #fbbf24;
+      --pi-danger: var(--accent-red);
     }
 
     body {
@@ -54,6 +63,14 @@
     }
     .nav-tab:hover {
       color: var(--text-primary);
+    }
+    .nav-tab:focus-visible,
+    .btn:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
     }
     .nav-tab.active {
       color: var(--accent-blue);
@@ -134,7 +151,7 @@
       text-transform: uppercase;
       letter-spacing: 0.02em;
     }
-    input[type="password"], input[type="text"], select {
+    input[type="password"], input[type="text"], input[type="email"], select {
       width: 100%;
       padding: 10px 14px;
       box-sizing: border-box;
@@ -388,7 +405,7 @@
       color: var(--text-primary);
       margin: 0 0 8px 0;
       line-height: 1.25;
-      letter-spacing: -0.02em;
+      letter-spacing: 0;
     }
     .welcome-desc {
       font-size: 12.5px;
@@ -456,16 +473,16 @@
     </div>
     
     <div id="auth-form-wrapper">
-      <h3 style="margin-top: 0; margin-bottom: 14px; font-weight: 800; letter-spacing: -0.02em;" id="auth-title">Log In</h3>
+      <h3 style="margin-top: 0; margin-bottom: 14px; font-weight: 800; letter-spacing: 0;" id="auth-title">Log In</h3>
       
       <div class="form-group">
         <label for="auth-email">Email Address</label>
-        <input type="text" id="auth-email" placeholder="you@example.com" />
+        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email" />
       </div>
       
       <div class="form-group">
         <label for="auth-password">Password</label>
-        <input type="password" id="auth-password" placeholder="••••••••" />
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
       </div>
       
       <button class="btn" id="auth-submit-btn" style="margin-top: 6px;">Log In</button>
@@ -484,10 +501,10 @@
 
   <!-- Authenticated Container Wrapper -->
   <div id="authenticated-wrapper" style="display: none;">
-    <div class="navbar">
-      <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
-      <div class="nav-tab" data-tab="library">Library</div>
-      <div class="nav-tab" data-tab="history">History</div>
+    <div class="navbar" role="tablist" aria-label="PromptIQ popup sections">
+      <div class="nav-tab active" data-tab="dashboard" role="tab" tabindex="0" aria-selected="true">Dashboard</div>
+      <div class="nav-tab" data-tab="library" role="tab" tabindex="0" aria-selected="false">Library</div>
+      <div class="nav-tab" data-tab="history" role="tab" tabindex="0" aria-selected="false">History</div>
     </div>
 
     <!-- Dashboard Tab -->

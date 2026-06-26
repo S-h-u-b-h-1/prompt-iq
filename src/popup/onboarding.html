@@ -2,23 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Welcome to PromptIQ!</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to PromptIQ</title>
   <style>
     :root {
-      --bg-color: #030712;
-      --card-bg: rgba(15, 23, 42, 0.65);
-      --card-border: rgba(255, 255, 255, 0.06);
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --accent-blue: #3b82f6;
-      --accent-cyan: #22d3ee;
-      --accent-purple: #8b5cf6;
-      --accent-pink: #ec4899;
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --pi-primary-gradient: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      --pi-bg: #070a12;
+      --pi-card: rgba(13, 20, 34, 0.76);
+      --pi-card-strong: rgba(17, 26, 43, 0.94);
+      --pi-border: rgba(148, 163, 184, 0.18);
+      --pi-text: #f8fafc;
+      --pi-muted: #9aa8ba;
+      --pi-primary: #38bdf8;
+      --pi-success: #34d399;
+      --pi-warning: #fbbf24;
+      --pi-danger: #fb7185;
+      --pi-shadow: rgba(0, 0, 0, 0.36);
+      --pi-radius: 8px;
     }
 
     * {
@@ -26,787 +25,849 @@
       scroll-behavior: smooth;
     }
 
+    html {
+      background: var(--pi-bg);
+    }
+
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      max-width: 840px;
-      margin: 40px auto;
-      padding: 20px;
-      color: var(--text-primary);
-      background-color: var(--bg-color);
-      line-height: 1.6;
       min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
+      margin: 0;
+      color: var(--pi-text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      background:
+        linear-gradient(120deg, rgba(56, 189, 248, 0.12), transparent 38%),
+        linear-gradient(180deg, #070a12 0%, #0b1120 46%, #080b13 100%);
     }
 
-    /* Glow background blobs */
-    .glow-bg {
+    body::before {
+      content: "";
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      inset: 0;
       z-index: -1;
-      overflow: hidden;
       pointer-events: none;
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent 76%);
     }
 
-    .blob {
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      filter: blur(140px);
-      opacity: 0.15;
-      mix-blend-mode: screen;
-      animation: float 25s infinite alternate ease-in-out;
+    a {
+      color: inherit;
     }
 
-    .blob-1 {
-      background: radial-gradient(circle, var(--accent-blue) 0%, transparent 80%);
-      top: -10%;
-      right: -10%;
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .blob-2 {
-      background: radial-gradient(circle, var(--accent-purple) 0%, transparent 80%);
-      bottom: -10%;
-      left: -15%;
-      animation-delay: -8s;
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--pi-primary);
+      outline-offset: 3px;
     }
 
-    .blob-3 {
-      background: radial-gradient(circle, var(--accent-pink) 0%, transparent 80%);
-      top: 45%;
-      left: 25%;
-      width: 450px;
-      height: 450px;
-      animation-delay: -15s;
-      opacity: 0.08;
+    .section {
+      width: 100%;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
     }
 
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(60px, -80px) scale(1.15); }
-      100% { transform: translate(-30px, 40px) scale(0.9); }
+    .section-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 72px 0;
     }
 
-    /* Main Container */
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--card-border);
-      padding: 56px 48px;
-      border-radius: 32px;
-      box-shadow: 
-        0 30px 60px -15px rgba(0, 0, 0, 0.8),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-      position: relative;
+    .hero .section-inner {
+      min-height: min(820px, calc(100vh - 32px));
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+      gap: 44px;
+      align-items: center;
+      padding-top: 64px;
+      padding-bottom: 44px;
     }
 
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-      border-top-left-radius: 32px;
-      border-top-right-radius: 32px;
+    .brand-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      color: var(--pi-muted);
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    /* Hero Section */
-    .hero-section {
-      text-align: center;
-      margin-bottom: 48px;
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: var(--pi-radius);
+      background: linear-gradient(135deg, var(--pi-primary), var(--pi-success));
+      color: #06101f;
+      font-weight: 900;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
     }
 
     h1 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      color: var(--text-primary);
-      font-size: 40px;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.2;
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue) 40%, var(--accent-purple) 75%, var(--accent-pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      max-width: 760px;
+      margin-bottom: 18px;
+      font-size: 68px;
+      line-height: 1.02;
+      letter-spacing: 0;
+      font-weight: 850;
     }
 
-    .subheading {
+    .hero-copy {
+      max-width: 660px;
+      margin-bottom: 30px;
+      color: var(--pi-muted);
       font-size: 18px;
-      color: var(--text-secondary);
-      max-width: 680px;
-      margin: 0 auto 36px auto;
-      font-weight: 500;
-      line-height: 1.6;
     }
 
-    /* Button styles */
     .cta-group {
       display: flex;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 12px;
-    }
-
-    @media (max-width: 600px) {
-      .cta-group {
-        flex-direction: column;
-        align-items: stretch;
-      }
-    }
-
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 15px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .cta-primary {
-      background: var(--pi-primary-gradient);
-      color: #030712;
-      box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
-    }
-
-    .cta-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(34, 211, 238, 0.4);
-      filter: brightness(1.15);
-    }
-
-    .cta-secondary {
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-primary);
-      border: 1px solid var(--card-border);
-    }
-
-    .cta-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateY(-2px);
-    }
-
-    /* Section Title */
-    .section-title {
-      font-size: 24px;
-      font-weight: 800;
-      text-align: center;
-      margin-top: 64px;
-      margin-bottom: 28px;
-      letter-spacing: -0.02em;
-      position: relative;
-    }
-
-    /* Social Proof / Platforms */
-    .social-proof {
-      margin: 40px 0;
-    }
-
-    .social-proof-title {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--text-muted);
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .platforms {
-      display: flex;
-      justify-content: center;
       flex-wrap: wrap;
-      gap: 12px 18px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
-    .platform-tag {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.03);
-      padding: 8px 18px;
-      border-radius: 9999px;
-      border: 1px solid var(--card-border);
-      transition: all 0.3s ease;
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+    .btn {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 18px;
+      border-radius: var(--pi-radius);
+      border: 1px solid transparent;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
     }
 
-    .platform-tag:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(59, 130, 246, 0.4);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px -6px rgba(59, 130, 246, 0.3);
+    .btn-primary {
+      color: #04101d;
+      background: linear-gradient(135deg, #67e8f9, #38bdf8 54%, #34d399);
+      box-shadow: 0 16px 42px rgba(56, 189, 248, 0.24);
     }
 
-    /* Mock Window Container */
-    .window-container {
-      background: rgba(2, 6, 23, 0.6);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      margin: 40px 0 20px 0;
+    .btn-secondary {
+      color: var(--pi-text);
+      background: rgba(255, 255, 255, 0.055);
+      border-color: var(--pi-border);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .proof-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--pi-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .proof-pill {
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 510px;
+    }
+
+    .browser-shell {
+      position: relative;
+      height: 510px;
       overflow: hidden;
-      box-shadow: 
-        0 15px 35px -10px rgba(0, 0, 0, 0.6),
-        0 0 25px -5px rgba(139, 92, 246, 0.05);
+      border: 1px solid rgba(203, 213, 225, 0.18);
+      border-radius: var(--pi-radius);
+      background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(8, 13, 24, 0.96)),
+        #0f172a;
+      box-shadow: 0 28px 80px var(--pi-shadow);
     }
 
-    .window-header {
-      background: rgba(15, 23, 42, 0.8);
-      padding: 14px 20px;
+    .browser-bar {
       display: flex;
       align-items: center;
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    .window-dots {
-      display: flex;
       gap: 8px;
-      margin-right: 20px;
+      height: 42px;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(255, 255, 255, 0.035);
     }
 
     .window-dot {
-      width: 11px;
-      height: 11px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
+      background: rgba(148, 163, 184, 0.5);
     }
-    .dot-red { background-color: var(--accent-red); opacity: 0.85; }
-    .dot-yellow { background-color: #eab308; opacity: 0.85; }
-    .dot-green { background-color: var(--accent-green); opacity: 0.85; }
 
-    .window-title {
+    .browser-url {
+      flex: 1;
+      height: 24px;
+      margin-left: 10px;
+      border-radius: var(--pi-radius);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--pi-muted);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
       font-size: 11px;
       font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin: 0 auto;
-      transform: translateX(-25px);
     }
 
-    /* Before / After Grid */
-    .before-after-grid {
+    .chat-preview {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    @media (max-width: 700px) {
-      .before-after-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .ba-pane {
-      padding: 28px;
-      position: relative;
-    }
-
-    .ba-pane:first-child {
-      border-right: 1px solid var(--card-border);
-    }
-
-    @media (max-width: 700px) {
-      .ba-pane:first-child {
-        border-right: none;
-        border-bottom: 1px solid var(--card-border);
-      }
-    }
-
-    .ba-badge {
-      display: inline-flex;
-      align-items: center;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      letter-spacing: 0.08em;
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-    }
-
-    .badge-red { 
-      background: rgba(239, 68, 68, 0.12); 
-      color: #f87171; 
-      border: 1px solid rgba(239, 68, 68, 0.2); 
-    }
-    
-    .badge-green { 
-      background: rgba(16, 185, 129, 0.12); 
-      color: #34d399; 
-      border: 1px solid rgba(16, 185, 129, 0.2); 
-    }
-
-    .ba-text {
-      font-size: 13.5px;
-      color: var(--text-secondary);
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      white-space: pre-wrap;
-      margin: 0;
-      line-height: 1.6;
-    }
-
-    .highlight-glow {
-      text-align: center;
-      font-size: 14.5px;
-      font-weight: 700;
-      color: var(--accent-cyan);
-      margin-top: 12px;
-      margin-bottom: 44px;
-      text-shadow: 0 0 15px rgba(34, 211, 238, 0.35);
-    }
-
-    /* Features Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 40px;
-    }
-
-    @media (max-width: 650px) {
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .feature-card {
-      background: rgba(255, 255, 255, 0.015);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 28px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .feature-card:hover {
-      border-color: rgba(255, 255, 255, 0.12);
-      transform: translateY(-4px);
-      box-shadow: 
-        0 15px 30px -10px rgba(0, 0, 0, 0.6),
-        0 0 20px -5px rgba(59, 130, 246, 0.1);
-    }
-
-    .feature-card:hover::before {
-      opacity: 1;
-    }
-
-    .feature-icon {
-      font-size: 24px;
-      margin-bottom: 16px;
-      display: inline-block;
-    }
-
-    .feature-title {
-      font-weight: 700;
-      font-size: 17px;
-      margin: 0 0 8px 0;
-      color: var(--text-primary);
-    }
-
-    .feature-desc {
-      font-size: 13.5px;
-      color: var(--text-secondary);
-      margin: 0;
-      line-height: 1.55;
-    }
-
-    /* Timeline Stepper */
-    .step-list {
-      display: flex;
-      flex-direction: column;
+      grid-template-columns: 1fr 238px;
       gap: 16px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
+      padding: 18px;
+      height: calc(100% - 42px);
     }
 
-    .step-item {
+    .chat-feed {
       display: flex;
-      gap: 20px;
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid var(--card-border);
-      padding: 24px;
-      border-radius: 20px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      align-items: flex-start;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
     }
 
-    .step-item:hover {
-      background: rgba(255, 255, 255, 0.025);
-      border-color: rgba(59, 130, 246, 0.35);
-      transform: translateX(6px);
-      box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
-    }
-
-    .step-number {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-      color: white;
-      font-weight: 800;
-      font-size: 13px;
-      flex-shrink: 0;
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-    }
-
-    .step-content {
-      font-size: 14.5px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    .step-content strong {
-      color: var(--text-primary);
-    }
-
-    .step-content a {
-      color: var(--accent-cyan);
-      text-decoration: none;
-      font-weight: 600;
-      border-bottom: 1px dashed rgba(34, 211, 238, 0.4);
-      transition: all 0.2s ease;
-    }
-
-    .step-content a:hover {
-      color: var(--accent-blue);
-      border-bottom-color: var(--accent-blue);
-      text-decoration: none;
-    }
-
-    /* Pricing Section */
-    .pricing-grid {
+    .message-stack {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-      margin-bottom: 40px;
-    }
-
-    @media (max-width: 650px) {
-      .pricing-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .pricing-card {
-      background: rgba(255, 255, 255, 0.015);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 36px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.3s;
-    }
-
-    .pricing-card.premium {
-      border-color: rgba(139, 92, 246, 0.4);
-      background: linear-gradient(180deg, rgba(139, 92, 246, 0.03) 0%, rgba(255, 255, 255, 0.015) 100%);
-      box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.15);
-    }
-
-    .pricing-card.premium::before {
-      content: 'RECOMMENDED';
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-      color: white;
-      padding: 4px 10px;
-      border-radius: 6px;
-    }
-
-    .pricing-card h3 {
-      font-size: 20px;
-      font-weight: 800;
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-    }
-
-    .price {
-      font-size: 32px;
-      font-weight: 800;
-      margin-bottom: 24px;
-      color: var(--text-primary);
-      display: flex;
-      align-items: baseline;
-    }
-
-    .price span {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-left: 4px;
-    }
-
-    .pricing-features {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
       gap: 12px;
     }
 
-    .pricing-features li {
-      font-size: 13.5px;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .message {
+      padding: 13px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: var(--pi-radius);
+      background: rgba(255, 255, 255, 0.045);
+      color: #e5edf7;
+      font-size: 13px;
     }
 
-    .pricing-features li::before {
-      content: '✓';
-      color: var(--accent-green);
+    .message.user {
+      justify-self: end;
+      max-width: 86%;
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.22);
+    }
+
+    .composer {
+      min-height: 96px;
+      border: 1px solid rgba(52, 211, 153, 0.28);
+      border-radius: var(--pi-radius);
+      background: rgba(2, 6, 23, 0.62);
+      padding: 14px;
+      color: var(--pi-muted);
+      font-size: 13px;
+    }
+
+    .panel-preview {
+      min-width: 0;
+      border: 1px solid rgba(203, 213, 225, 0.18);
+      border-radius: var(--pi-radius);
+      background: rgba(7, 10, 18, 0.82);
+      padding: 14px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .panel-preview-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .score-badge {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 7px solid rgba(52, 211, 153, 0.68);
+      color: var(--pi-success);
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .mini-label {
+      margin-bottom: 7px;
+      color: var(--pi-muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .mini-chip {
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 999px;
+      padding: 4px 7px;
+      color: var(--pi-muted);
+      font-size: 10px;
       font-weight: 800;
     }
 
-    .pricing-card.premium .pricing-features li::before {
-      color: var(--accent-purple);
+    .mini-chip.ready {
+      color: var(--pi-success);
+      border-color: rgba(52, 211, 153, 0.28);
+      background: rgba(52, 211, 153, 0.08);
     }
 
-    /* Privacy and Trust Note */
-    .privacy-note {
-      display: flex;
-      gap: 20px;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
-      border: 1px solid rgba(139, 92, 246, 0.12);
-      border-radius: 20px;
-      padding: 24px;
-      align-items: flex-start;
-      margin-top: 48px;
+    .output-box {
+      max-height: 190px;
+      overflow: auto;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: var(--pi-radius);
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.72);
+      color: #dbeafe;
+      font-size: 12px;
+      line-height: 1.5;
     }
 
-    .privacy-icon {
-      font-size: 28px;
-      flex-shrink: 0;
-      line-height: 1;
+    .section-eyebrow {
+      margin-bottom: 10px;
+      color: var(--pi-primary);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
     }
 
-    .privacy-title {
-      font-weight: 700;
-      font-size: 15px;
-      margin: 0 0 6px 0;
-      color: var(--text-primary);
+    .section-heading {
+      max-width: 720px;
+      margin-bottom: 18px;
+      font-size: 42px;
+      line-height: 1.1;
+      letter-spacing: 0;
+      font-weight: 850;
     }
 
-    .privacy-desc {
-      font-size: 13px;
-      color: var(--text-secondary);
+    .section-lede {
+      max-width: 720px;
+      margin-bottom: 28px;
+      color: var(--pi-muted);
+      font-size: 16px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 0.86fr 1.14fr;
+      gap: 14px;
+    }
+
+    .prompt-card,
+    .feature-card,
+    .plan-card,
+    .step-card,
+    .trust-note {
+      border: 1px solid var(--pi-border);
+      border-radius: var(--pi-radius);
+      background: var(--pi-card);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.2);
+    }
+
+    .prompt-card {
+      padding: 20px;
+    }
+
+    .prompt-card.after {
+      background: linear-gradient(180deg, rgba(52, 211, 153, 0.08), var(--pi-card));
+      border-color: rgba(52, 211, 153, 0.28);
+    }
+
+    .card-kicker {
+      display: inline-flex;
+      margin-bottom: 14px;
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--pi-muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .card-kicker.good {
+      color: var(--pi-success);
+      background: rgba(52, 211, 153, 0.09);
+    }
+
+    .prompt-text {
       margin: 0;
-      line-height: 1.6;
+      color: #dbeafe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
+    .platform-grid,
+    .feature-grid,
+    .steps-grid,
+    .plans-grid {
+      display: grid;
+      gap: 14px;
     }
-    ::-webkit-scrollbar-track {
-      background: var(--bg-color);
+
+    .platform-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
     }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+
+    .platform-item {
+      min-height: 84px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--pi-border);
+      border-radius: var(--pi-radius);
+      background: rgba(255, 255, 255, 0.035);
+      color: #dbeafe;
+      font-weight: 850;
+      text-align: center;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.2);
+
+    .feature-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .feature-card,
+    .step-card,
+    .plan-card {
+      padding: 20px;
+    }
+
+    .feature-number,
+    .step-number {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 16px;
+      border-radius: var(--pi-radius);
+      background: rgba(56, 189, 248, 0.11);
+      color: var(--pi-primary);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .feature-title,
+    .step-title,
+    .plan-title {
+      margin-bottom: 7px;
+      color: var(--pi-text);
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .feature-copy,
+    .step-copy,
+    .plan-copy {
+      margin: 0;
+      color: var(--pi-muted);
+      font-size: 13px;
+    }
+
+    .steps-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .plans-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plan-card.pro {
+      border-color: rgba(56, 189, 248, 0.32);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.08), var(--pi-card));
+    }
+
+    .plan-price {
+      margin-bottom: 14px;
+      color: var(--pi-text);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .plan-price span {
+      color: var(--pi-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .plan-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--pi-muted);
+      font-size: 13px;
+    }
+
+    .plan-list li {
+      display: flex;
+      gap: 9px;
+    }
+
+    .plan-list li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      margin-top: 8px;
+      border-radius: 50%;
+      background: var(--pi-success);
+      flex: 0 0 auto;
+    }
+
+    .trust-note {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 18px;
+      background: rgba(15, 23, 42, 0.86);
+    }
+
+    .trust-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--pi-radius);
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--pi-success);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .trust-note h3 {
+      margin-bottom: 5px;
+      font-size: 16px;
+    }
+
+    .trust-note p {
+      margin: 0;
+      color: var(--pi-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 940px) {
+      .hero .section-inner {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .hero-visual {
+        min-height: 440px;
+      }
+
+      .browser-shell {
+        height: 440px;
+      }
+
+      .platform-grid,
+      .feature-grid,
+      .steps-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      h1 {
+        font-size: 54px;
+      }
+
+      .section-heading {
+        font-size: 36px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .section-inner {
+        width: min(100% - 28px, 1120px);
+        padding: 52px 0;
+      }
+
+      .hero .section-inner {
+        padding-top: 40px;
+      }
+
+      h1 {
+        font-size: 40px;
+      }
+
+      .section-heading {
+        font-size: 30px;
+      }
+
+      .hero-copy {
+        font-size: 16px;
+      }
+
+      .cta-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .chat-preview,
+      .comparison-grid,
+      .plans-grid,
+      .platform-grid,
+      .feature-grid,
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-visual,
+      .browser-shell {
+        min-height: auto;
+        height: auto;
+      }
+
+      .panel-preview {
+        min-height: 320px;
+      }
     }
   </style>
 </head>
 <body>
-
-  <!-- Glow Background blobs -->
-  <div class="glow-bg">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
-
-  <div class="card">
-    <!-- Hero Section -->
-    <div class="hero-section">
-      <h1>Write normally. PromptIQ turns your idea into a professional AI prompt.</h1>
-      <p class="subheading">
-        Upgrade prompts instantly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
-      </p>
-      
-      <div class="cta-group">
-        <a href="https://chatgpt.com" target="_blank" class="cta-btn cta-primary">Start Using PromptIQ</a>
-        <a href="#how-it-works" class="cta-btn cta-secondary">See How It Works</a>
-      </div>
-    </div>
-    
-    <!-- Social Proof -->
-    <div class="social-proof">
-      <div class="social-proof-title">Optimizes Native Input Fields In:</div>
-      <div class="platforms">
-        <span class="platform-tag">ChatGPT</span>
-        <span class="platform-tag">Claude</span>
-        <span class="platform-tag">Gemini</span>
-        <span class="platform-tag">Perplexity</span>
-        <span class="platform-tag">Copilot</span>
-        <span class="platform-tag">DeepSeek</span>
-      </div>
-    </div>
-
-    <!-- Before / After mockup window -->
-    <div class="window-container" id="comparison">
-      <div class="window-header">
-        <div class="window-dots">
-          <span class="window-dot dot-red"></span>
-          <span class="window-dot dot-yellow"></span>
-          <span class="window-dot dot-green"></span>
+  <main>
+    <section class="section hero">
+      <div class="section-inner">
+        <div>
+          <div class="brand-row">
+            <span class="brand-mark">IQ</span>
+            <span>PromptIQ for AI workspaces</span>
+          </div>
+          <h1>Write normally. PromptIQ turns your idea into a professional AI prompt.</h1>
+          <p class="hero-copy">Upgrade prompts instantly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.</p>
+          <div class="cta-group">
+            <a class="btn btn-primary" href="https://chatgpt.com" target="_blank" rel="noreferrer">Start Using PromptIQ</a>
+            <a class="btn btn-secondary" href="#how-it-works">See How It Works</a>
+          </div>
+          <div class="proof-row" aria-label="Key PromptIQ outcomes">
+            <span class="proof-pill">Inline optimizer</span>
+            <span class="proof-pill">Prompt scoring</span>
+            <span class="proof-pill">Before and after diff</span>
+          </div>
         </div>
-        <div class="window-title">Prompt Optimization Model</div>
-      </div>
-      <div class="before-after-grid">
-        <div class="ba-pane">
-          <span class="ba-badge badge-red">Your Original Draft</span>
-          <p class="ba-text">Write a marketing campaign for my startup.</p>
+
+        <div class="hero-visual" aria-label="PromptIQ optimizer preview">
+          <div class="browser-shell">
+            <div class="browser-bar">
+              <span class="window-dot"></span>
+              <span class="window-dot"></span>
+              <span class="window-dot"></span>
+              <div class="browser-url">chat workspace / promptiq active</div>
+            </div>
+            <div class="chat-preview">
+              <div class="chat-feed">
+                <div class="message-stack">
+                  <div class="message">How can I help refine your idea today?</div>
+                  <div class="message user">write a launch plan for my app</div>
+                  <div class="message">PromptIQ found missing role, audience, format, and success criteria.</div>
+                </div>
+                <div class="composer">Type a rough idea here. PromptIQ scores it before you send.</div>
+              </div>
+              <aside class="panel-preview">
+                <div class="panel-preview-top">
+                  <div>
+                    <div class="panel-title">PromptIQ Optimizer</div>
+                    <div class="mini-label">Draft quality</div>
+                  </div>
+                  <div class="score-badge">92</div>
+                </div>
+                <div class="mini-label">Prompt dimensions</div>
+                <div class="chip-grid">
+                  <span class="mini-chip ready">Task</span>
+                  <span class="mini-chip ready">Role</span>
+                  <span class="mini-chip ready">Context</span>
+                  <span class="mini-chip ready">Format</span>
+                  <span class="mini-chip">Constraints</span>
+                  <span class="mini-chip ready">Specificity</span>
+                </div>
+                <div class="mini-label">Optimized output</div>
+                <div class="output-box">
+                  Act as a senior product marketing strategist. Create a 30-day launch plan for a productivity app targeting solo founders. Include positioning, channels, launch assets, metrics, and weekly execution milestones.
+                </div>
+              </aside>
+            </div>
+          </div>
         </div>
-        <div class="ba-pane">
-          <span class="ba-badge badge-green">PromptIQ Optimized</span>
-          <p class="ba-text">Act as a senior B2B SaaS growth strategist.
+      </div>
+    </section>
+
+    <section class="section" id="comparison">
+      <div class="section-inner">
+        <div class="section-eyebrow">Before and after</div>
+        <h2 class="section-heading">Turn loose thoughts into prompts that give AI enough direction to help.</h2>
+        <p class="section-lede">PromptIQ adds role, task, context, format, constraints, and specificity without forcing you to learn prompt engineering first.</p>
+        <div class="comparison-grid">
+          <div class="prompt-card">
+            <span class="card-kicker">Original draft</span>
+            <p class="prompt-text">Write a marketing campaign for my startup.</p>
+          </div>
+          <div class="prompt-card after">
+            <span class="card-kicker good">PromptIQ optimized</span>
+            <p class="prompt-text">Act as a senior B2B SaaS growth strategist.
 
 Create a multi-channel marketing campaign for a startup targeting founders and SMB decision makers.
 
-Include:
-• Positioning & Messaging guidelines
-• LinkedIn & Email outbound strategies
-• Budget allocation & Success metrics
+Include positioning, LinkedIn content, email outreach, launch timeline, budget allocation, and success metrics.
 
-Format as an actionable 30-day timeline.</p>
+Format the result as an actionable 30-day plan.</p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="highlight-glow">
-      Same concept. Dramatically superior AI outputs.
-    </div>
+    </section>
 
-    <!-- Key Benefits -->
-    <h2 class="section-title">Why PromptIQ?</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon">⚡</span>
-        <h3 class="feature-title">Instant Upgrades</h3>
-        <p class="feature-desc">Convert single-line instructions into professional prompts with context, goals, and structure in one click.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🧠</span>
-        <h3 class="feature-title">Model-Specific Tuning</h3>
-        <p class="feature-desc">Tailored automatically for the nuances of ChatGPT, Claude, Gemini, and other target models.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🎨</span>
-        <h3 class="feature-title">Inline Floating Controls</h3>
-        <p class="feature-desc">No context switching. Optimize, diff, and use prompts directly in the active text input box.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">📂</span>
-        <h3 class="feature-title">Smart Prompt History</h3>
-        <p class="feature-desc">Save your best prompts, track score improvement over time, and recall past versions instantly.</p>
-      </div>
-    </div>
-
-    <!-- How to get started -->
-    <h2 class="section-title" id="how-it-works">How It Works</h2>
-    <ul class="step-list">
-      <li class="step-item">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          Open any supported AI platform (e.g., <a href="https://chatgpt.com" target="_blank">ChatGPT</a>, <a href="https://claude.ai" target="_blank">Claude</a>, or <a href="https://gemini.google.com" target="_blank">Gemini</a>).
+    <section class="section" id="platforms">
+      <div class="section-inner">
+        <div class="section-eyebrow">Supported platforms</div>
+        <h2 class="section-heading">Works where you already write prompts.</h2>
+        <div class="platform-grid">
+          <div class="platform-item">ChatGPT</div>
+          <div class="platform-item">Claude</div>
+          <div class="platform-item">Gemini</div>
+          <div class="platform-item">Perplexity</div>
+          <div class="platform-item">Copilot</div>
+          <div class="platform-item">DeepSeek</div>
         </div>
-      </li>
-      <li class="step-item">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          You will find the floating <strong>PromptIQ badge</strong> sitting right next to the chat input area.
-        </div>
-      </li>
-      <li class="step-item">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          As you type, the badge analyzes your prompt quality score. Click the badge to open the optimization panel, preview the optimized layout, and hit <strong>"Use Prompt"</strong> to run it.
-        </div>
-      </li>
-      <li class="step-item">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          Click the extension icon in your browser toolbar to access history, settings, and subscription info.
-        </div>
-      </li>
-    </ul>
-
-    <!-- Free vs Premium -->
-    <h2 class="section-title">Choose Your Power</h2>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <h3>Free Tier</h3>
-        <div class="price">₹0</div>
-        <ul class="pricing-features">
-          <li>5 Daily Optimizations</li>
-          <li>Turbo Optimization Mode</li>
-          <li>Standard Scorer Checks</li>
-          <li>Local Prompt History</li>
-        </ul>
       </div>
-      <div class="pricing-card premium">
-        <h3>PromptIQ Pro</h3>
-        <div class="price">₹99<span>/mo</span></div>
-        <ul class="pricing-features">
-          <li>Unlimited Optimizations</li>
-          <li>All Advanced Rewrite Modes</li>
-          <li>Deep Model-Specific Customizations</li>
-          <li>Priority Cloud Features & Sync</li>
-        </ul>
-      </div>
-    </div>
+    </section>
 
-    <!-- Privacy and Trust Note -->
-    <div class="privacy-note">
-      <div class="privacy-icon">🔒</div>
-      <div>
-        <h4 class="privacy-title">Secure & Private by Design</h4>
-        <p class="privacy-desc">
-          Your prompts are optimized securely and never stored. No data is shared with third parties or used for training other models.
-        </p>
+    <section class="section" id="benefits">
+      <div class="section-inner">
+        <div class="section-eyebrow">Key benefits</div>
+        <h2 class="section-heading">Built for fast, repeatable AI work.</h2>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-number">01</div>
+            <h3 class="feature-title">Instant prompt upgrades</h3>
+            <p class="feature-copy">Turn short instructions into structured prompts with a clear role, objective, and expected output.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">02</div>
+            <h3 class="feature-title">Quality scoring</h3>
+            <p class="feature-copy">See whether your draft is weak, good, or strong before you spend a message.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">03</div>
+            <h3 class="feature-title">Readable diffs</h3>
+            <p class="feature-copy">Review exactly what changed so every optimization teaches you better prompting habits.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">04</div>
+            <h3 class="feature-title">Prompt history</h3>
+            <p class="feature-copy">Keep useful runs available from the extension popup for review, reuse, and improvement tracking.</p>
+          </article>
+        </div>
       </div>
-    </div>
+    </section>
 
-  </div>
+    <section class="section" id="how-it-works">
+      <div class="section-inner">
+        <div class="section-eyebrow">How it works</div>
+        <h2 class="section-heading">Optimize without leaving the chat flow.</h2>
+        <div class="steps-grid">
+          <article class="step-card">
+            <div class="step-number">1</div>
+            <h3 class="step-title">Write normally</h3>
+            <p class="step-copy">Type the rough prompt you already had in mind inside a supported AI chat.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">2</div>
+            <h3 class="step-title">Check the score</h3>
+            <p class="step-copy">PromptIQ identifies missing dimensions and shows a clear quality state.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">3</div>
+            <h3 class="step-title">Optimize</h3>
+            <p class="step-copy">Choose a rewrite mode and generate a stronger prompt in the floating panel.</p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">4</div>
+            <h3 class="step-title">Use it</h3>
+            <p class="step-copy">Copy, edit, or insert the optimized prompt back into the active chat box.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="plans">
+      <div class="section-inner">
+        <div class="section-eyebrow">Free vs Premium</div>
+        <h2 class="section-heading">Start free. Upgrade when PromptIQ becomes part of your daily workflow.</h2>
+        <div class="plans-grid">
+          <article class="plan-card">
+            <h3 class="plan-title">Free</h3>
+            <div class="plan-price">Rs 0</div>
+            <p class="plan-copy">For trying PromptIQ on everyday prompts.</p>
+            <ul class="plan-list">
+              <li>5 daily optimizations</li>
+              <li>Turbo rewrite mode</li>
+              <li>Prompt scoring and missing item chips</li>
+              <li>Prompt history from the extension popup</li>
+            </ul>
+          </article>
+          <article class="plan-card pro">
+            <h3 class="plan-title">PromptIQ Pro</h3>
+            <div class="plan-price">Rs 99 <span>/ month</span></div>
+            <p class="plan-copy">For people who use AI heavily and need stronger rewrite control.</p>
+            <ul class="plan-list">
+              <li>Unlimited optimizations</li>
+              <li>Professional, research, creative, coding, and business modes</li>
+              <li>Advanced rewrite depth for higher-value tasks</li>
+              <li>Priority access to new productivity features</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="privacy">
+      <div class="section-inner">
+        <div class="trust-note">
+          <div class="trust-mark">SEC</div>
+          <div>
+            <h3>Secure and transparent by design</h3>
+            <p>Prompts you choose to optimize are processed securely and saved in your PromptIQ history so you can review them later. You can clear this history from the extension popup.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <script type="module" src="./onboarding.js"></script>
 </body>

@@ -39,7 +39,7 @@ How to Use:
 5. Click "Use Optimized" to insert the refined prompt directly into the input text area.
 
 Privacy & Security:
-All prompt optimizations are processed securely. Telemetry history is saved under a randomized install ID to sync history records safely without collecting personally identifiable information.
+All prompt optimizations are processed securely. Prompt history and telemetry are synced to your PromptIQ account or installation ID so the extension can show history, usage stats, and plan status.
 
 **Category**
 Productivity
@@ -85,14 +85,14 @@ English
 
 | Data Type | Collected? | Transmitted Off-Device? | Purpose | Shared with Third Parties? |
 |-----------|-----------|------------------------|---------|---------------------------|
-| Personally identifiable info | No | No | N/A | No |
+| Personally identifiable info | Yes | Yes | Account email for login, support, and subscription status. | No |
 | Health info | No | No | N/A | No |
 | Financial info | No | No | N/A | No |
-| Authentication info | No | No | N/A | No |
-| Personal communications | Yes | Yes | To send prompt data to backend for optimization and history syncing. | No |
+| Authentication info | Yes | Yes | Email/password login; passwords are transmitted to the backend over HTTPS and stored as salted hashes. | No |
+| Personal communications | Yes | Yes | To send prompt data to backend/Gemini for optimization and history syncing. | Yes, Google Gemini API for optimization processing |
 | Location | No | No | N/A | No |
 | Web history | No | No | N/A | No |
-| User activity | Yes | Yes | To sync optimization stats (scores, improvements) to history logs. | No |
+| User activity | Yes | Yes | To sync optimization stats, usage limits, survey responses, feedback, and upgrade events. | No |
 | Website content | Yes | Yes | To read input field values to calculate prompt scores. | No |
 
 ### Data Use Certification

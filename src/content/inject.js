@@ -263,13 +263,17 @@ async function handleOptimize() {
     const diffedTokens = diffPrompt(text, result.optimized);
     const explainedChanges = explainChanges(result.changes);
 
-    panelApi.showResult(result.optimized, diffedTokens, explainedChanges, runId);
+    panelApi.showResult(result.optimized, diffedTokens, explainedChanges, runId, {
+      originalScore,
+      newScore
+    });
   } catch (err) {
     if (err.status === 403) {
       panelApi.showPaywall('mode');
     } else if (err.status === 429) {
       panelApi.showPaywall('limit');
     } else if (err.status === 401) {
+      await clearSessionToken();
       if (panelApi) panelApi.setLoggedState(false);
       panelApi.showError(new Error('Session expired. Please log in again via the PromptIQ popup.'));
     } else if (err.message && err.message.includes('Extension context invalidated')) {

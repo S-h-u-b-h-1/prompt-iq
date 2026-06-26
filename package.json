@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "package:extension": "npm run build && cd dist && zip -qrFS ../dist.zip .",
     "preview": "vite preview",
-    "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/storage.test.mjs"
+    "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/storage.test.mjs && node src/lib/optimizer.test.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"

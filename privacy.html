@@ -77,6 +77,10 @@
       <li><strong>Prompt Text (Personal Communications):</strong> We collect the text of the prompt you choose to optimize in order to send it to the Gemini API (via our secure serverless backend) to perform the optimization.</li>
       <li><strong>Website Content:</strong> We read the active chatbox input field content locally on supported AI platforms (e.g. ChatGPT, Claude, Gemini) solely to calculate the prompt quality score (0-100) dynamically as you type.</li>
       <li><strong>User Activity Metadata:</strong> We collect metadata about optimization events (such as the AI platform name, the original score, the optimized score, and the time of the event) to populate your history logs and dashboard statistics.</li>
+      <li><strong>Account Information:</strong> If you create an account, we collect your email address and password authentication data. Passwords are stored only as salted hashes.</li>
+      <li><strong>Subscription Metadata:</strong> If you upgrade to Pro, Stripe processes your payment and we store subscription status, plan, and Stripe customer/subscription identifiers.</li>
+      <li><strong>Survey Responses:</strong> If you answer optional in-product research questions, we store those responses to improve PromptIQ and understand customer needs.</li>
+      <li><strong>Website Analytics:</strong> Our website may use Google Analytics and externally hosted assets such as Google Fonts to understand site usage and render the page.</li>
       <li><strong>Installation ID:</strong> A randomly generated UUID is created on installation. We use this anonymous identifier to save and sync your prompt history to our database without requiring a user account.</li>
     </ul>
 
@@ -99,10 +103,12 @@
     <ul>
       <li><strong>No Sale of Data:</strong> We do not sell, rent, or trade your data to third parties.</li>
       <li><strong>Third-Party APIs:</strong> Premium prompt optimizations are processed using the Google Gemini API. Only the prompt text and platform name are shared with Google's API to complete the request. We do not share any personal identifiers with Google.</li>
+      <li><strong>Payments:</strong> Paid subscriptions are processed by Stripe. PromptIQ does not store full card numbers.</li>
+      <li><strong>Website Services:</strong> Google Analytics, Google Fonts, and CDN-hosted frontend assets may receive standard browser request metadata when you visit PromptIQ web pages.</li>
     </ul>
 
     <h2>5. Data Retention & Deletion</h2>
-    <p>We retain your optimization history in our database. You can delete all history records associated with your installation ID at any time by clicking the <strong>"Clear All"</strong> button in the History tab of the PromptIQ popup interface. This action wipes the data both locally and from our central server.</p>
+    <p>We retain your optimization history in our database so you can review past prompt improvements. You can delete all history records associated with your account or installation ID at any time by clicking the <strong>"Clear All"</strong> button in the History tab of the PromptIQ popup interface. This action wipes the data both locally and from our central server. Account, subscription, survey, and operational logs may be retained as needed to operate the service, handle billing, prevent abuse, and meet legal obligations.</p>
 
     <h2>6. Policy Certifications</h2>
     <ul>

@@ -1,6 +1,6 @@
 # Chrome Web Store Listing — PromptIQ
 
-> Last Updated: 2026-06-22
+> Last Updated: 2026-06-26
 
 ## Store Listing
 
@@ -127,4 +127,5 @@ shubhaangkataruka22012007@gmail.com
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 1.0.0 | 2026-06-22 | Initial Release. Live prompt scoring, inline optimizations, Vercel backend sync, and premium upgrade paths. | Draft |
+| 1.0.1 | 2026-06-26 | UI/UX redesign of onboarding and inline optimizer panel; updated API keys for model compatibility. | Draft |
+| 1.0.0 | 2026-06-22 | Initial Release. Live prompt scoring, inline optimizations, Vercel backend sync, and premium upgrade paths. | Published |

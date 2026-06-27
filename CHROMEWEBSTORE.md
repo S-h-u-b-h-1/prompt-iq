@@ -11,35 +11,37 @@ PromptIQ
 Write normally. PromptIQ turns your idea into a professional AI prompt in one click.
 
 **Detailed Description**
-Stop guessing how to write AI prompts.
+PromptIQ helps you get better AI responses by transforming ordinary drafts into clear, structured, and high-quality instructions—right where you work. It integrates seamlessly with popular AI platforms, allowing you to optimize prompts without switching tabs or learning prompt engineering.
 
-PromptIQ instantly upgrades your drafts into professional, context-rich instructions directly inside your preferred AI chat platforms.
+Write normally. PromptIQ makes it AI-ready.
 
-Write naturally. PromptIQ makes it AI-ready.
+### Key Features
 
-Same idea. Much better AI output.
+🚀 **One-Click Prompt Optimization**
+Instantly rewrite vague or incomplete drafts into well-structured, AI-ready prompts for higher-quality responses.
 
-Core Benefits:
-* Instant Prompt Upgrade: Expand one-line drafts into detailed prompts with clear goals, context, and constraints.
-* Multi-Model Optimization: Calibrates your prompt structure dynamically depending on the nuances of your target platform.
-* One Click Workflow: No copy-pasting between websites. Optimize directly where you work.
-* Prompt History: Never lose a great prompt again.
+📊 **Live Prompt Quality Score**
+Receive a real-time quality score as you type, with actionable suggestions for improving clarity, context, specificity, role definition, and constraints.
 
-Why PromptIQ Exists:
-Most people don't get poor AI results because AI is bad. They get poor results because their prompts are vague. PromptIQ fixes that instantly. No prompt engineering, no tutorials, no learning curve. Just better prompts and better answers.
+🧠 **Platform-Aware Calibrations**
+PromptIQ automatically adapts its optimization strategy to match the formatting guidelines and nuances of your target AI platform.
 
-Pricing:
-Free to get started. Upgrade when you need more power.
+📖 **Explanations Included**
+See exactly what was improved and why, helping you understand the principles behind effective prompt writing.
 
-How to Use:
-1. Open your preferred generative AI chat platform.
-2. A sleek PromptIQ badge will float in the bottom-right corner next to the chatbox input.
-3. As you type, the badge will score your prompt. Click the badge to slide out the PromptIQ sidebar.
-4. Click "Optimize Prompt" to refine it instantly using local templates (Free) or advanced LLMs (Premium).
-5. Click "Use Optimized" to insert the refined prompt directly into the input text area.
+⚡ **One-Click Insert**
+Replace your original prompt with the optimized version instantly—no manual copy-pasting required.
 
-Privacy & Security:
-All prompt optimizations are processed securely. Prompt history and telemetry are synced to your PromptIQ account or installation ID so the extension can show history, usage stats, and plan status.
+### How It Works:
+
+1. **Write:** Open your preferred AI platform and start typing as usual.
+2. **Score:** Click the floating PromptIQ badge beside the chat input to check your draft's score.
+3. **Optimize:** Click "Optimize Prompt" to refine it instantly using local templates or advanced LLMs.
+4. **Insert:** Insert the optimized prompt directly into the text area with a single click.
+
+### Privacy & Security
+
+PromptIQ is built with privacy at its core. Prompt optimization requests are processed securely, and only the information necessary to provide the service is transmitted. Optional prompt history is synced securely to support multi-device access and past retrieval. PromptIQ never requires you to expose your personal API keys for standard operation.
 
 **Category**
 Productivity

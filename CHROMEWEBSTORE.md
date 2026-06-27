@@ -11,17 +11,17 @@ PromptIQ
 Write normally. PromptIQ turns your idea into a professional AI prompt in one click.
 
 **Detailed Description**
-Stop Guessing How To Write AI Prompts.
+Stop guessing how to write AI prompts.
 
-PromptIQ instantly upgrades your prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
+PromptIQ instantly upgrades your drafts into professional, context-rich instructions directly inside your preferred AI chat platforms.
 
 Write naturally. PromptIQ makes it AI-ready.
 
 Same idea. Much better AI output.
 
 Core Benefits:
-* Instant Prompt Upgrade: Turn vague prompts into professional instructions.
-* AI-Aware Optimization: Optimized differently for ChatGPT, Claude, Gemini, and other models.
+* Instant Prompt Upgrade: Expand one-line drafts into detailed prompts with clear goals, context, and constraints.
+* Multi-Model Optimization: Calibrates your prompt structure dynamically depending on the nuances of your target platform.
 * One Click Workflow: No copy-pasting between websites. Optimize directly where you work.
 * Prompt History: Never lose a great prompt again.
 
@@ -127,5 +127,6 @@ shubhaangkataruka22012007@gmail.com
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 1.0.1 | 2026-06-26 | UI/UX redesign of onboarding and inline optimizer panel; updated API keys for model compatibility. | Draft |
+| 1.0.2 | 2026-06-27 | Fixed metadata policy violation (keyword spam in description). | Draft |
+| 1.0.1 | 2026-06-26 | UI/UX redesign of onboarding and inline optimizer panel; updated API keys for model compatibility. | Rejected |
 | 1.0.0 | 2026-06-22 | Initial Release. Live prompt scoring, inline optimizations, Vercel backend sync, and premium upgrade paths. | Published |

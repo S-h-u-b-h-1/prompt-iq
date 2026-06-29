@@ -129,6 +129,7 @@ shubhaangkataruka22012007@gmail.com
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 1.0.2 | 2026-06-27 | Fixed metadata policy violation (keyword spam in description). | Draft |
+| 1.0.3 | 2026-06-29 | Excluded landing/privacy pages from extension bundle to resolve remotely hosted code violation (Blue Argon). | Draft |
+| 1.0.2 | 2026-06-27 | Fixed metadata policy violation (keyword spam in description). | Rejected |
 | 1.0.1 | 2026-06-26 | UI/UX redesign of onboarding and inline optimizer panel; updated API keys for model compatibility. | Rejected |
 | 1.0.0 | 2026-06-22 | Initial Release. Live prompt scoring, inline optimizations, Vercel backend sync, and premium upgrade paths. | Published |

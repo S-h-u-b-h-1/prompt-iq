@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "package:extension": "npm run build && cd dist && zip -qrFS ../dist.zip .",
+    "package:extension": "npm run build && cd dist && zip -qrFS ../dist.zip . -x index.html privacy.html",
     "preview": "vite preview",
     "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/storage.test.mjs && node src/lib/optimizer.test.mjs"
   },

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:website": "node scripts/build-website.mjs",
     "verify:extension": "node scripts/verify-extension-package.mjs",
     "package:extension": "npm run build && npm run verify:extension && cd dist && zip -qrFS ../dist.zip .",
     "preview": "vite preview",

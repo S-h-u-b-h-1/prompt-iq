@@ -105,8 +105,11 @@ English
 
 ## Privacy Policy
 
+**Homepage URL**
+https://promptiq-theta.vercel.app/
+
 **Privacy Policy URL**
-https://promptiq-theta.vercel.app/privacy (Recommended to host a simple markdown/HTML privacy page at this route).
+https://promptiq-theta.vercel.app/privacy
 
 
 ## Distribution

@@ -1,12 +1,60 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 import { signToken, authenticate } from './_utils/auth-helper.js';
+import { normalizePlan } from './_utils/plans.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 const sql = neon(DATABASE_URL);
+const PASSWORD_ITERATIONS = 310000;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function derivePasswordHash(password, salt, iterations) {
+  return new Promise((resolve, reject) => {
+    crypto.pbkdf2(password, salt, iterations, 64, 'sha512', (error, key) => {
+      if (error) reject(error);
+      else resolve(key.toString('hex'));
+    });
+  });
+}
+
+async function createPasswordHash(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = await derivePasswordHash(password, salt, PASSWORD_ITERATIONS);
+  return `pbkdf2$${PASSWORD_ITERATIONS}$${salt}$${hash}`;
+}
+
+async function verifyPassword(password, passwordHash) {
+  let iterations;
+  let salt;
+  let storedHash;
+  let needsUpgrade = false;
+
+  if (passwordHash.startsWith('pbkdf2$')) {
+    const parts = passwordHash.split('$');
+    if (parts.length !== 4) return { matches: false, needsUpgrade: false };
+    iterations = Number.parseInt(parts[1], 10);
+    salt = parts[2];
+    storedHash = parts[3];
+  } else {
+    const parts = passwordHash.split(':');
+    if (parts.length !== 2) return { matches: false, needsUpgrade: false };
+    iterations = 1000;
+    [salt, storedHash] = parts;
+    needsUpgrade = true;
+  }
+
+  const candidateHash = await derivePasswordHash(password, salt, iterations);
+  const candidateBuffer = Buffer.from(candidateHash, 'hex');
+  const storedBuffer = Buffer.from(storedHash, 'hex');
+  const matches =
+    candidateBuffer.length === storedBuffer.length &&
+    crypto.timingSafeEqual(candidateBuffer, storedBuffer);
+
+  return { matches, needsUpgrade: matches && needsUpgrade };
+}
 
 export default async function handler(req, res) {
   // CORS headers
@@ -48,7 +96,9 @@ export default async function handler(req, res) {
       }
 
       const user = users[0];
-      const resolvedPlan = user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan;
+      const resolvedPlan = normalizePlan(
+        user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
+      );
 
       res.status(200).json({
         authenticated: true,
@@ -63,18 +113,19 @@ export default async function handler(req, res) {
 
     if (action === 'login' && req.method === 'POST') {
       // --- LOGIN (formerly login.js) ---
-      const { email, password } = req.body;
+      const { email, password } = req.body || {};
 
       if (!email || !password) {
         res.status(400).json({ error: 'Email and password are required' });
         return;
       }
 
+      const normalizedEmail = email.toLowerCase().trim();
       const users = await sql`
         SELECT u.id, u.email, u.password_hash, u.plan as base_plan, s.plan as sub_plan, s.status as sub_status
         FROM users u
         LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
-        WHERE u.email = ${email.toLowerCase().trim()}
+        WHERE u.email = ${normalizedEmail}
       `;
 
       if (users.length === 0) {
@@ -84,21 +135,24 @@ export default async function handler(req, res) {
 
       const user = users[0];
 
-      const parts = user.password_hash.split(':');
-      if (parts.length !== 2) {
-        res.status(500).json({ error: 'Database password format error' });
-        return;
-      }
-
-      const [salt, storedHash] = parts;
-      const verifyHash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-
-      if (storedHash !== verifyHash) {
+      const passwordResult = await verifyPassword(password, user.password_hash);
+      if (!passwordResult.matches) {
         res.status(401).json({ error: 'Invalid email or password' });
         return;
       }
 
-      const resolvedPlan = user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan;
+      if (passwordResult.needsUpgrade) {
+        const upgradedHash = await createPasswordHash(password);
+        await sql`
+          UPDATE users
+          SET password_hash = ${upgradedHash}
+          WHERE id = ${user.id}
+        `;
+      }
+
+      const resolvedPlan = normalizePlan(
+        user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
+      );
 
       const token = signToken({
         userId: user.id,
@@ -120,20 +174,26 @@ export default async function handler(req, res) {
 
     if (action === 'signup' && req.method === 'POST') {
       // --- SIGNUP (formerly signup.js) ---
-      const { email, password } = req.body;
+      const { email, password } = req.body || {};
 
       if (!email || !password) {
         res.status(400).json({ error: 'Email and password are required' });
         return;
       }
 
-      if (password.length < 6) {
-        res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      const normalizedEmail = email.toLowerCase().trim();
+      if (!EMAIL_PATTERN.test(normalizedEmail) || normalizedEmail.length > 254) {
+        res.status(400).json({ error: 'Enter a valid email address' });
+        return;
+      }
+
+      if (password.length < 8 || password.length > 128) {
+        res.status(400).json({ error: 'Password must be between 8 and 128 characters long' });
         return;
       }
 
       const existing = await sql`
-        SELECT id FROM users WHERE email = ${email.toLowerCase().trim()}
+        SELECT id FROM users WHERE email = ${normalizedEmail}
       `;
 
       if (existing.length > 0) {
@@ -141,13 +201,11 @@ export default async function handler(req, res) {
         return;
       }
 
-      const salt = crypto.randomBytes(16).toString('hex');
-      const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-      const passwordHash = `${salt}:${hash}`;
+      const passwordHash = await createPasswordHash(password);
 
       const result = await sql`
         INSERT INTO users (email, password_hash, plan, created_at)
-        VALUES (${email.toLowerCase().trim()}, ${passwordHash}, 'free', NOW())
+        VALUES (${normalizedEmail}, ${passwordHash}, 'free', NOW())
         RETURNING id, email, plan;
       `;
 
@@ -174,6 +232,10 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Invalid action or method' });
   } catch (error) {
     console.error('Auth API error:', error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    if (error.code === '23505') {
+      res.status(409).json({ error: 'User with this email already exists' });
+      return;
+    }
+    res.status(500).json({ error: 'Authentication is temporarily unavailable. Please try again.' });
   }
 }

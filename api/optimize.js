@@ -1,5 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from './_utils/auth-helper.js';
+import { isPremiumPlan, normalizePlan } from './_utils/plans.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -12,7 +13,7 @@ function sendJsonError(res, status, code, message) {
   res.status(status).json({ error: message, code });
 }
 
-function getSystemPrompt(platform, intent, mode) {
+function getSystemPrompt(platform, intent) {
   let intentInstructions = '';
   switch (intent) {
     case 'coding':
@@ -56,52 +57,12 @@ function getSystemPrompt(platform, intent, mode) {
 - Formatting: Ensure output structures (headings, tables, lists) are well-defined.`;
   }
 
-  let modeInstructions = '';
-  switch (mode) {
-    case 'turbo':
-      modeInstructions = `
-- Objective: Fast, direct, and concise improvement. 
-- Refinement: Retain the original draft length as much as possible, focusing only on correcting major instruction ambiguities.`;
-      break;
-    case 'professional':
-      modeInstructions = `
-- Objective: The gold standard for general prompt engineering.
-- Refinement: Integrate a clear role, explicit context, structured instruction hierarchy, and comprehensive output styling rules.`;
-      break;
-    case 'research':
-      modeInstructions = `
-- Objective: Maximum depth, reasoning, and structure.
-- Refinement: Inject explicit Chain-of-Thought (CoT) instructions (e.g., 'Analyze step-by-step...'), demand detailed justifications, and structure extensive context layers.`;
-      break;
-    case 'creative':
-      modeInstructions = `
-- Objective: Maximum creativity and ideation.
-- Refinement: Allow open brainstorming constraints, prompt for multiple alternative suggestions, and set stylistic descriptors.`;
-      break;
-    case 'coding':
-      modeInstructions = `
-- Objective: Extreme technical and debugging precision.
-- Refinement: Build rigorous algorithmic specifications, input/output boundary rules, syntax validation checks, and security requirements.`;
-      break;
-    case 'business':
-      modeInstructions = `
-- Objective: Strategic planning and ROI decision-making.
-- Refinement: Structure prompts around market analysis, financial implications, KPI targets, stakeholder alignment, and risk assessments.`;
-      break;
-    default:
-      modeInstructions = `
-- Objective: Balanced general prompt optimization.`;
-  }
-
   return `You are PromptIQ, the world's best AI Prompt Optimizer. Your sole mission is to refine, polish, and validate text prompts to produce superior AI responses on ${platform}.
 
-Your task is to optimize the provided pre-structured draft using the following intent-specific and mode-specific directives:
+Your task is to provide a premium-quality optimization of the pre-structured draft using the following intent-specific directives:
 
 [INTENT DIRECTIVES (${intent.toUpperCase()})]
 ${intentInstructions}
-
-[MODE DIRECTIVES (${mode.toUpperCase()})]
-${modeInstructions}
 
 [INSTRUCTION HIERARCHY RULES]
 - **Role Assignment:** Define a clear persona/role at the very beginning (e.g., "Act as an expert copywriter...").
@@ -109,6 +70,7 @@ ${modeInstructions}
 - **Context & Elaboration:** Synthesize background detail and target audience parameters.
 - **Explicit Constraints:** Add boundaries (e.g., "Do not include fluff", "Format strictly as...").
 - **Format Directive:** Specify markdown structure (tables, headers, etc.).
+- **Safety Integrity:** Never add instructions intended to evade or weaken an AI service's safety controls.
 
 Your response MUST be strict JSON matching this schema:
 {
@@ -152,7 +114,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode } = req.body;
+    const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent } = req.body;
 
     if (!originalPrompt || !platform) {
       sendJsonError(res, 400, 'BAD_REQUEST', 'Missing originalPrompt or platform parameter');
@@ -184,30 +146,17 @@ export default async function handler(req, res) {
     }
 
     const user = users[0];
-    const resolvedPlan = user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan;
-    const optMode = mode || 'turbo';
+    const resolvedPlan = normalizePlan(
+      user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
+    );
 
-    // 3. Enforce Pro mode locks on server
-    if (resolvedPlan === 'free' && optMode !== 'turbo') {
-      sendJsonError(res, 403, 'PRO_MODE_LOCKED', 'This mode is available on PromptIQ Premium.');
-      return;
-    }
-
-    // 4. Enforce daily usage count limits on server
-    const today = new Date().toISOString().split('T')[0];
-    const usage = await sql`
-      SELECT count FROM usage_events
-      WHERE user_id = ${userId.toString()} AND date = ${today}
-    `;
-
-    const dailyCount = usage.length > 0 ? usage[0].count : 0;
-    if (resolvedPlan === 'free' && dailyCount >= 5) {
-      sendJsonError(res, 429, 'DAILY_LIMIT_REACHED', 'You have reached your daily optimization limit.');
+    if (!isPremiumPlan(resolvedPlan)) {
+      sendJsonError(res, 403, 'PREMIUM_REQUIRED', 'Cloud AI optimization requires PromptIQ Premium.');
       return;
     }
 
     const intent = detectedIntent || 'general';
-    const systemPrompt = getSystemPrompt(platform, intent, optMode);
+    const systemPrompt = getSystemPrompt(platform, intent);
 
     const payload = {
       contents: [{
@@ -334,14 +283,6 @@ export default async function handler(req, res) {
       sendJsonError(res, 503, 'GEMINI_INVALID_FORMAT', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
-
-    // 5. Success! Increment daily usage limits on the server
-    await sql`
-      INSERT INTO usage_events (user_id, date, count, created_at)
-      VALUES (${userId.toString()}, ${today}, 1, NOW())
-      ON CONFLICT (user_id, date)
-      DO UPDATE SET count = usage_events.count + 1, created_at = NOW();
-    `;
 
     res.status(200).json(parsed);
   } catch (error) {

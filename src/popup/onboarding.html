@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to PromptIQ</title>
+  <link rel="icon" href="../../favicon.svg">
   <style>
     :root {
       --pi-bg: #070a12;
@@ -25,12 +26,17 @@
       scroll-behavior: smooth;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     html {
       background: var(--pi-bg);
     }
 
     body {
       min-height: 100vh;
+      min-width: 360px;
       margin: 0;
       color: var(--pi-text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -506,7 +512,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .plan-card.pro {
+    .plan-card.premium {
       border-color: rgba(56, 189, 248, 0.32);
       background: linear-gradient(180deg, rgba(56, 189, 248, 0.08), var(--pi-card));
     }
@@ -581,6 +587,219 @@
       font-size: 13px;
     }
 
+    .data-use-list {
+      display: grid;
+      gap: 7px;
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--pi-muted);
+      font-size: 12px;
+    }
+
+    .account-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 58px;
+      padding: 8px max(20px, calc((100% - 1120px) / 2));
+      border-bottom: 1px solid var(--pi-border);
+      background: rgba(7, 10, 18, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .account-state {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tier-badge {
+      flex: 0 0 auto;
+      border: 1px solid var(--pi-border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: var(--pi-muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .tier-badge.premium {
+      color: var(--pi-primary);
+      border-color: rgba(56, 189, 248, 0.34);
+      background: rgba(56, 189, 248, 0.09);
+    }
+
+    .account-copy {
+      min-width: 0;
+      color: var(--pi-muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .account-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .account-actions .btn {
+      min-height: 36px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+
+    .auth-dialog {
+      width: min(440px, calc(100% - 28px));
+      max-height: calc(100vh - 28px);
+      overflow: auto;
+      padding: 0;
+      border: 1px solid var(--pi-border);
+      border-radius: var(--pi-radius);
+      color: var(--pi-text);
+      background: #0c1322;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58);
+    }
+
+    .auth-dialog::backdrop {
+      background: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(6px);
+    }
+
+    .auth-dialog-inner {
+      padding: 22px;
+    }
+
+    .auth-dialog-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .auth-dialog-title {
+      margin-bottom: 5px;
+      font-size: 20px;
+    }
+
+    .auth-dialog-copy {
+      margin: 0;
+      color: var(--pi-muted);
+      font-size: 13px;
+    }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--pi-border);
+      border-radius: var(--pi-radius);
+      color: var(--pi-text);
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .auth-modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-bottom: 18px;
+      padding: 4px;
+      border: 1px solid var(--pi-border);
+      border-radius: var(--pi-radius);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .auth-mode {
+      min-height: 36px;
+      border: 0;
+      border-radius: 5px;
+      color: var(--pi-muted);
+      background: transparent;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .auth-mode.active {
+      color: var(--pi-text);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .form-group {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      color: var(--pi-muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .form-group input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--pi-border);
+      border-radius: var(--pi-radius);
+      padding: 0 12px;
+      color: var(--pi-text);
+      background: rgba(2, 6, 23, 0.62);
+      font: inherit;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--pi-primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+    }
+
+    .auth-submit {
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .auth-status {
+      display: none;
+      margin: 12px 0 0;
+      border-radius: var(--pi-radius);
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .auth-status.visible {
+      display: block;
+    }
+
+    .auth-status.error {
+      color: #fecdd3;
+      background: rgba(251, 113, 133, 0.1);
+      border: 1px solid rgba(251, 113, 133, 0.22);
+    }
+
+    .auth-status.success {
+      color: #a7f3d0;
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.22);
+    }
+
+    .auth-privacy {
+      margin: 14px 0 0;
+      color: var(--pi-muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
     @media (max-width: 940px) {
       .hero .section-inner {
         grid-template-columns: 1fr;
@@ -611,6 +830,21 @@
     }
 
     @media (max-width: 680px) {
+      .account-bar {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 10px 14px;
+      }
+
+      .account-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .account-actions .btn {
+        width: 100%;
+      }
+
       .section-inner {
         width: min(100% - 28px, 1120px);
         padding: 52px 0;
@@ -662,6 +896,51 @@
   </style>
 </head>
 <body>
+  <header class="account-bar">
+    <div class="account-state">
+      <span class="tier-badge" id="tier-badge">FREE</span>
+      <span class="account-copy" id="account-copy">Smart Template runs locally. No account required.</span>
+    </div>
+    <div class="account-actions">
+      <button class="btn btn-secondary" id="auth-open-btn" type="button">Sign In</button>
+      <button class="btn btn-primary" id="upgrade-btn" type="button">Get Premium</button>
+      <button class="btn btn-secondary" id="dashboard-btn" type="button" hidden>Dashboard</button>
+      <button class="btn btn-secondary" id="logout-btn" type="button" hidden>Log Out</button>
+    </div>
+  </header>
+
+  <dialog class="auth-dialog" id="auth-dialog">
+    <div class="auth-dialog-inner">
+      <div class="auth-dialog-header">
+        <div>
+          <h2 class="auth-dialog-title" id="auth-dialog-title">Sign in</h2>
+          <p class="auth-dialog-copy">Access your account and Premium AI status.</p>
+        </div>
+        <button class="icon-button" id="auth-close-btn" type="button" aria-label="Close account dialog">&times;</button>
+      </div>
+
+      <div class="auth-modes" role="tablist" aria-label="Account action">
+        <button class="auth-mode active" id="login-mode-btn" type="button" role="tab" aria-selected="true">Sign In</button>
+        <button class="auth-mode" id="signup-mode-btn" type="button" role="tab" aria-selected="false">Create Account</button>
+      </div>
+
+      <form id="auth-form">
+        <div class="form-group">
+          <label for="auth-email">Email address</label>
+          <input id="auth-email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Password</label>
+          <input id="auth-password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="At least 8 characters">
+        </div>
+        <button class="btn btn-primary auth-submit" id="auth-submit-btn" type="submit">Sign In</button>
+        <p class="auth-status" id="auth-status" role="alert"></p>
+      </form>
+
+      <p class="auth-privacy">Creating an account sends your email and password over HTTPS. Passwords are stored as salted hashes. Signed-in history is synchronized to your account. Premium sends prompts you choose to optimize to Google Gemini. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
+    </div>
+  </dialog>
+
   <main>
     <section class="section hero">
       <div class="section-inner">
@@ -673,7 +952,8 @@
           <h1>Write normally. PromptIQ turns your idea into a professional AI prompt.</h1>
           <p class="hero-copy">Upgrade prompts instantly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.</p>
           <div class="cta-group">
-            <a class="btn btn-primary" href="https://chatgpt.com" target="_blank" rel="noreferrer">Start Using PromptIQ</a>
+            <a class="btn btn-primary" href="https://chatgpt.com" target="_blank" rel="noreferrer">Use Free Template</a>
+            <button class="btn btn-secondary" id="hero-auth-btn" type="button">Sign In for Premium</button>
             <a class="btn btn-secondary" href="#how-it-works">See How It Works</a>
           </div>
           <div class="proof-row" aria-label="Key PromptIQ outcomes">
@@ -814,7 +1094,7 @@ Format the result as an actionable 30-day plan.</p>
           <article class="step-card">
             <div class="step-number">3</div>
             <h3 class="step-title">Optimize</h3>
-            <p class="step-copy">Choose a rewrite mode and generate a stronger prompt in the floating panel.</p>
+            <p class="step-copy">Free uses a local Smart Template. Premium uses server-side AI for deeper optimization.</p>
           </article>
           <article class="step-card">
             <div class="step-number">4</div>
@@ -833,23 +1113,23 @@ Format the result as an actionable 30-day plan.</p>
           <article class="plan-card">
             <h3 class="plan-title">Free</h3>
             <div class="plan-price">Rs 0</div>
-            <p class="plan-copy">For trying PromptIQ on everyday prompts.</p>
+            <p class="plan-copy">For reliable everyday prompt structure without an account.</p>
             <ul class="plan-list">
-              <li>5 daily optimizations</li>
-              <li>Turbo rewrite mode</li>
+              <li>Unlimited local Smart Template optimizations</li>
+              <li>No prompt is sent to an optimization API</li>
               <li>Prompt scoring and missing item chips</li>
-              <li>Prompt history from the extension popup</li>
+              <li>Local prompt history on this device</li>
             </ul>
           </article>
-          <article class="plan-card pro">
-            <h3 class="plan-title">PromptIQ Pro</h3>
+          <article class="plan-card premium">
+            <h3 class="plan-title">Premium</h3>
             <div class="plan-price">Rs 99 <span>/ month</span></div>
-            <p class="plan-copy">For people who use AI heavily and need stronger rewrite control.</p>
+            <p class="plan-copy">For deeper, context-aware optimization using PromptIQ's server-side AI.</p>
             <ul class="plan-list">
-              <li>Unlimited optimizations</li>
-              <li>Professional, research, creative, coding, and business modes</li>
-              <li>Advanced rewrite depth for higher-value tasks</li>
-              <li>Priority access to new productivity features</li>
+              <li>Premium AI optimization</li>
+              <li>API keys remain secured on the server</li>
+              <li>Cloud-synced prompt history</li>
+              <li>Account access across supported browsers</li>
             </ul>
           </article>
         </div>
@@ -862,7 +1142,14 @@ Format the result as an actionable 30-day plan.</p>
           <div class="trust-mark">SEC</div>
           <div>
             <h3>Secure and transparent by design</h3>
-            <p>Prompts you choose to optimize are processed securely and saved in your PromptIQ history so you can review them later. You can clear this history from the extension popup.</p>
+            <p>Data handling is limited to providing prompt optimization, account access, history, feedback, and subscriptions.</p>
+            <ul class="data-use-list">
+              <li>Free optimization and signed-out history remain on this device.</li>
+              <li>Signed-in history is synchronized to your PromptIQ account.</li>
+              <li>Premium sends prompts you choose to optimize to the PromptIQ backend and Google Gemini.</li>
+              <li>Stripe processes Premium payments. PromptIQ does not store full card numbers.</li>
+              <li>Prompt data is not sold or used for personalized advertising.</li>
+            </ul>
           </div>
         </div>
       </div>

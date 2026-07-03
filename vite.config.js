@@ -8,6 +8,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         onboarding: 'src/popup/onboarding.html',
+        dashboard: 'src/popup/popup.html',
       },
     },
   },

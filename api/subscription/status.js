@@ -1,5 +1,4 @@
 import { neon } from '@neondatabase/serverless';
-import { verifyToken } from '../_utils/auth-helper.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -18,7 +17,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { stripe_session_id, token, cancel } = req.query;
+  const { stripe_session_id, cancel } = req.query;
 
   // Handle cancellation redirect
   if (cancel === 'true') {
@@ -26,22 +25,6 @@ export default async function handler(req, res) {
     res.status(200).send(renderResponsePage(false, 'Checkout cancelled. You can try again when you are ready.'));
     return;
   }
-
-  // Validate session token
-  if (!token) {
-    res.setHeader('Content-Type', 'text/html');
-    res.status(400).send(renderResponsePage(false, 'Missing authorization token.'));
-    return;
-  }
-
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    res.setHeader('Content-Type', 'text/html');
-    res.status(401).send(renderResponsePage(false, 'Unauthorized: Invalid session token.'));
-    return;
-  }
-
-  const userId = decoded.userId;
 
   try {
     let success = false;
@@ -64,27 +47,31 @@ export default async function handler(req, res) {
       }
 
       const sessionDetails = await response.json();
+      const userId = Number.parseInt(sessionDetails.client_reference_id, 10);
 
-      if (sessionDetails.payment_status === 'paid' || sessionDetails.status === 'complete') {
+      if (!Number.isSafeInteger(userId) || userId <= 0) {
+        throw new Error('Checkout session is missing a valid account reference.');
+      }
+
+      if (sessionDetails.payment_status === 'paid') {
         const stripeCustomerId = sessionDetails.customer;
         const stripeSubscriptionId = sessionDetails.subscription;
 
-        // Update database in a transactional logic
         await sql`
           INSERT INTO subscriptions (user_id, status, plan, stripe_customer_id, stripe_subscription_id, updated_at)
-          VALUES (${userId.toString()}, 'active', 'pro', ${stripeCustomerId}, ${stripeSubscriptionId}, NOW())
+          VALUES (${String(userId)}, 'active', 'premium', ${stripeCustomerId}, ${stripeSubscriptionId}, NOW())
           ON CONFLICT (user_id)
-          DO UPDATE SET status = 'active', plan = 'pro', stripe_customer_id = ${stripeCustomerId}, stripe_subscription_id = ${stripeSubscriptionId}, updated_at = NOW();
+          DO UPDATE SET status = 'active', plan = 'premium', stripe_customer_id = ${stripeCustomerId}, stripe_subscription_id = ${stripeSubscriptionId}, updated_at = NOW();
         `;
 
         await sql`
           UPDATE users
-          SET plan = 'pro'
-          WHERE id = ${parseInt(userId, 10)};
+          SET plan = 'premium'
+          WHERE id = ${userId};
         `;
 
         success = true;
-        message = 'Thank you! Your payment was verified and your Pro account is now active.';
+        message = 'Thank you! Your payment was verified and your Premium account is now active.';
       } else {
         message = 'Stripe checkout session has not completed payment yet.';
       }
@@ -98,7 +85,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Verify checkout error:', error);
     res.setHeader('Content-Type', 'text/html');
-    res.status(500).send(renderResponsePage(false, `Error: ${error.message}`));
+    res.status(500).send(renderResponsePage(false, 'We could not verify this checkout. Please contact support if payment completed.'));
   }
 }
 

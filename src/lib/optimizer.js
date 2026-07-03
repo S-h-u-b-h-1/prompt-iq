@@ -2,8 +2,8 @@
  * LLM Prompt Optimization client communication helper
  */
 
-export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, mode = null, token = null) {
-  return optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode, token);
+export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, token = null) {
+  return optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token);
 }
 
 function createOptimizerError(status, payload = {}, statusText = '') {
@@ -20,7 +20,7 @@ function createOptimizerError(status, payload = {}, statusText = '') {
   if (isPromptIqAuthError) {
     userMessage = 'Your session expired. Please log in again.';
   } else if (status === 403 || /pro mode|locked|premium/i.test(rawMessage)) {
-    userMessage = 'This mode is available on PromptIQ Premium.';
+    userMessage = 'Cloud AI optimization requires PromptIQ Premium.';
   } else if (status === 429 || /daily limit|rate limit|quota/i.test(rawMessage)) {
     userMessage = 'You have reached your daily optimization limit.';
   } else if (isRawGeminiError || status >= 500 || code.startsWith('GEMINI_')) {
@@ -33,7 +33,7 @@ function createOptimizerError(status, payload = {}, statusText = '') {
   return err;
 }
 
-async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode, token) {
+async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token) {
   const url = `https://promptiq-theta.vercel.app/api/optimize`;
 
   const headers = {
@@ -51,8 +51,7 @@ async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPromp
       originalPrompt,
       platform,
       locallyEnhancedPrompt,
-      detectedIntent,
-      mode
+      detectedIntent
     })
   });
 

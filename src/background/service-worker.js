@@ -24,13 +24,19 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'OPEN_ONBOARDING' || message.action === 'OPEN_POPUP') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/onboarding.html') })
+      .then(() => sendResponse({ success: true }))
+      .catch((error) => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
   if (message.action === 'CALL_OPTIMIZER') {
     optimizePrompt(
       message.originalPrompt, 
       message.platform, 
       message.locallyEnhancedPrompt, 
       message.detectedIntent, 
-      message.mode,
       message.token // Relay the JWT session token
     )
       .then(result => sendResponse({ success: true, result }))

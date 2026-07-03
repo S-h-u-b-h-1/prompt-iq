@@ -6,6 +6,48 @@ const DB_NAME = 'PromptIQ_DB';
 const STORE_NAME = 'history';
 const DB_VERSION = 1;
 const API_BASE = 'https://promptiq-theta.vercel.app';
+const REQUEST_TIMEOUT_MS = 15000;
+const MAX_LOCAL_HISTORY = 200;
+
+export function normalizeTier(tier) {
+  return tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
+}
+
+async function requestJson(path, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      signal: controller.signal
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const error = new Error(data.error || `Request failed with status ${response.status}`);
+      error.status = response.status;
+      error.code = data.code || '';
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      const timeoutError = new Error('The server took too long to respond. Please try again.');
+      timeoutError.code = 'REQUEST_TIMEOUT';
+      throw timeoutError;
+    }
+    if (error instanceof TypeError) {
+      const networkError = new Error('Unable to reach PromptIQ. Check your connection and try again.');
+      networkError.code = 'NETWORK_ERROR';
+      throw networkError;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function initDB() {
   return new Promise((resolve, reject) => {
@@ -18,6 +60,37 @@ function initDB() {
         db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
       }
     };
+  });
+}
+
+async function getLocalHistory() {
+  const db = await initDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const request = tx.objectStore(STORE_NAME).getAll();
+
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => {
+      resolve(request.result.sort((a, b) => b.timestamp - a.timestamp));
+    };
+    request.onerror = (event) => reject(event.target.error);
+  });
+}
+
+async function trimLocalHistory(db) {
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  const request = store.getAll();
+
+  await new Promise((resolve, reject) => {
+    request.onsuccess = () => {
+      const staleRecords = request.result
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(MAX_LOCAL_HISTORY);
+      staleRecords.forEach((record) => store.delete(record.id));
+    };
+    tx.oncomplete = resolve;
+    tx.onerror = (event) => reject(event.target.error);
+    request.onerror = (event) => reject(event.target.error);
   });
 }
 
@@ -71,19 +144,22 @@ export function clearSessionToken() {
 
 // Auth Actions
 export async function signupUser(email, password) {
-  const response = await fetch(`${API_BASE}/api/auth?action=signup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to sign up');
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    throw new Error('Enter a valid email address.');
+  }
+  if (password.length < 8) {
+    throw new Error('Password must be at least 8 characters.');
   }
 
+  const data = await requestJson('/api/auth?action=signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: normalizedEmail, password })
+  });
+
   await setSessionToken(data.token);
-  await setUserTier(data.user.plan);
+  await setUserTier(normalizeTier(data.user.plan));
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
     chrome.storage.local.set({ userEmail: data.user.email });
   } else {
@@ -93,19 +169,19 @@ export async function signupUser(email, password) {
 }
 
 export async function loginUser(email, password) {
-  const response = await fetch(`${API_BASE}/api/auth?action=login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to log in');
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail || !password) {
+    throw new Error('Email and password are required.');
   }
 
+  const data = await requestJson('/api/auth?action=login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: normalizedEmail, password })
+  });
+
   await setSessionToken(data.token);
-  await setUserTier(data.user.plan);
+  await setUserTier(normalizeTier(data.user.plan));
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
     chrome.storage.local.set({ userEmail: data.user.email });
   } else {
@@ -118,18 +194,20 @@ export async function fetchUserProfile() {
   const token = await getSessionToken();
   if (!token) return null;
 
-  const response = await fetch(`${API_BASE}/api/auth?action=me`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-
-  if (!response.ok) {
-    await clearSessionToken();
-    return null;
+  try {
+    const data = await requestJson('/api/auth?action=me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    data.user.plan = normalizeTier(data.user.plan);
+    await setUserTier(data.user.plan);
+    return data.user;
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      await clearSessionToken();
+      return null;
+    }
+    throw error;
   }
-
-  const data = await response.json();
-  await setUserTier(data.user.plan);
-  return data.user;
 }
 
 // Subscription Actions
@@ -137,7 +215,7 @@ export async function checkoutSubscription() {
   const token = await getSessionToken();
   if (!token) throw new Error('You must be logged in to subscribe.');
 
-  const response = await fetch(`${API_BASE}/api/subscription/checkout`, {
+  const data = await requestJson('/api/subscription/checkout', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -145,96 +223,16 @@ export async function checkoutSubscription() {
     }
   });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to initiate checkout');
-  }
   return data.url;
-}
-
-export async function logTelemetryEvent(eventType) {
-  const token = await getSessionToken();
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/api/telemetry`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ event_type: eventType })
-    });
-    return response.ok;
-  } catch (err) {
-    console.error('Telemetry logging failed:', err);
-    return false;
-  }
-}
-
-export async function submitSurveyResponses(surveyData) {
-  const token = await getSessionToken();
-  if (!token) throw new Error('You must be logged in to submit a survey.');
-
-  const response = await fetch(`${API_BASE}/api/survey`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(surveyData)
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to submit survey responses');
-  }
-  return true;
-}
-
-// User ID fallback (local tracking, unused for server auth)
-export function getUserId() {
-  return new Promise((resolve) => {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get('userId', (data) => {
-          if (data.userId) resolve(data.userId);
-          else {
-            const newId = generateUUID();
-            chrome.storage.local.set({ userId: newId }, () => resolve(newId));
-          }
-        });
-        return;
-      }
-    } catch (e) {
-      // Context invalidated
-    }
-    let localId = localStorage.getItem('userId');
-    if (!localId) {
-      localId = generateUUID();
-      localStorage.setItem('userId', localId);
-    }
-    resolve(localId);
-  });
-}
-
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
 }
 
 // IndexedDB Actions (Synchronized via JWT Authorization)
 export async function saveOptimization(original, optimized, scoreDelta, platform, intent = null, mode = null, scoreOriginal = null, scoreOptimized = null) {
   try {
-    // 1. Save locally
     const db = await initDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    
-    store.add({
+    const addRequest = store.add({
       original,
       optimized,
       scoreDelta,
@@ -246,15 +244,19 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
       timestamp: Date.now()
     });
 
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = () => resolve();
-      tx.onerror = (e) => reject(e.target.error);
+    const localId = await new Promise((resolve, reject) => {
+      addRequest.onsuccess = () => resolve(addRequest.result);
+      addRequest.onerror = (event) => reject(event.target.error);
     });
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = (event) => reject(event.target.error);
+    });
+    await trimLocalHistory(db);
 
-    // 2. Save centrally on Neon
     const token = await getSessionToken();
     if (token) {
-      const response = await fetch(`${API_BASE}/api/history`, {
+      const data = await requestJson('/api/history', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -271,11 +273,23 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
           scoreOptimized
         })
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        return data.data?.id;
+
+      const remoteId = data.data?.id || null;
+      if (remoteId !== null) {
+        const updateTx = db.transaction(STORE_NAME, 'readwrite');
+        const updateStore = updateTx.objectStore(STORE_NAME);
+        const getRequest = updateStore.get(localId);
+        getRequest.onsuccess = () => {
+          if (getRequest.result) {
+            updateStore.put({ ...getRequest.result, serverId: remoteId });
+          }
+        };
+        await new Promise((resolve, reject) => {
+          updateTx.oncomplete = resolve;
+          updateTx.onerror = (event) => reject(event.target.error);
+        });
       }
+      return remoteId;
     }
   } catch (err) {
     console.error('Failed to save history:', err);
@@ -285,35 +299,28 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
 
 export async function getHistory() {
   try {
+    const localHistory = await getLocalHistory();
     const token = await getSessionToken();
     if (token) {
-      // Try to fetch from server with JWT auth
       try {
-        const response = await fetch(`${API_BASE}/api/history`, {
+        const serverHistory = await requestJson('/api/history', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (response.ok) {
-          const serverHistory = await response.json();
-          return serverHistory;
-        }
+
+        const serverIds = new Set(serverHistory.map((item) => String(item.id)));
+        const unsyncedLocal = localHistory.filter((item) => {
+          return !item.serverId || !serverIds.has(String(item.serverId));
+        });
+
+        return [...serverHistory, ...unsyncedLocal]
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, MAX_LOCAL_HISTORY);
       } catch (serverErr) {
         console.warn('Failed to fetch from central server, falling back to local database:', serverErr);
       }
     }
 
-    // Fallback to local IndexedDB
-    const db = await initDB();
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.getAll();
-
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        const sorted = request.result.sort((a, b) => b.timestamp - a.timestamp);
-        resolve(sorted);
-      };
-      request.onerror = (e) => reject(e.target.error);
-    });
+    return localHistory;
   } catch (err) {
     console.error('Failed to get history:', err);
     return [];
@@ -322,27 +329,29 @@ export async function getHistory() {
 
 export async function clearHistory() {
   try {
-    // 1. Clear locally
     const db = await initDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.clear();
+    tx.objectStore(STORE_NAME).clear();
 
     await new Promise((resolve, reject) => {
       tx.oncomplete = () => resolve();
       tx.onerror = (e) => reject(e.target.error);
     });
-
-    // 2. Clear centrally
-    const token = await getSessionToken();
-    if (token) {
-      fetch(`${API_BASE}/api/history`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      }).catch(err => console.error('Failed to clear central history:', err));
-    }
   } catch (err) {
     console.error('Failed to clear history locally:', err);
+    return;
+  }
+
+  const token = await getSessionToken();
+  if (token) {
+    try {
+      await requestJson('/api/history', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error('Local history was cleared, but account history could not be cleared:', err);
+    }
   }
 }
 
@@ -352,99 +361,29 @@ export function getUserTier() {
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get('userTier', (data) => {
-          resolve(data.userTier || 'free');
+          resolve(normalizeTier(data.userTier));
         });
         return;
       }
     } catch (e) {
       // Context invalidated
     }
-    resolve(localStorage.getItem('userTier') || 'free');
+    resolve(normalizeTier(localStorage.getItem('userTier')));
   });
 }
 
 export function setUserTier(tier) {
+  const normalizedTier = normalizeTier(tier);
   return new Promise((resolve) => {
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ userTier: tier }, () => resolve());
+        chrome.storage.local.set({ userTier: normalizedTier }, () => resolve());
         return;
       }
     } catch (e) {
       // Context invalidated
     }
-    localStorage.setItem('userTier', tier);
+    localStorage.setItem('userTier', normalizedTier);
     resolve();
-  });
-}
-
-// Client-side rate estimation (acts as a backup UI indicator; limits are strictly enforced on Vercel)
-export async function checkDailyLimit() {
-  const token = await getSessionToken();
-  if (token) {
-    try {
-      const profile = await fetchUserProfile();
-      if (profile && profile.plan === 'pro') {
-        return { allowed: true, count: 0 };
-      }
-    } catch (err) {
-      // Fallback to local
-    }
-  }
-
-  const today = new Date().toDateString();
-  try {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-      return new Promise((resolve) => {
-        try {
-          chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
-            const savedDate = data.optCountDate;
-            let count = data.optCountValue || 0;
-            if (savedDate !== today) {
-              chrome.storage.local.set({ optCountDate: today, optCountValue: 0 }, () => {
-                resolve({ allowed: true, count: 0 });
-              });
-            } else {
-              resolve({ allowed: count < 5, count });
-            }
-          });
-        } catch (e) {
-          resolve({ allowed: true, count: 0 });
-        }
-      });
-    }
-  } catch (e) {
-    // Context invalidated
-  }
-
-  const savedDate = localStorage.getItem('optCountDate');
-  let count = parseInt(localStorage.getItem('optCountValue') || '0', 10);
-  if (savedDate !== today) {
-    localStorage.setItem('optCountDate', today);
-    localStorage.setItem('optCountValue', '0');
-    return { allowed: true, count: 0 };
-  } else {
-    return { allowed: count < 5, count };
-  }
-}
-
-export function incrementDailyOptimization() {
-  return new Promise((resolve) => {
-    const today = new Date().toDateString();
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get(['optCountDate', 'optCountValue'], (data) => {
-          let count = (data.optCountValue || 0) + 1;
-          chrome.storage.local.set({ optCountDate: today, optCountValue: count }, () => resolve(count));
-        });
-        return;
-      }
-    } catch (e) {
-      // Context invalidated
-    }
-    let count = parseInt(localStorage.getItem('optCountValue') || '0', 10) + 1;
-    localStorage.setItem('optCountDate', today);
-    localStorage.setItem('optCountValue', count.toString());
-    resolve(count);
   });
 }

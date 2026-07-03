@@ -6,9 +6,7 @@ import {
   signupUser, 
   loginUser, 
   fetchUserProfile, 
-  checkoutSubscription,
-  logTelemetryEvent,
-  submitSurveyResponses
+  checkoutSubscription
 } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 
@@ -53,10 +51,13 @@ async function checkAuthStatus() {
     initPayments();
   } catch (err) {
     console.warn('Session expired or server error:', err);
-    await clearSessionToken();
     authContainer.style.display = 'block';
     authenticatedWrapper.style.display = 'none';
     initAuthListeners();
+    const statusEl = document.getElementById('auth-status');
+    statusEl.textContent = err.message || 'Unable to verify your account. Free mode remains available.';
+    statusEl.className = 'status-msg status-error';
+    statusEl.style.display = 'block';
   }
 }
 
@@ -67,9 +68,20 @@ function initAuthListeners() {
   const toggleLink = document.getElementById('auth-toggle-link');
   const toggleMsg = document.getElementById('auth-toggle-msg');
   const statusEl = document.getElementById('auth-status');
+  const emailInput = document.getElementById('auth-email');
+  const passwordInput = document.getElementById('auth-password');
   
   statusEl.className = 'status-msg';
   statusEl.style.display = 'none';
+
+  [emailInput, passwordInput].forEach((input) => {
+    input.onkeydown = (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitBtn.click();
+      }
+    };
+  });
 
   // Toggle Login/Signup
   toggleLink.onclick = (e) => {
@@ -91,12 +103,13 @@ function initAuthListeners() {
   };
 
   submitBtn.onclick = async () => {
-    const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
     if (!email || !password) {
       statusEl.textContent = 'Email and password are required.';
       statusEl.className = 'status-msg status-error';
+      statusEl.style.display = 'block';
       return;
     }
 
@@ -114,6 +127,7 @@ function initAuthListeners() {
     } catch (err) {
       statusEl.textContent = err.message;
       statusEl.className = 'status-msg status-error';
+      statusEl.style.display = 'block';
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = currentMode === 'login' ? 'Log In' : 'Sign Up';
@@ -130,8 +144,6 @@ function initPayments() {
     upgradeBtn.disabled = true;
     upgradeBtn.textContent = 'Redirecting...';
     try {
-      // Log telemetry event
-      await logTelemetryEvent('upgrade_click');
       const checkoutUrl = await checkoutSubscription();
       // Redirect to Stripe checkout session
       window.open(checkoutUrl, '_blank');
@@ -139,7 +151,7 @@ function initPayments() {
       alert(`Checkout failed: ${err.message}`);
     } finally {
       upgradeBtn.disabled = false;
-      upgradeBtn.textContent = 'Upgrade to Pro';
+      upgradeBtn.textContent = 'Upgrade to Premium';
     }
   };
 }
@@ -213,8 +225,8 @@ async function renderDashboard(user) {
   
   if (user) {
     loggedInUserText.textContent = `Logged in as: ${user.email}`;
-    if (user.plan === 'pro') {
-      planStatusText.innerHTML = `<span style="color: #2563eb; font-weight: 700;">💎 Pro Plan (Active)</span>`;
+    if (user.plan === 'premium') {
+      planStatusText.innerHTML = `<span style="color: #2563eb; font-weight: 700;">Premium Plan (Active)</span>`;
       if (upgradeBtn) upgradeBtn.style.display = 'none';
     } else {
       planStatusText.innerHTML = `<span style="color: #64748b; font-weight: 700;">⚡ Free Plan</span>`;
@@ -296,86 +308,6 @@ async function renderDashboard(user) {
     weakDimensionTipEl.textContent = "Great job! Your prompts score well across all dimensions. Keep up the high standard!";
   }
 
-  // Handle optional survey status
-  initSurvey(user);
-}
-
-function initSurvey(user) {
-  const surveyCard = document.getElementById('survey-card');
-  if (!surveyCard) return;
-
-  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(['survey_completed_date'], (result) => {
-      if (!result.survey_completed_date && user && user.plan === 'free') {
-        surveyCard.style.display = 'block';
-        initSurveyListeners();
-      } else {
-        surveyCard.style.display = 'none';
-      }
-    });
-  } else {
-    surveyCard.style.display = 'none';
-  }
-}
-
-function initSurveyListeners() {
-  const submitBtn = document.getElementById('survey-submit-btn');
-  const closeBtn = document.getElementById('close-survey-btn');
-  const surveyCard = document.getElementById('survey-card');
-
-  if (!submitBtn || !closeBtn) return;
-
-  closeBtn.onclick = (e) => {
-    e.preventDefault();
-    surveyCard.style.display = 'none';
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ survey_completed_date: new Date().toISOString() });
-    }
-  };
-
-  submitBtn.onclick = async (e) => {
-    e.preventDefault();
-    const q1 = document.getElementById('survey-q1').value.trim();
-    const q2 = document.getElementById('survey-q2').value;
-    const q3 = document.getElementById('survey-q3').value;
-    const q4 = document.getElementById('survey-q4').value.trim();
-    const q5 = document.getElementById('survey-q5').value;
-    const payWillingness = document.getElementById('survey-pay-willingness').value;
-    const payAmount = document.getElementById('survey-pay-amount').value;
-    const coreValue = document.getElementById('survey-core-value').value;
-
-    if (!q1 || !q4) {
-      alert('Please answer all questions so we can validate PromptIQ.');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
-
-    try {
-      await submitSurveyResponses({
-        q1_reason: q1,
-        q2_tool: q2,
-        q3_frequency: q3,
-        q4_value: q4,
-        q5_profession: q5,
-        pay_willingness: payWillingness,
-        pay_amount: payAmount,
-        core_value: coreValue
-      });
-
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ survey_completed_date: new Date().toISOString() });
-      }
-      surveyCard.style.display = 'none';
-      alert('Thank you for helping us improve PromptIQ!');
-    } catch (err) {
-      alert(`Failed to submit survey: ${err.message}`);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit Responses';
-    }
-  };
 }
 
 // History Management

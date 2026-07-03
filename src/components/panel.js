@@ -6,6 +6,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   let isCooldownActive = false;
   let currentRunId = null;
   let userTier = 'free';
+  let isLoggedIn = false;
   
   // Theme detection
   const isDark = document.documentElement.classList.contains('dark') || 
@@ -20,8 +21,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   const shadow = container.attachShadow({ mode: 'open' });
   const openPromptIqPopup = () => {
     try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-        window.open(chrome.runtime.getURL('src/popup/popup.html'), '_blank', 'noopener,noreferrer');
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ action: 'OPEN_ONBOARDING' });
         return;
       }
     } catch (err) {
@@ -167,7 +168,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       background: rgba(100, 116, 139, 0.1);
       color: var(--pi-muted);
     }
-    .status-pro {
+    .status-premium {
       background: rgba(124, 58, 237, 0.14);
       color: var(--pi-pro);
       border: 1px solid rgba(139, 92, 246, 0.2);
@@ -208,22 +209,22 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       color: var(--pi-muted);
       letter-spacing: 0.05em;
     }
-    .mode-selector-wrapper select {
-      width: 100%;
-      padding: 10px 14px;
+    .engine-summary {
+      padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid var(--pi-border);
       background: var(--pi-card);
-      color: var(--pi-text);
-      font-size: 13px;
-      font-weight: 600;
-      outline: none;
-      transition: all 0.2s;
-      cursor: pointer;
     }
-    .mode-selector-wrapper select:focus {
-      border-color: var(--pi-primary);
-      box-shadow: 0 0 0 3px var(--pi-glow);
+    .engine-name {
+      color: var(--pi-text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .engine-copy {
+      margin-top: 3px;
+      color: var(--pi-muted);
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     /* Visual Score Progress Area */
@@ -735,23 +736,18 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       </div>
     </div>
     
-    <!-- Mode Selector -->
     <div class="mode-selector-wrapper">
-      <label for="mode-select">Optimization Mode</label>
-      <select id="mode-select">
-        <option value="turbo">⚡ Turbo (Free)</option>
-        <option value="professional">🔒 Professional (Pro)</option>
-        <option value="research">🔒 Research (Pro)</option>
-        <option value="creative">🔒 Creative (Pro)</option>
-        <option value="coding">🔒 Coding (Pro)</option>
-        <option value="business">🔒 Business (Pro)</option>
-      </select>
+      <label>Optimization Engine</label>
+      <div class="engine-summary">
+        <div class="engine-name" id="engine-name">Smart Template</div>
+        <div class="engine-copy" id="engine-copy">Runs locally without an account or API call.</div>
+      </div>
     </div>
 
     <div class="signin-card" id="signin-card">
-      <div class="signin-title">Sign in required</div>
-      <div class="signin-copy">Open the PromptIQ popup to log in, then return here to optimize prompts inline.</div>
-      <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ popup" style="width: 100%; padding: 8px 10px; font-size: 12px;">Open PromptIQ Popup</button>
+      <div class="signin-title">Free mode is ready</div>
+      <div class="signin-copy">Sign in only when you want Premium cloud AI optimization.</div>
+      <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%; padding: 8px 10px; font-size: 12px;">Open Account</button>
     </div>
 
     <!-- Visual Score Circle & Info -->
@@ -795,15 +791,15 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       <div class="error-icon" id="error-panel-icon">!</div>
       <div class="error-title" id="error-panel-title">Optimization Failed</div>
       <div class="error-message" id="error-panel-message">Please try refreshing the page.</div>
-      <button class="btn btn-secondary" id="error-open-popup-btn" aria-label="Open PromptIQ popup" style="width: 100%;">Open PromptIQ Popup</button>
+      <button class="btn btn-secondary" id="error-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%;">Open Account</button>
     </div>
     
     <!-- Paywall Overlay -->
     <div class="paywall-overlay" id="paywall-overlay">
       <div class="paywall-card">
-        <div class="paywall-icon" id="paywall-icon">PRO</div>
-        <div class="paywall-title" id="paywall-title">Unlock PromptIQ Pro</div>
-        <div class="paywall-desc" id="paywall-desc">Unlock advanced modes and unlimited daily optimizations.</div>
+        <div class="paywall-icon" id="paywall-icon">AI</div>
+        <div class="paywall-title" id="paywall-title">Unlock PromptIQ Premium</div>
+        <div class="paywall-desc" id="paywall-desc">Use server-side AI optimization while keeping API keys out of the extension.</div>
         <button class="btn btn-primary" id="paywall-upgrade-btn" aria-label="Open PromptIQ popup to upgrade" style="width: 100%;">Open Upgrade Options</button>
         <button class="btn btn-secondary" id="paywall-close-btn" aria-label="Close upgrade message" style="width: 100%; margin-top: 8px;">Back</button>
       </div>
@@ -859,7 +855,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   const changesList = shadow.getElementById('changes-list');
   const changesHeader = shadow.getElementById('changes-header');
   const toggleChangesLabel = shadow.getElementById('toggle-changes-label');
-  const modeSelect = shadow.getElementById('mode-select');
   const paywallOverlay = shadow.getElementById('paywall-overlay');
   const optimizeBtn = shadow.getElementById('optimize-btn');
   const loaderShimmer = shadow.getElementById('loader-shimmer');
@@ -912,17 +907,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       if (!isCooldownActive) {
         optimizeBtn.disabled = false;
       }
-    }
-  });
-
-  // Mode select logic for Free users: Immediately show paywall
-  modeSelect.addEventListener('change', () => {
-    const selectedMode = modeSelect.value;
-    if (selectedMode !== 'turbo' && userTier === 'free') {
-      // Revert select back to turbo
-      modeSelect.value = 'turbo';
-      // Open paywall
-      api.showPaywall('mode', selectedMode);
     }
   });
 
@@ -1011,7 +995,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
 
   const api = {
     container,
-    setLoggedState: (isLoggedIn) => {
+    setLoggedState: (loggedIn) => {
+      isLoggedIn = Boolean(loggedIn);
       logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
       signInCard.classList.toggle('visible', !isLoggedIn);
     },
@@ -1019,33 +1004,22 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       const isVisible = panel.classList.toggle('visible');
       container.classList.toggle('panel-open', isVisible);
     },
-    getMode: () => {
-      return modeSelect.value;
-    },
     setTier: (tier) => {
-      userTier = tier;
+      userTier = tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
       const proBadge = shadow.getElementById('header-pro-badge');
-      
-      if (tier === 'pro') {
-        proBadge.textContent = 'PRO';
-        proBadge.className = 'status-badge status-pro';
-        
-        // Remove lock icons from mode selector
-        modeSelect.options[1].text = '💎 Professional';
-        modeSelect.options[2].text = '📚 Research';
-        modeSelect.options[3].text = '🎨 Creative';
-        modeSelect.options[4].text = '💻 Coding';
-        modeSelect.options[5].text = '💼 Business';
+      const engineName = shadow.getElementById('engine-name');
+      const engineCopy = shadow.getElementById('engine-copy');
+
+      if (userTier === 'premium') {
+        proBadge.textContent = 'PREMIUM';
+        proBadge.className = 'status-badge status-premium';
+        engineName.textContent = 'Premium AI';
+        engineCopy.textContent = 'Uses PromptIQ server-side AI for deeper optimization.';
       } else {
         proBadge.textContent = 'FREE';
         proBadge.className = 'status-badge status-free';
-        
-        // Add lock icons to mode selector
-        modeSelect.options[1].text = '🔒 Professional (Pro)';
-        modeSelect.options[2].text = '🔒 Research (Pro)';
-        modeSelect.options[3].text = '🔒 Creative (Pro)';
-        modeSelect.options[4].text = '🔒 Coding (Pro)';
-        modeSelect.options[5].text = '🔒 Business (Pro)';
+        engineName.textContent = 'Smart Template';
+        engineCopy.textContent = 'Runs locally without an account or API call.';
       }
     },
     showPaywall: (type, lockedMode = null) => {
@@ -1055,16 +1029,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       const titleEl = shadow.getElementById('paywall-title');
       const descEl = shadow.getElementById('paywall-desc');
       
-      if (type === 'limit') {
-        titleEl.textContent = "Daily Limit Reached";
-        descEl.textContent = "Unlock unlimited optimizations and advanced rewrite modes with PromptIQ Pro.";
-      } else if (type === 'mode') {
-        titleEl.textContent = "Pro Mode Locked";
-        const selectedModeText = lockedMode
-          ? lockedMode.charAt(0).toUpperCase() + lockedMode.slice(1)
-          : modeSelect.options[modeSelect.selectedIndex].text.replace('🔒 ', '').split(' (')[0];
-        descEl.textContent = `The ${selectedModeText} mode is locked. Unlock advanced rewrite modes and unlimited optimizations with PromptIQ Pro!`;
-      }
+      titleEl.textContent = 'Unlock PromptIQ Premium';
+      descEl.textContent = 'Premium uses PromptIQ server-side AI for deeper, context-aware optimization.';
       
       paywallOverlay.classList.add('active');
     },

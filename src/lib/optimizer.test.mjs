@@ -9,7 +9,7 @@ async function expectOptimizerError(mockResponse, expected) {
   global.fetch = async () => mockResponse;
 
   try {
-    await optimizePrompt('write a linkedin post', 'chatgpt', null, null, 'turbo', 'mock-token');
+    await optimizePrompt('write a linkedin post', 'chatgpt', null, null, 'mock-token');
     assert.fail('Expected optimizePrompt to throw');
   } catch (err) {
     assert.strictEqual(err.status, expected.status);

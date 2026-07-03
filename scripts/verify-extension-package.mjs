@@ -29,6 +29,14 @@ const prohibitedPatterns = [
     label: 'string evaluation',
     pattern: /\beval\s*\(|\bnew\s+Function\s*\(/i,
   },
+  {
+    label: 'embedded Google API key',
+    pattern: /\bAIza[0-9A-Za-z_-]{30,}\b/,
+  },
+  {
+    label: 'embedded Stripe secret key',
+    pattern: /\bsk_(?:live|test)_[0-9A-Za-z]{16,}\b/,
+  },
 ];
 
 async function listFiles(directory) {
@@ -53,6 +61,14 @@ const relativeFiles = files.map((file) => path.relative(distDir, file));
 const violations = relativeFiles
   .filter((file) => prohibitedFiles.has(file))
   .map((file) => `${file}: website-only file must not be included`);
+
+if (manifest.action?.default_popup !== 'src/popup/onboarding.html') {
+  violations.push('manifest.json: toolbar popup must point to src/popup/onboarding.html');
+}
+
+if (manifest.host_permissions?.some((permission) => permission.includes('*.vercel.app'))) {
+  violations.push('manifest.json: backend permission must use the exact PromptIQ production host');
+}
 
 for (const file of files) {
   if (!codeExtensions.has(path.extname(file))) continue;

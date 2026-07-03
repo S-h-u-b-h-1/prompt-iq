@@ -80,20 +80,6 @@ export function analyzeAndEnhancePrompt(originalPrompt) {
     general: 'highly capable expert assistant'
   };
 
-  const audiences = {
-    coding: 'developers and technical review teams',
-    marketing: 'the target consumer demographic',
-    research: 'scholars and subject matter experts',
-    business: 'executive leadership and key business stakeholders',
-    creative: 'engaged general readers',
-    finance: 'investors and corporate decision makers',
-    education: 'students seeking intuitive comprehension',
-    productivity: 'professionals seeking optimized workflows',
-    analysis: 'data-driven managers',
-    writing: 'readers looking for clear and compelling copy',
-    general: 'general readers'
-  };
-
   const formats = {
     coding: 'Clean markdown code blocks with line comments, input/output examples, and error handling notes.',
     marketing: 'High-impact copy structured with bold accents, short paragraphs, and direct bullet-point lists.',
@@ -120,32 +106,20 @@ export function analyzeAndEnhancePrompt(originalPrompt) {
     general: 'Avoid boilerplate introductory remarks. Be direct and clear.'
   };
 
-  // Build the local draft
   let draft = '';
-  
-  // 1. Role (Always establish first)
   const roleText = roles[intent] || roles.general;
-  draft += `[ROLE] Act as an ${roleText}.\n\n`;
+  draft += `[ROLE]\nWork as the following specialist: ${roleText}.\n\n`;
 
-  // 2. Objective (Core User Task)
-  draft += `[OBJECTIVE] Optimize and fulfill the following task:\n"${originalPrompt}"\n\n`;
+  draft += `[TASK]\nComplete the following request:\n${originalPrompt.trim()}\n\n`;
 
-  // 3. Target Audience
-  const audienceText = audiences[intent] || audiences.general;
-  draft += `[AUDIENCE] Write specifically for ${audienceText}.\n\n`;
+  draft += `[AUDIENCE AND CONTEXT]\nUse the audience and context stated in the request. When either is missing, make the smallest reasonable assumption and label it clearly.\n\n`;
 
-  // 4. Formatting Instructions
   const formatText = formats[intent] || formats.general;
-  draft += `[FORMAT] ${formatText}\n\n`;
+  draft += `[OUTPUT FORMAT]\n${formatText}\n\n`;
 
-  // 5. Constraints & Boundaries
   const constraintText = constraints[intent] || constraints.general;
-  draft += `[CONSTRAINTS] ${constraintText}\n\n`;
-
-  // 6. Context Note (if prompt is short)
-  if (!structure.context) {
-    draft += `[CONTEXT] Provide complete, fully elaborated detail for this request. Do not summarize or output placeholders.`;
-  }
+  draft += `[CONSTRAINTS]\n${constraintText}\n\n`;
+  draft += `[QUALITY CHECK]\nAddress the request directly, preserve the user's intent, make the result actionable, and do not return placeholders or instructions that bypass an AI service's safety controls.`;
 
   return {
     enhancedPrompt: draft.trim(),

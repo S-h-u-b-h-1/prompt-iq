@@ -5,7 +5,7 @@ if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');
 }
 
-export function signToken(payload, expiresInSeconds = 86400) {
+export function signToken(payload, expiresInSeconds = 60 * 60 * 24 * 30) {
   const header = { alg: 'HS256', typ: 'JWT' };
   const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
   const fullPayload = { ...payload, exp };
@@ -32,7 +32,12 @@ export function verifyToken(token) {
       .update(`${base64Header}.${base64Payload}`)
       .digest('base64url');
 
-    if (signature !== expectedSignature) {
+    const signatureBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+    if (
+      signatureBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+    ) {
       return null;
     }
 
@@ -49,13 +54,7 @@ export function verifyToken(token) {
 
 export function authenticate(req) {
   const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    const queryToken = req.query?.token;
-    if (queryToken) {
-      return verifyToken(queryToken);
-    }
-    return null;
-  }
+  if (!authHeader) return null;
 
   const parts = authHeader.split(' ');
   if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {

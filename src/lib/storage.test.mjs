@@ -1,4 +1,4 @@
-import { getSessionToken, setSessionToken, clearSessionToken } from './storage.js';
+import { getSessionToken, setSessionToken, clearSessionToken, normalizeTier } from './storage.js';
 import assert from 'assert';
 
 console.log('Running updated storage session tests...');
@@ -13,6 +13,11 @@ global.localStorage = {
 };
 
 async function testSessionToken() {
+  assert.strictEqual(normalizeTier('free'), 'free');
+  assert.strictEqual(normalizeTier('premium'), 'premium');
+  assert.strictEqual(normalizeTier('pro'), 'premium');
+  assert.strictEqual(normalizeTier('unknown'), 'free');
+
   // Set token
   await setSessionToken('mock-jwt-token-12345');
   

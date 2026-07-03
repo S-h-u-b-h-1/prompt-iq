@@ -27,9 +27,6 @@ export default async function handler(req, res) {
       return;
     }
 
-    const authHeader = req.headers.authorization;
-    const token = authHeader ? authHeader.split(' ')[1] : '';
-
     const stripeKey = process.env.STRIPE_SECRET_KEY;
 
     if (!stripeKey) {
@@ -41,13 +38,13 @@ export default async function handler(req, res) {
     const params = new URLSearchParams({
       'payment_method_types[0]': 'card',
       'line_items[0][price_data][currency]': 'inr',
-      'line_items[0][price_data][product_data][name]': 'PromptIQ Pro',
-      'line_items[0][price_data][product_data][description]': 'Unlimited optimizations & pro modes',
+      'line_items[0][price_data][product_data][name]': 'PromptIQ Premium',
+      'line_items[0][price_data][product_data][description]': 'Premium server-side AI prompt optimization',
       'line_items[0][price_data][unit_amount]': '9900', // ₹99 in paise (99.00 INR)
       'line_items[0][price_data][recurring][interval]': 'month',
       'line_items[0][quantity]': '1',
       'mode': 'subscription',
-      'success_url': `https://promptiq-theta.vercel.app/api/subscription/status?stripe_session_id={CHECKOUT_SESSION_ID}&token=${token}`,
+      'success_url': 'https://promptiq-theta.vercel.app/api/subscription/status?stripe_session_id={CHECKOUT_SESSION_ID}',
       'cancel_url': 'https://promptiq-theta.vercel.app/api/subscription/status?cancel=true',
       'client_reference_id': session.userId.toString(),
       'customer_email': session.email

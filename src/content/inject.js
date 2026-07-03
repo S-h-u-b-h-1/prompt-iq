@@ -1,7 +1,7 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { saveOptimization, getUserTier, checkDailyLimit, incrementDailyOptimization, getSessionToken, clearSessionToken } from '../lib/storage.js';
+import { saveOptimization, getUserTier, getSessionToken, clearSessionToken } from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
 import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.js';
@@ -43,11 +43,16 @@ function setupStorageListener() {
   try {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'local' && changes.sessionToken) {
+        if (areaName !== 'local' || !panelApi) return;
+
+        if (changes.sessionToken) {
           const newToken = changes.sessionToken.newValue;
           if (panelApi) {
             panelApi.setLoggedState(!!newToken);
           }
+        }
+        if (changes.userTier) {
+          panelApi.setTier(changes.userTier.newValue || 'free');
         }
       });
     }
@@ -129,7 +134,8 @@ async function handleLogout() {
   await clearSessionToken();
   if (panelApi) {
     panelApi.setLoggedState(false);
-    panelApi.showError(new Error('Logged out. Please log in via the PromptIQ popup in your browser toolbar.'));
+    panelApi.setTier('free');
+    panelApi.showError(new Error('Signed out. Free Smart Template optimization remains available.'));
   }
 }
 
@@ -190,57 +196,39 @@ async function handleOptimize() {
     return;
   }
 
-  // 1. Authenticate check: Require valid token
   const token = await getSessionToken();
-  if (!token) {
-    if (panelApi) panelApi.setLoggedState(false);
-    panelApi.showError(new Error('Please log in via the PromptIQ extension popup in your browser toolbar to optimize prompts.'));
-    return;
+  let tier = await getUserTier();
+  if (!token && tier === 'premium') tier = 'free';
+  if (panelApi) {
+    panelApi.setLoggedState(!!token);
+    panelApi.setTier(tier);
   }
-  if (panelApi) panelApi.setLoggedState(true);
-
-  const mode = panelApi.getMode() || 'turbo';
-  const tier = await getUserTier();
-  if (panelApi) panelApi.setTier(tier);
-  const limitCheck = await checkDailyLimit();
-
-  // Local gate: client-side caching limits to prevent redundant API load
-  if (tier === 'free') {
-    if (!limitCheck.allowed) {
-      panelApi.showPaywall('limit');
-      return;
-    }
-    if (mode !== 'turbo') {
-      panelApi.showPaywall('mode');
-      return;
-    }
-  }
-
   const localResult = analyzeAndEnhancePrompt(text);
+  let result;
+  let optimizationTier = tier;
 
   try {
-    const response = await chrome.runtime.sendMessage({
-      action: 'CALL_OPTIMIZER',
-      originalPrompt: text,
-      platform: adapter.platform,
-      locallyEnhancedPrompt: localResult.enhancedPrompt,
-      detectedIntent: localResult.intent,
-      mode: mode,
-      token: token // Include the JWT session token
-    });
+    if (tier === 'premium' && token) {
+      const response = await chrome.runtime.sendMessage({
+        action: 'CALL_OPTIMIZER',
+        originalPrompt: text,
+        platform: adapter.platform,
+        locallyEnhancedPrompt: localResult.enhancedPrompt,
+        detectedIntent: localResult.intent,
+        token
+      });
 
-    if (!response || !response.success) {
-      const status = response?.status;
-      const errorMsg = response?.error || 'Failed to optimize prompt.';
-      const err = new Error(errorMsg);
-      err.status = status;
-      throw err;
+      if (!response || !response.success) {
+        const error = new Error(response?.error || 'Failed to optimize prompt.');
+        error.status = response?.status;
+        throw error;
+      }
+      result = response.result;
+    } else {
+      result = createLocalOptimization(localResult);
     }
 
-    const result = response.result;
     lastOptimizedPrompt = result.optimized;
-    
-    // Save optimization telemetry & score delta
     const originalScore = scorePrompt(text).score;
     const newScore = scorePrompt(result.optimized).score;
     const runId = await saveOptimization(
@@ -249,17 +237,11 @@ async function handleOptimize() {
       newScore - originalScore, 
       adapter.platform,
       localResult.intent,
-      mode,
+      optimizationTier,
       originalScore,
       newScore
     );
 
-    // Increment local optimization counter
-    if (tier === 'free') {
-      await incrementDailyOptimization();
-    }
-
-    // Compute diff and explain changes
     const diffedTokens = diffPrompt(text, result.optimized);
     const explainedChanges = explainChanges(result.changes);
 
@@ -268,14 +250,13 @@ async function handleOptimize() {
       newScore
     });
   } catch (err) {
-    if (err.status === 403) {
-      panelApi.showPaywall('mode');
-    } else if (err.status === 429) {
-      panelApi.showPaywall('limit');
-    } else if (err.status === 401) {
+    if (err.status === 401 || err.status === 403) {
       await clearSessionToken();
-      if (panelApi) panelApi.setLoggedState(false);
-      panelApi.showError(new Error('Session expired. Please log in again via the PromptIQ popup.'));
+      if (panelApi) {
+        panelApi.setLoggedState(false);
+        panelApi.setTier('free');
+      }
+      panelApi.showError(new Error('Premium access could not be verified. Sign in again, or continue with Free Smart Template.'));
     } else if (err.message && err.message.includes('Extension context invalidated')) {
       const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');
       panelApi.showError(reloadErr);
@@ -283,6 +264,26 @@ async function handleOptimize() {
       panelApi.showError(err);
     }
   }
+}
+
+function createLocalOptimization(localResult) {
+  const descriptions = {
+    role: 'Added an expert role to guide tone and decision quality.',
+    task: 'Clarified the objective and preserved the original request.',
+    context: 'Added context guidance so the response is complete and useful.',
+    format: 'Specified a structured output format for easier use.',
+    constraints: 'Added practical boundaries to reduce vague or generic output.',
+    specificity: 'Expanded the request with audience and delivery details.'
+  };
+  const changeTypes = ['role', 'task', 'context', 'format', 'constraints', 'specificity'];
+
+  return {
+    optimized: localResult.enhancedPrompt,
+    changes: changeTypes.map((type) => ({
+      type,
+      description: descriptions[type]
+    }))
+  };
 }
 
 function handleUse(finalPrompt) {

@@ -56,13 +56,22 @@ export default async function handler(req, res) {
 
       const t = tPart.split('=')[1];
       const v1 = v1Part.split('=')[1];
+      const timestamp = Number.parseInt(t, 10);
+      if (!Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) {
+        throw new Error('Signature timestamp is outside the accepted window');
+      }
 
       const computedSignature = crypto
         .createHmac('sha256', webhookSecret)
         .update(`${t}.${rawBody}`)
         .digest('hex');
 
-      if (computedSignature !== v1) {
+      const computedBuffer = Buffer.from(computedSignature, 'hex');
+      const signatureBuffer = Buffer.from(v1, 'hex');
+      if (
+        computedBuffer.length !== signatureBuffer.length ||
+        !crypto.timingSafeEqual(computedBuffer, signatureBuffer)
+      ) {
         throw new Error('Signature mismatch');
       }
 
@@ -85,27 +94,25 @@ export default async function handler(req, res) {
       if (userId) {
         await sql`
           INSERT INTO subscriptions (user_id, status, plan, stripe_customer_id, stripe_subscription_id, updated_at)
-          VALUES (${userId}, 'active', 'pro', ${customerId}, ${subscriptionId}, NOW())
+          VALUES (${userId}, 'active', 'premium', ${customerId}, ${subscriptionId}, NOW())
           ON CONFLICT (user_id)
-          DO UPDATE SET status = 'active', plan = 'pro', stripe_customer_id = ${customerId}, stripe_subscription_id = ${subscriptionId}, updated_at = NOW();
+          DO UPDATE SET status = 'active', plan = 'premium', stripe_customer_id = ${customerId}, stripe_subscription_id = ${subscriptionId}, updated_at = NOW();
         `;
 
         await sql`
           UPDATE users
-          SET plan = 'pro'
+          SET plan = 'premium'
           WHERE id = ${parseInt(userId, 10)};
         `;
-        console.log(`User ${userId} successfully upgraded to Pro plan via webhook.`);
+        console.log(`User ${userId} successfully upgraded to Premium via webhook.`);
       }
     } else if (type === 'customer.subscription.updated') {
       const subscription = data.object;
       const customerId = subscription.customer;
       const subId = subscription.id;
       const status = subscription.status; // e.g. active, trialing, past_due, canceled
-      const plan = 'pro'; // Default plan identifier
-
       const resolvedStatus = (status === 'active' || status === 'trialing') ? 'active' : 'inactive';
-      const resolvedPlan = resolvedStatus === 'active' ? 'pro' : 'free';
+      const resolvedPlan = resolvedStatus === 'active' ? 'premium' : 'free';
 
       // Find user matching customerId
       const users = await sql`

@@ -10,7 +10,7 @@
     "verify:extension": "node scripts/verify-extension-package.mjs",
     "package:extension": "npm run build && npm run verify:extension && cd dist && zip -qrFS ../dist.zip .",
     "preview": "vite preview",
-    "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/storage.test.mjs && node src/lib/optimizer.test.mjs"
+    "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/local-optimizer.test.mjs && node src/lib/storage.test.mjs && node src/lib/optimizer.test.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"

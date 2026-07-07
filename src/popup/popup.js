@@ -142,16 +142,21 @@ function initPayments() {
 
   upgradeBtn.onclick = async () => {
     upgradeBtn.disabled = true;
-    upgradeBtn.textContent = 'Redirecting...';
+    upgradeBtn.textContent = 'Activating...';
     try {
       const checkoutUrl = await checkoutSubscription();
-      // Redirect to Stripe checkout session
-      window.open(checkoutUrl, '_blank');
+      if (checkoutUrl && checkoutUrl.includes('simulated=true')) {
+        // Success! Refetch profile and update UI instantly
+        const user = await fetchUserProfile();
+        renderDashboard(user);
+      } else {
+        window.open(checkoutUrl, '_blank');
+      }
     } catch (err) {
       alert(`Checkout failed: ${err.message}`);
     } finally {
       upgradeBtn.disabled = false;
-      upgradeBtn.textContent = 'Upgrade to Premium';
+      upgradeBtn.textContent = 'Activate Premium Trial';
     }
   };
 }
@@ -223,18 +228,28 @@ async function renderDashboard(user) {
   const loggedInUserText = document.getElementById('logged-in-user-text');
   const upgradeBtn = document.getElementById('upgrade-pro-btn');
   
+  const history = await getHistory();
+  const premiumRuns = history.filter(h => h.mode === 'premium').length;
+
   if (user) {
     loggedInUserText.textContent = `Logged in as: ${user.email}`;
     if (user.plan === 'premium') {
-      planStatusText.innerHTML = `<span style="color: #2563eb; font-weight: 700;">Premium Plan (Active)</span>`;
+      const left = Math.max(0, 1 - premiumRuns);
+      if (left > 0) {
+        planStatusText.innerHTML = `<span style="color: var(--accent-cyan); font-weight: 800;">Premium Active (${left} left)</span>`;
+      } else {
+        planStatusText.innerHTML = `<span style="color: var(--text-muted); font-weight: 700;">Premium (Trial Ended)</span>`;
+      }
       if (upgradeBtn) upgradeBtn.style.display = 'none';
     } else {
-      planStatusText.innerHTML = `<span style="color: #64748b; font-weight: 700;">⚡ Free Plan</span>`;
-      if (upgradeBtn) upgradeBtn.style.display = 'block';
+      planStatusText.innerHTML = `<span style="color: var(--text-secondary); font-weight: 700;">⚡ Free Plan</span>`;
+      if (upgradeBtn) {
+        upgradeBtn.style.display = 'block';
+        upgradeBtn.textContent = 'Activate Premium Trial';
+      }
     }
   }
 
-  const history = await getHistory();
   const avgScoreEl = document.getElementById('avg-score');
   const trendDescEl = document.getElementById('trend-desc');
   const optCountEl = document.getElementById('opt-count');

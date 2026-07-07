@@ -27,47 +27,29 @@ export default async function handler(req, res) {
       return;
     }
 
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const userId = Number.parseInt(session.userId, 10);
 
-    if (!stripeKey) {
-      res.status(500).json({ error: 'STRIPE_SECRET_KEY environment variable is not configured' });
-      return;
-    }
+    // Instantly upgrade user in the database for free
+    await sql`
+      UPDATE users
+      SET plan = 'premium'
+      WHERE id = ${userId};
+    `;
 
-    // Call Stripe API directly using native fetch to keep dependencies clean
-    const params = new URLSearchParams({
-      'payment_method_types[0]': 'card',
-      'line_items[0][price_data][currency]': 'inr',
-      'line_items[0][price_data][product_data][name]': 'PromptIQ Premium',
-      'line_items[0][price_data][product_data][description]': 'Premium server-side AI prompt optimization',
-      'line_items[0][price_data][unit_amount]': '9900', // ₹99 in paise (99.00 INR)
-      'line_items[0][price_data][recurring][interval]': 'month',
-      'line_items[0][quantity]': '1',
-      'mode': 'subscription',
-      'success_url': 'https://promptiq-theta.vercel.app/api/subscription/status?stripe_session_id={CHECKOUT_SESSION_ID}',
-      'cancel_url': 'https://promptiq-theta.vercel.app/api/subscription/status?cancel=true',
-      'client_reference_id': session.userId.toString(),
-      'customer_email': session.email
+    // Insert or update active subscription record for consistency
+    await sql`
+      INSERT INTO subscriptions (user_id, status, plan, stripe_customer_id, stripe_subscription_id, updated_at)
+      VALUES (${String(userId)}, 'active', 'premium', 'simulated_cust', 'simulated_sub', NOW())
+      ON CONFLICT (user_id)
+      DO UPDATE SET status = 'active', plan = 'premium', updated_at = NOW();
+    `;
+
+    res.status(200).json({ 
+      url: 'https://promptiq-theta.vercel.app/api/subscription/status?simulated=true', 
+      simulated: true 
     });
-
-    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${stripeKey}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params.toString()
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Stripe API error: ${response.status} ${errorText}`);
-    }
-
-    const data = await response.json();
-    res.status(200).json({ url: data.url, simulated: false });
   } catch (error) {
-    console.error('Checkout creation error:', error);
+    console.error('Simulated checkout creation error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }

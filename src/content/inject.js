@@ -250,7 +250,11 @@ async function handleOptimize() {
       newScore
     });
   } catch (err) {
-    if (err.status === 401 || err.status === 403) {
+    if (err.code === 'PREMIUM_LIMIT_REACHED') {
+      if (panelApi) {
+        panelApi.showError(err);
+      }
+    } else if (err.status === 401 || err.status === 403) {
       await clearSessionToken();
       if (panelApi) {
         panelApi.setLoggedState(false);
@@ -261,7 +265,9 @@ async function handleOptimize() {
       const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');
       panelApi.showError(reloadErr);
     } else {
-      panelApi.showError(err);
+      if (panelApi) {
+        panelApi.showError(err);
+      }
     }
   }
 }

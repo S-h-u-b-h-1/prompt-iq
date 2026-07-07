@@ -62,8 +62,8 @@ const violations = relativeFiles
   .filter((file) => prohibitedFiles.has(file))
   .map((file) => `${file}: website-only file must not be included`);
 
-if (manifest.action?.default_popup !== 'src/popup/onboarding.html') {
-  violations.push('manifest.json: toolbar popup must point to src/popup/onboarding.html');
+if (manifest.action?.default_popup !== 'src/popup/popup.html') {
+  violations.push('manifest.json: toolbar popup must point to src/popup/popup.html');
 }
 
 if (manifest.host_permissions?.some((permission) => permission.includes('*.vercel.app'))) {

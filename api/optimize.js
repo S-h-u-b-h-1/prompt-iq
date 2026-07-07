@@ -150,6 +150,19 @@ export default async function handler(req, res) {
       user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
     );
 
+    // Enforce 1 premium prompt limit
+    const historyCount = await sql`
+      SELECT COUNT(*) as count 
+      FROM prompt_history 
+      WHERE user_id = ${userId.toString()} AND mode = 'premium'
+    `;
+    const premiumCount = historyCount[0]?.count ? parseInt(historyCount[0].count, 10) : 0;
+
+    if (premiumCount >= 1) {
+      sendJsonError(res, 403, 'PREMIUM_LIMIT_REACHED', 'You have used your 1 free Premium optimization. Additional runs are currently disabled.');
+      return;
+    }
+
     if (!isPremiumPlan(resolvedPlan)) {
       sendJsonError(res, 403, 'PREMIUM_REQUIRED', 'Cloud AI optimization requires PromptIQ Premium.');
       return;

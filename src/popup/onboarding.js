@@ -151,16 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     upgradeButton.disabled = true;
-    upgradeButton.textContent = 'Opening Checkout...';
+    upgradeButton.textContent = 'Activating...';
     try {
       const checkoutUrl = await checkoutSubscription();
-      await chrome.tabs.create({ url: checkoutUrl });
+      if (checkoutUrl && checkoutUrl.includes('simulated=true')) {
+        // Success! Refresh status immediately
+        await refreshAccount();
+      } else {
+        await chrome.tabs.create({ url: checkoutUrl });
+      }
     } catch (error) {
       openAuth('login');
-      showStatus(error.message || 'Unable to open checkout.');
+      showStatus(error.message || 'Unable to activate upgrade.');
     } finally {
       upgradeButton.disabled = false;
-      upgradeButton.textContent = 'Get Premium';
+      upgradeButton.textContent = 'Activate Premium Trial';
     }
   });
 

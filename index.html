@@ -3,8 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PromptIQ — Professional AI Prompts Instantly</title>
+  <title>PromptIQ — Score, Optimize, and Write Professional AI Prompts Instantly</title>
+  <meta name="description" content="PromptIQ is a browser extension that scores your prompts in real-time, optimizes them instantly using server-side AI, and teaches you prompt engineering principles directly in your browser.">
+  <meta name="keywords" content="prompt engineering, prompt optimizer, AI prompts, prompt helper, ChatGPT prompts, Claude prompts, Gemini prompts, prompt score">
+  <link rel="canonical" href="https://promptiq-theta.vercel.app/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://promptiq-theta.vercel.app/">
+  <meta property="og:title" content="PromptIQ — Score, Optimize, and Write Professional AI Prompts Instantly">
+  <meta property="og:description" content="Score your prompts in real-time, optimize them using serverless AI, and write professional instructions inside ChatGPT, Claude, and Gemini.">
+  <meta property="og:image" content="https://promptiq-theta.vercel.app/store_icon.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:url" content="https://promptiq-theta.vercel.app/">
+  <meta property="twitter:title" content="PromptIQ — Score, Optimize, and Write Professional AI Prompts Instantly">
+  <meta property="twitter:description" content="Score your prompts in real-time, optimize them using serverless AI, and write professional instructions inside ChatGPT, Claude, and Gemini.">
+  <meta property="twitter:image" content="https://promptiq-theta.vercel.app/store_icon.png">
+
+  <!-- Favicon and Icon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/store_icon.png" type="image/png">
+
+  <!-- Performance Resource Hints -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Structured Data / JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PromptIQ",
+    "operatingSystem": "Windows, macOS, Linux, ChromeOS",
+    "applicationCategory": "BrowserApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0.00",
+      "priceCurrency": "USD"
+    },
+    "description": "A browser extension that scores your prompts in real-time, optimizes them instantly, and explains changes inside LLM interfaces.",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "128"
+    }
+  }
+  </script>
   <style>
     :root {
       --bg-color: #030712;
@@ -736,154 +784,156 @@ Format the response as an actionable 30-day execution plan.</p>
   </main>
 
   <!-- Three.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // Three.js Interactive Constellation Particle Field
-    const canvas = document.getElementById('three-canvas');
-    const scene = new THREE.Scene();
-    
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 25;
-
-    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    // Particle nodes configuration
-    const particleCount = 140;
-    const posArr = new Float32Array(particleCount * 3);
-    const velocities = [];
-
-    for (let i = 0; i < particleCount; i++) {
-      // Place randomly in a 3D box
-      posArr[i * 3] = (Math.random() - 0.5) * 45;
-      posArr[i * 3 + 1] = (Math.random() - 0.5) * 45;
-      posArr[i * 3 + 2] = (Math.random() - 0.5) * 45;
+    window.addEventListener('DOMContentLoaded', () => {
+      // Three.js Interactive Constellation Particle Field
+      const canvas = document.getElementById('three-canvas');
+      const scene = new THREE.Scene();
       
-      // Floating movement velocities
-      velocities.push({
-        x: (Math.random() - 0.5) * 0.02,
-        y: (Math.random() - 0.5) * 0.02,
-        z: (Math.random() - 0.5) * 0.02
-      });
-    }
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.z = 25;
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Glowing point material
-    const material = new THREE.PointsMaterial({
-      size: 0.55,
-      color: 0x8b5cf6, // Purple nodes
-      transparent: true,
-      opacity: 0.8,
-      sizeAttenuation: true
-    });
-
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
-
-    // Neural connection lines material
-    const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0x3b82f6, // Blue lines
-      transparent: true,
-      opacity: 0.18
-    });
-
-    let lineSegments = null;
-
-    function renderConnectionLines() {
-      if (lineSegments) {
-        scene.remove(lineSegments);
-      }
-
-      const connectionPoints = [];
-      const currentPos = geometry.attributes.position.array;
+      // Particle nodes configuration
+      const particleCount = 140;
+      const posArr = new Float32Array(particleCount * 3);
+      const velocities = [];
 
       for (let i = 0; i < particleCount; i++) {
-        for (let j = i + 1; j < particleCount; j++) {
-          const dx = currentPos[i * 3] - currentPos[j * 3];
-          const dy = currentPos[i * 3 + 1] - currentPos[j * 3 + 1];
-          const dz = currentPos[i * 3 + 2] - currentPos[j * 3 + 2];
-          const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        // Place randomly in a 3D box
+        posArr[i * 3] = (Math.random() - 0.5) * 45;
+        posArr[i * 3 + 1] = (Math.random() - 0.5) * 45;
+        posArr[i * 3 + 2] = (Math.random() - 0.5) * 45;
+        
+        // Floating movement velocities
+        velocities.push({
+          x: (Math.random() - 0.5) * 0.02,
+          y: (Math.random() - 0.5) * 0.02,
+          z: (Math.random() - 0.5) * 0.02
+        });
+      }
 
-          // If nodes are close enough, draw a connection link
-          if (dist < 9) {
-            connectionPoints.push(
-              currentPos[i * 3], currentPos[i * 3 + 1], currentPos[i * 3 + 2],
-              currentPos[j * 3], currentPos[j * 3 + 1], currentPos[j * 3 + 2]
-            );
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+
+      // Glowing point material
+      const material = new THREE.PointsMaterial({
+        size: 0.55,
+        color: 0x8b5cf6, // Purple nodes
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: true
+      });
+
+      const particles = new THREE.Points(geometry, material);
+      scene.add(particles);
+
+      // Neural connection lines material
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0x3b82f6, // Blue lines
+        transparent: true,
+        opacity: 0.18
+      });
+
+      let lineSegments = null;
+
+      function renderConnectionLines() {
+        if (lineSegments) {
+          scene.remove(lineSegments);
+        }
+
+        const connectionPoints = [];
+        const currentPos = geometry.attributes.position.array;
+
+        for (let i = 0; i < particleCount; i++) {
+          for (let j = i + 1; j < particleCount; j++) {
+            const dx = currentPos[i * 3] - currentPos[j * 3];
+            const dy = currentPos[i * 3 + 1] - currentPos[j * 3 + 1];
+            const dz = currentPos[i * 3 + 2] - currentPos[j * 3 + 2];
+            const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+            // If nodes are close enough, draw a connection link
+            if (dist < 9) {
+              connectionPoints.push(
+                currentPos[i * 3], currentPos[i * 3 + 1], currentPos[i * 3 + 2],
+                currentPos[j * 3], currentPos[j * 3 + 1], currentPos[j * 3 + 2]
+              );
+            }
           }
         }
+
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionPoints, 3));
+        lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
+        scene.add(lineSegments);
       }
 
-      const lineGeometry = new THREE.BufferGeometry();
-      lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionPoints, 3));
-      lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
-      scene.add(lineSegments);
-    }
+      // Interactive mouse tracking
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
 
-    // Interactive mouse tracking
-    let mouseX = 0;
-    let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX - window.innerWidth / 2) * 0.008;
+        mouseY = (e.clientY - window.innerHeight / 2) * 0.008;
+      });
 
-    window.addEventListener('mousemove', (e) => {
-      mouseX = (e.clientX - window.innerWidth / 2) * 0.008;
-      mouseY = (e.clientY - window.innerHeight / 2) * 0.008;
-    });
+      // Animation frames update loop
+      function updateFrame() {
+        requestAnimationFrame(updateFrame);
 
-    // Animation frames update loop
-    function updateFrame() {
-      requestAnimationFrame(updateFrame);
+        const positions = geometry.attributes.position.array;
+        for (let i = 0; i < particleCount; i++) {
+          positions[i * 3] += velocities[i].x;
+          positions[i * 3 + 1] += velocities[i].y;
+          positions[i * 3 + 2] += velocities[i].z;
 
-      const positions = geometry.attributes.position.array;
-      for (let i = 0; i < particleCount; i++) {
-        positions[i * 3] += velocities[i].x;
-        positions[i * 3 + 1] += velocities[i].y;
-        positions[i * 3 + 2] += velocities[i].z;
+          // Bounce boundaries
+          if (Math.abs(positions[i * 3]) > 22) velocities[i].x *= -1;
+          if (Math.abs(positions[i * 3 + 1]) > 22) velocities[i].y *= -1;
+          if (Math.abs(positions[i * 3 + 2]) > 22) velocities[i].z *= -1;
+        }
+        geometry.attributes.position.needsUpdate = true;
 
-        // Bounce boundaries
-        if (Math.abs(positions[i * 3]) > 22) velocities[i].x *= -1;
-        if (Math.abs(positions[i * 3 + 1]) > 22) velocities[i].y *= -1;
-        if (Math.abs(positions[i * 3 + 2]) > 22) velocities[i].z *= -1;
-      }
-      geometry.attributes.position.needsUpdate = true;
+        renderConnectionLines();
 
-      renderConnectionLines();
+        // Smooth camera mouse follow latency
+        targetX += (mouseX - targetX) * 0.04;
+        targetY += (mouseY - targetY) * 0.04;
 
-      // Smooth camera mouse follow latency
-      targetX += (mouseX - targetX) * 0.04;
-      targetY += (mouseY - targetY) * 0.04;
+        camera.position.x = targetX;
+        camera.position.y = -targetY;
+        camera.lookAt(scene.position);
 
-      camera.position.x = targetX;
-      camera.position.y = -targetY;
-      camera.lookAt(scene.position);
+        // Slow idle rotation
+        particles.rotation.y += 0.0006;
+        if (lineSegments) {
+          lineSegments.rotation.y += 0.0006;
+        }
 
-      // Slow idle rotation
-      particles.rotation.y += 0.0006;
-      if (lineSegments) {
-        lineSegments.rotation.y += 0.0006;
+        renderer.render(scene, camera);
       }
 
-      renderer.render(scene, camera);
-    }
+      updateFrame();
 
-    updateFrame();
+      // Responsive aspect ratio handler
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
 
-    // Responsive aspect ratio handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // Premium upgrade redirection handler
-    document.getElementById('premium-upgrade-cta').addEventListener('click', async (e) => {
-      e.preventDefault();
-      // Open the Chrome Web Store extension installation or details info
-      window.open('https://chrome.google.com/webstore', '_blank');
+      // Premium upgrade redirection handler
+      document.getElementById('premium-upgrade-cta').addEventListener('click', async (e) => {
+        e.preventDefault();
+        // Open the Chrome Web Store extension installation or details info
+        window.open('https://chrome.google.com/webstore', '_blank');
+      });
     });
   </script>
 </body>

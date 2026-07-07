@@ -132,7 +132,8 @@ shubhaangkataruka22012007@gmail.com
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 1.0.4 | 2026-07-03 | Moved the toolbar entry to onboarding, repaired authentication and account navigation, introduced local Free templates and server-side Premium AI, and hardened storage and MV3 packaging. | Draft |
+| 1.0.5 | 2026-07-07 | Redesigned popup dialog to premium dark mode glassmorphism layout, enabled payment bypass checkout, and restricted premium runs to a 1-prompt free trial. | Draft |
+| 1.0.4 | 2026-07-03 | Moved the toolbar entry to onboarding, repaired authentication and account navigation, introduced local Free templates and server-side Premium AI, and hardened storage and MV3 packaging. | Published |
 | 1.0.3 | 2026-06-29 | Removed website-only pages and all remote resources from the extension UI; added an automated Manifest V3 package compliance check. | Draft |
 | 1.0.2 | 2026-06-27 | Fixed metadata policy violation (keyword spam in description). | Rejected |
 | 1.0.1 | 2026-06-26 | UI/UX redesign of onboarding and inline optimizer panel; updated API keys for model compatibility. | Rejected |

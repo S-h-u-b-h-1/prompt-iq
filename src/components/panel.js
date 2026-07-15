@@ -1,4 +1,4 @@
-export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
+export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onFavorite) {
   const container = document.createElement('div');
   container.id = 'promptiq-container';
   container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 999999; font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;';
@@ -7,6 +7,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   let currentRunId = null;
   let userTier = 'free';
   let isLoggedIn = false;
+  let detectedPlatform = 'general';
+  let lastResultRecord = null;
   
   // Theme detection
   const isDark = document.documentElement.classList.contains('dark') || 
@@ -29,6 +31,16 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       // Fall through to the generic extension hint.
     }
     window.alert('Open the PromptIQ extension from your browser toolbar.');
+  };
+
+  const platformLabels = {
+    chatgpt: 'ChatGPT',
+    claude: 'Claude',
+    gemini: 'Gemini',
+    perplexity: 'Perplexity',
+    copilot: 'Copilot',
+    deepseek: 'DeepSeek',
+    general: 'AI assistant'
   };
   
   const style = document.createElement('style');
@@ -209,6 +221,41 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       color: var(--pi-muted);
       letter-spacing: 0.05em;
     }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .select-control {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--pi-border);
+      background: var(--pi-card);
+      color: var(--pi-text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      box-sizing: border-box;
+    }
+    .platform-pill {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--pi-border);
+      background: var(--pi-card);
+      color: var(--pi-text);
+      font-size: 12px;
+      font-weight: 800;
+      box-sizing: border-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .engine-summary {
       padding: 10px 12px;
       border-radius: 12px;
@@ -387,6 +434,13 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       border: 1px solid rgba(16, 185, 129, 0.18);
       background: rgba(16, 185, 129, 0.07);
     }
+    .success-summary.pulse {
+      animation: successPulse 650ms ease-out;
+    }
+    @keyframes successPulse {
+      0% { transform: scale(0.985); border-color: rgba(16, 185, 129, 0.1); }
+      100% { transform: scale(1); border-color: rgba(16, 185, 129, 0.18); }
+    }
     .success-title {
       font-size: 13px;
       font-weight: 800;
@@ -466,6 +520,43 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       font-weight: 600;
       padding: 2px 4px;
       border-radius: 4px;
+    }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .comparison-grid[hidden] {
+      display: none;
+    }
+    .compare-box {
+      border: 1px solid var(--pi-border);
+      border-radius: 12px;
+      background: var(--pi-card);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .compare-title {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--pi-border);
+      color: var(--pi-muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .compare-text {
+      margin: 0;
+      padding: 10px;
+      min-height: 96px;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--pi-text);
+      font: inherit;
+      font-size: 11.5px;
+      line-height: 1.45;
     }
 
     .changes-header {
@@ -708,6 +799,10 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       .action-row {
         grid-template-columns: 1fr;
       }
+      .settings-grid,
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
     }
   `;
   shadow.appendChild(style);
@@ -737,7 +832,17 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     </div>
     
     <div class="mode-selector-wrapper">
-      <label>Optimization Engine</label>
+      <label>Mode and Platform</label>
+      <div class="settings-grid">
+        <select class="select-control" id="mode-select" aria-label="Optimization mode">
+          <option value="standard">Standard</option>
+          <option value="concise">Concise</option>
+          <option value="detailed">Detailed</option>
+          <option value="creative">Creative</option>
+          <option value="technical">Technical</option>
+        </select>
+        <div class="platform-pill" id="platform-pill">AI assistant</div>
+      </div>
       <div class="engine-summary">
         <div class="engine-name" id="engine-name">Smart Template</div>
         <div class="engine-copy" id="engine-copy">Runs locally without an account or API call.</div>
@@ -822,6 +927,17 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         <div class="diff-view" id="diff-view"></div>
         <textarea class="optimized-textarea" id="optimized-text" style="display: none;"></textarea>
       </div>
+
+      <div class="comparison-grid" id="comparison-grid" hidden>
+        <div class="compare-box">
+          <div class="compare-title">Original</div>
+          <pre class="compare-text" id="compare-original"></pre>
+        </div>
+        <div class="compare-box">
+          <div class="compare-title">Optimized</div>
+          <pre class="compare-text" id="compare-optimized"></pre>
+        </div>
+      </div>
       
       <div class="changes-header" id="changes-header">
         <span class="changes-title">Changes Explained</span>
@@ -841,7 +957,15 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       
       <div class="action-row">
         <button class="btn btn-secondary" id="copy-btn" aria-label="Copy optimized prompt">Copy</button>
+        <button class="btn btn-secondary" id="favorite-btn" aria-label="Save optimized prompt as favorite">Favorite</button>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-ghost" id="compare-btn" aria-label="Compare original and optimized prompt">Compare</button>
+        <button class="btn btn-ghost" id="undo-btn" aria-label="Undo the last inserted optimization">Undo</button>
+      </div>
+      <div class="action-row">
         <button class="btn btn-ghost" id="retry-btn" aria-label="Retry optimization">Retry</button>
+        <button class="btn btn-ghost" id="copy-original-btn" aria-label="Copy original prompt">Copy Original</button>
       </div>
       <button class="btn btn-primary" id="use-btn" aria-label="Use optimized prompt" style="width: 100%;">Use Prompt</button>
     </div>
@@ -861,7 +985,28 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
   const errorPanel = shadow.getElementById('error-panel');
   const signInCard = shadow.getElementById('signin-card');
   const copyBtn = shadow.getElementById('copy-btn');
+  const copyOriginalBtn = shadow.getElementById('copy-original-btn');
   const retryBtn = shadow.getElementById('retry-btn');
+  const modeSelect = shadow.getElementById('mode-select');
+  const platformPill = shadow.getElementById('platform-pill');
+  const favoriteBtn = shadow.getElementById('favorite-btn');
+  const compareBtn = shadow.getElementById('compare-btn');
+  const undoBtn = shadow.getElementById('undo-btn');
+  const comparisonGrid = shadow.getElementById('comparison-grid');
+  const compareOriginal = shadow.getElementById('compare-original');
+  const compareOptimized = shadow.getElementById('compare-optimized');
+
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get('optimizationMode', (data) => {
+        if (data.optimizationMode && modeSelect.querySelector(`option[value="${data.optimizationMode}"]`)) {
+          modeSelect.value = data.optimizationMode;
+        }
+      });
+    }
+  } catch (err) {
+    // Extension storage may be unavailable after a hot reload.
+  }
   
   // Event Listeners
   const togglePanel = () => {
@@ -891,6 +1036,16 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
 
   shadow.getElementById('signin-open-popup-btn').addEventListener('click', openPromptIqPopup);
   shadow.getElementById('error-open-popup-btn').addEventListener('click', openPromptIqPopup);
+
+  modeSelect.addEventListener('change', () => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ optimizationMode: modeSelect.value });
+      }
+    } catch (err) {
+      // Non-fatal preference persistence failure.
+    }
+  });
 
   optimizeBtn.addEventListener('click', async () => {
     loaderShimmer.style.display = 'block';
@@ -963,6 +1118,55 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
     }, 1600);
   });
 
+  copyOriginalBtn.addEventListener('click', async () => {
+    const originalPrompt = lastResultRecord?.original || '';
+    try {
+      await navigator.clipboard.writeText(originalPrompt);
+      copyOriginalBtn.textContent = 'Copied';
+    } catch (err) {
+      copyOriginalBtn.textContent = 'Copy failed';
+    }
+    setTimeout(() => {
+      copyOriginalBtn.textContent = 'Copy Original';
+    }, 1600);
+  });
+
+  compareBtn.addEventListener('click', () => {
+    comparisonGrid.hidden = !comparisonGrid.hidden;
+    compareBtn.textContent = comparisonGrid.hidden ? 'Compare' : 'Hide Compare';
+  });
+
+  undoBtn.addEventListener('click', () => {
+    const restored = typeof onUndo === 'function' ? onUndo() : false;
+    undoBtn.textContent = restored ? 'Undone' : 'Nothing to undo';
+    setTimeout(() => {
+      undoBtn.textContent = 'Undo';
+    }, 1600);
+  });
+
+  favoriteBtn.addEventListener('click', async () => {
+    if (!lastResultRecord || typeof onFavorite !== 'function') return;
+    const finalPrompt = textarea.style.display === 'none' ? diffView.textContent : textarea.value;
+    favoriteBtn.disabled = true;
+    try {
+      const isFavorite = await onFavorite({
+        ...lastResultRecord,
+        optimized: finalPrompt,
+        mode: modeSelect.value
+      });
+      favoriteBtn.textContent = isFavorite ? 'Favorited' : 'Favorite';
+    } catch (err) {
+      favoriteBtn.textContent = 'Favorite failed';
+    } finally {
+      setTimeout(() => {
+        favoriteBtn.disabled = false;
+        if (favoriteBtn.textContent === 'Favorite failed') {
+          favoriteBtn.textContent = 'Favorite';
+        }
+      }, 1400);
+    }
+  });
+
   retryBtn.addEventListener('click', () => {
     optimizeBtn.click();
   });
@@ -999,6 +1203,14 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       isLoggedIn = Boolean(loggedIn);
       logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
       signInCard.classList.toggle('visible', !isLoggedIn);
+    },
+    getSettings: () => ({
+      mode: modeSelect.value || 'standard',
+      platform: detectedPlatform || 'general'
+    }),
+    setPlatform: (platform) => {
+      detectedPlatform = platform || 'general';
+      platformPill.textContent = platformLabels[detectedPlatform] || platformLabels.general;
     },
     toggleVisibility: () => {
       const isVisible = panel.classList.toggle('visible');
@@ -1096,15 +1308,18 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
         }
       });
     },
-    showResult: (optimizedText, diffedTokens, explainedChanges, runId, scoreSummary = null) => {
+    showResult: (optimizedText, diffedTokens, explainedChanges, runId, scoreSummary = null, meta = {}) => {
       currentRunId = runId;
       errorPanel.style.display = 'none';
       shadow.getElementById('result-section').style.display = 'block';
       optimizeBtn.textContent = 'Optimize Prompt';
+      comparisonGrid.hidden = true;
+      compareBtn.textContent = 'Compare';
       
       // Reset feedback display
       shadow.getElementById('feedback-buttons-wrapper').style.display = 'flex';
       shadow.getElementById('feedback-thanks').style.display = 'none';
+      favoriteBtn.textContent = 'Favorite';
 
       // Set values
       textarea.value = optimizedText;
@@ -1117,6 +1332,19 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       } else {
         scoreDeltaEl.textContent = 'Improved';
       }
+
+      lastResultRecord = {
+        original: meta.originalPrompt || '',
+        optimized: optimizedText,
+        platform: meta.platform || detectedPlatform || 'general',
+        intent: meta.intent || null,
+        mode: meta.mode || modeSelect.value || 'standard',
+        scoreOriginal: scoreSummary?.originalScore ?? null,
+        scoreOptimized: scoreSummary?.newScore ?? null,
+        timestamp: Date.now()
+      };
+      compareOriginal.textContent = lastResultRecord.original;
+      compareOptimized.textContent = optimizedText;
       
       // Render Diff HTML
       diffView.innerHTML = diffedTokens.map(tok => {
@@ -1146,6 +1374,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout) {
       textarea.style.display = 'none';
       toggleEditBtn.textContent = 'Edit';
       shadow.getElementById('editor-view-title').textContent = 'Optimized Draft';
+
+      const successSummary = shadow.querySelector('.success-summary');
+      successSummary.classList.remove('pulse');
+      void successSummary.offsetWidth;
+      successSummary.classList.add('pulse');
     },
     showError: (err) => {
       loaderShimmer.style.display = 'none';

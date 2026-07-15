@@ -14,6 +14,72 @@ const INTENT_KEYWORDS = {
   writing: /\b(write|essay|article|blog post|summarize|paraphrase|grammar|tone|prose|revise|edit|proofread|letter|email|author)\b/i
 };
 
+export const OPTIMIZATION_MODES = {
+  standard: {
+    label: 'Standard',
+    instruction: 'Balance clarity, completeness, and practical structure without making the prompt unnecessarily long.'
+  },
+  concise: {
+    label: 'Concise',
+    instruction: 'Make the prompt compact and direct while preserving the full task, constraints, and success criteria.'
+  },
+  detailed: {
+    label: 'Detailed',
+    instruction: 'Expand context, acceptance criteria, examples, and evaluation rules so the AI has enough detail to produce a high-quality answer.'
+  },
+  creative: {
+    label: 'Creative',
+    instruction: 'Encourage distinctive angles, variations, tone options, and ideation while keeping the request usable and bounded.'
+  },
+  technical: {
+    label: 'Technical',
+    instruction: 'Emphasize precision, edge cases, implementation constraints, validation steps, and measurable acceptance criteria.'
+  }
+};
+
+const PLATFORM_PROFILES = {
+  chatgpt: {
+    label: 'ChatGPT',
+    instruction: 'Use clear role, task, context, output format, and constraints sections. Prefer markdown headings and explicit success criteria.'
+  },
+  claude: {
+    label: 'Claude',
+    instruction: 'Use natural language instructions with context first, then desired output, constraints, and examples when useful.'
+  },
+  gemini: {
+    label: 'Gemini',
+    instruction: 'Use explicit task steps, source/context boundaries, and a clear final-answer format.'
+  },
+  perplexity: {
+    label: 'Perplexity',
+    instruction: 'Ask for source-aware analysis, concise synthesis, and separation between facts, assumptions, and recommendations.'
+  },
+  copilot: {
+    label: 'Copilot',
+    instruction: 'Specify the environment, expected implementation, error cases, and verification steps.'
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    instruction: 'Use precise technical context, constraints, and a validation checklist for the final answer.'
+  },
+  general: {
+    label: 'AI assistant',
+    instruction: 'Use a broadly compatible prompt structure with clear task, context, output format, and constraints.'
+  }
+};
+
+export function normalizeOptimizationMode(mode) {
+  return OPTIMIZATION_MODES[mode] ? mode : 'standard';
+}
+
+export function normalizePlatform(platform) {
+  return PLATFORM_PROFILES[platform] ? platform : 'general';
+}
+
+export function getPlatformLabel(platform) {
+  return PLATFORM_PROFILES[normalizePlatform(platform)].label;
+}
+
 export function detectIntent(promptText) {
   const text = promptText.toLowerCase();
   for (const [intent, regex] of Object.entries(INTENT_KEYWORDS)) {
@@ -53,17 +119,23 @@ export function checkStructure(promptText) {
   };
 }
 
-export function analyzeAndEnhancePrompt(originalPrompt) {
+export function analyzeAndEnhancePrompt(originalPrompt, options = {}) {
   if (!originalPrompt || originalPrompt.trim() === '') {
     return {
       enhancedPrompt: '',
       intent: 'general',
-      missing: []
+      missing: [],
+      mode: 'standard',
+      platform: 'general'
     };
   }
 
   const intent = detectIntent(originalPrompt);
   const structure = checkStructure(originalPrompt);
+  const mode = normalizeOptimizationMode(options.mode);
+  const platform = normalizePlatform(options.platform);
+  const modeProfile = OPTIMIZATION_MODES[mode];
+  const platformProfile = PLATFORM_PROFILES[platform];
   
   // Define default values based on intent
   const roles = {
@@ -114,16 +186,22 @@ export function analyzeAndEnhancePrompt(originalPrompt) {
 
   draft += `[AUDIENCE AND CONTEXT]\nUse the audience and context stated in the request. When either is missing, make the smallest reasonable assumption and label it clearly.\n\n`;
 
+  draft += `[MODE]\n${modeProfile.label}: ${modeProfile.instruction}\n\n`;
+
+  draft += `[PLATFORM CALIBRATION]\nOptimize this prompt for ${platformProfile.label}. ${platformProfile.instruction}\n\n`;
+
   const formatText = formats[intent] || formats.general;
   draft += `[OUTPUT FORMAT]\n${formatText}\n\n`;
 
   const constraintText = constraints[intent] || constraints.general;
   draft += `[CONSTRAINTS]\n${constraintText}\n\n`;
-  draft += `[QUALITY CHECK]\nAddress the request directly, preserve the user's intent, make the result actionable, and do not return placeholders or instructions that bypass an AI service's safety controls.`;
+  draft += `[QUALITY CHECK]\nAddress the request directly, preserve the user's intent, make the result actionable, reason internally without exposing hidden chain-of-thought, and do not return placeholders or instructions that bypass an AI service's safety controls.`;
 
   return {
     enhancedPrompt: draft.trim(),
     intent,
-    missing: structure.missing
+    missing: structure.missing,
+    mode,
+    platform
   };
 }

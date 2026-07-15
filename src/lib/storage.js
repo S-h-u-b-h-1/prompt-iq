@@ -8,6 +8,8 @@ const DB_VERSION = 1;
 const API_BASE = 'https://promptiq-theta.vercel.app';
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_LOCAL_HISTORY = 200;
+const MAX_FAVORITE_PROMPTS = 100;
+const FAVORITES_KEY = 'favoritePrompts';
 
 export function normalizeTier(tier) {
   return tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
@@ -140,6 +142,100 @@ export function clearSessionToken() {
     keys.forEach(k => localStorage.removeItem(k));
     resolve();
   });
+}
+
+function getExtensionStorageValue(key, fallbackValue) {
+  return new Promise((resolve) => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(key, (data) => {
+          resolve(data[key] ?? fallbackValue);
+        });
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
+    }
+
+    try {
+      const raw = localStorage.getItem(key);
+      resolve(raw ? JSON.parse(raw) : fallbackValue);
+    } catch (e) {
+      resolve(fallbackValue);
+    }
+  });
+}
+
+function setExtensionStorageValue(key, value) {
+  return new Promise((resolve) => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ [key]: value }, () => resolve());
+        return;
+      }
+    } catch (e) {
+      // Context invalidated
+    }
+
+    localStorage.setItem(key, JSON.stringify(value));
+    resolve();
+  });
+}
+
+function createFavoriteKey(original, optimized, platform) {
+  const source = `${platform || 'general'}::${original || ''}::${optimized || ''}`;
+  let hash = 0;
+  for (let i = 0; i < source.length; i += 1) {
+    hash = ((hash << 5) - hash) + source.charCodeAt(i);
+    hash |= 0;
+  }
+  return `fav_${Math.abs(hash).toString(36)}`;
+}
+
+function normalizeFavoriteRecord(record) {
+  const original = String(record.original || '');
+  const optimized = String(record.optimized || '');
+  const platform = String(record.platform || 'general');
+
+  return {
+    id: record.id || createFavoriteKey(original, optimized, platform),
+    original,
+    optimized,
+    platform,
+    intent: record.intent || null,
+    mode: record.mode || 'standard',
+    scoreOriginal: Number.isFinite(record.scoreOriginal) ? record.scoreOriginal : null,
+    scoreOptimized: Number.isFinite(record.scoreOptimized) ? record.scoreOptimized : null,
+    timestamp: Number.isFinite(record.timestamp) ? record.timestamp : Date.now()
+  };
+}
+
+export async function getFavoritePrompts() {
+  const favorites = await getExtensionStorageValue(FAVORITES_KEY, []);
+  return Array.isArray(favorites)
+    ? favorites.map(normalizeFavoriteRecord).sort((a, b) => b.timestamp - a.timestamp)
+    : [];
+}
+
+export async function isFavoritePrompt(record) {
+  const normalized = normalizeFavoriteRecord(record);
+  const favorites = await getFavoritePrompts();
+  return favorites.some((favorite) => favorite.id === normalized.id);
+}
+
+export async function toggleFavoritePrompt(record) {
+  const normalized = normalizeFavoriteRecord(record);
+  const favorites = await getFavoritePrompts();
+  const exists = favorites.some((favorite) => favorite.id === normalized.id);
+  const nextFavorites = exists
+    ? favorites.filter((favorite) => favorite.id !== normalized.id)
+    : [normalized, ...favorites].slice(0, MAX_FAVORITE_PROMPTS);
+
+  await setExtensionStorageValue(FAVORITES_KEY, nextFavorites);
+  return {
+    favorite: !exists,
+    favorites: nextFavorites
+  };
 }
 
 // Auth Actions

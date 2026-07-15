@@ -34,7 +34,17 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       // 1. Get History (formerly history.js)
       const history = await sql`
-        SELECT id, original, optimized, score_delta as "scoreDelta", platform, created_at as "timestamp"
+        SELECT
+          id,
+          original,
+          optimized,
+          score_delta as "scoreDelta",
+          platform,
+          intent,
+          mode,
+          score_original as "scoreOriginal",
+          score_optimized as "scoreOptimized",
+          created_at as "timestamp"
         FROM prompt_history
         WHERE user_id = ${userId}
         ORDER BY created_at DESC

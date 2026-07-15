@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PromptIQ",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A browser extension that scores your prompt, optimizes it for the specific AI you're using, and explains every change.",
   "permissions": [
     "storage",
@@ -41,7 +41,7 @@
     "128": "store_icon.png"
   },
   "action": {
-    "default_popup": "src/popup/popup.html",
+    "default_popup": "src/popup/onboarding.html",
     "default_icon": {
       "16": "icon-16.png",
       "48": "icon-48.png",

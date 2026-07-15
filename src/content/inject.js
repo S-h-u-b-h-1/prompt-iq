@@ -1,7 +1,7 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { saveOptimization, getUserTier, getSessionToken, clearSessionToken } from '../lib/storage.js';
+import { saveOptimization, getUserTier, getSessionToken, clearSessionToken, toggleFavoritePrompt } from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
 import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.js';
@@ -10,6 +10,7 @@ let currentInputEl = null;
 let panelApi = null;
 let adapter = null;
 let lastOptimizedPrompt = '';
+let previousPromptBeforeUse = '';
 let observer = null;
 
 function isContextValid() {
@@ -66,6 +67,9 @@ async function init() {
   if (!adapter) return;
 
   ensurePanelInjected();
+  if (panelApi) {
+    panelApi.setPlatform(adapter.platform);
+  }
 
   // Sync initial logged state and user tier
   const token = await getSessionToken();
@@ -142,7 +146,7 @@ async function handleLogout() {
 function ensurePanelInjected() {
   if (document.getElementById('promptiq-container')) return;
 
-  panelApi = createPanel(handleOptimize, handleUse, handleFeedback, handleLogout);
+  panelApi = createPanel(handleOptimize, handleUse, handleFeedback, handleLogout, handleUndo, handleFavorite);
   document.body.appendChild(panelApi.container);
 }
 
@@ -198,12 +202,17 @@ async function handleOptimize() {
 
   const token = await getSessionToken();
   let tier = await getUserTier();
+  const settings = panelApi.getSettings ? panelApi.getSettings() : { mode: 'standard', platform: adapter.platform };
+  const mode = settings.mode || 'standard';
   if (!token && tier === 'premium') tier = 'free';
   if (panelApi) {
     panelApi.setLoggedState(!!token);
     panelApi.setTier(tier);
   }
-  const localResult = analyzeAndEnhancePrompt(text);
+  const localResult = analyzeAndEnhancePrompt(text, {
+    mode,
+    platform: adapter.platform
+  });
   let result;
   let optimizationTier = tier;
 
@@ -215,6 +224,7 @@ async function handleOptimize() {
         platform: adapter.platform,
         locallyEnhancedPrompt: localResult.enhancedPrompt,
         detectedIntent: localResult.intent,
+        mode,
         token
       });
 
@@ -237,7 +247,7 @@ async function handleOptimize() {
       newScore - originalScore, 
       adapter.platform,
       localResult.intent,
-      optimizationTier,
+      mode,
       originalScore,
       newScore
     );
@@ -248,6 +258,12 @@ async function handleOptimize() {
     panelApi.showResult(result.optimized, diffedTokens, explainedChanges, runId, {
       originalScore,
       newScore
+    }, {
+      originalPrompt: text,
+      platform: adapter.platform,
+      intent: localResult.intent,
+      mode,
+      tier: optimizationTier
     });
   } catch (err) {
     if (err.code === 'PREMIUM_LIMIT_REACHED') {
@@ -296,12 +312,30 @@ function handleUse(finalPrompt) {
   if (!isContextValid()) return;
   const textToUse = finalPrompt || lastOptimizedPrompt;
   if (textToUse) {
+    previousPromptBeforeUse = adapter.getText(currentInputEl) || '';
     adapter.setText(currentInputEl, textToUse);
     const scoreData = scorePrompt(textToUse);
     const structure = checkStructure(textToUse);
     scoreData.missing = structure.missing;
     panelApi.updateScore(scoreData);
   }
+}
+
+function handleUndo() {
+  if (!isContextValid() || !previousPromptBeforeUse || !currentInputEl) return false;
+  adapter.setText(currentInputEl, previousPromptBeforeUse);
+  const scoreData = scorePrompt(previousPromptBeforeUse);
+  const structure = checkStructure(previousPromptBeforeUse);
+  scoreData.missing = structure.missing;
+  panelApi.updateScore(scoreData);
+  previousPromptBeforeUse = '';
+  return true;
+}
+
+async function handleFavorite(record) {
+  if (!isContextValid()) return false;
+  const result = await toggleFavoritePrompt(record);
+  return result.favorite;
 }
 
 async function handleFeedback(runId, feedbackVal) {

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PromptIQ Popup</title>
+  <link rel="icon" href="../../favicon.svg">
   <style>
     :root {
       --bg-color: #030712;
@@ -542,7 +543,7 @@
       <p class="welcome-desc" style="margin-bottom: 0;">Free optimization works without an account. Sign in for synced history and Premium AI.</p>
     </div>
     
-    <div id="auth-form-wrapper">
+    <form id="auth-form-wrapper">
       <h3 style="margin-top: 0; margin-bottom: 14px; font-weight: 800; letter-spacing: 0;" id="auth-title">Log In</h3>
       
       <div class="form-group">
@@ -555,7 +556,7 @@
         <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
       </div>
       
-      <button class="btn" id="auth-submit-btn" style="margin-top: 6px;">Log In</button>
+      <button class="btn" id="auth-submit-btn" type="button" style="margin-top: 6px;">Log In</button>
       
       <div style="text-align: center; margin-top: 16px; font-size: 12.5px;">
         <span id="auth-toggle-msg">New to PromptIQ?</span>
@@ -566,7 +567,7 @@
       </div>
       
       <div class="status-msg" id="auth-status" style="margin-top: 12px; text-align: center;"></div>
-    </div>
+    </form>
   </div>
 
   <!-- Authenticated Container Wrapper -->
@@ -575,6 +576,7 @@
       <div class="nav-tab active" data-tab="dashboard" role="tab" tabindex="0" aria-selected="true">Dashboard</div>
       <div class="nav-tab" data-tab="library" role="tab" tabindex="0" aria-selected="false">Library</div>
       <div class="nav-tab" data-tab="history" role="tab" tabindex="0" aria-selected="false">History</div>
+      <div class="nav-tab" data-tab="favorites" role="tab" tabindex="0" aria-selected="false">Favorites</div>
     </div>
 
     <!-- Dashboard Tab -->
@@ -651,6 +653,16 @@
       </div>
       <div class="history-list" id="history-container">
         No history yet. Get started by optimizing your prompts inline!
+      </div>
+    </div>
+
+    <!-- Favorites Tab -->
+    <div class="tab-content" id="tab-favorites">
+      <div class="history-header">
+        <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary);" id="favorites-summary">0 favorite prompts</span>
+      </div>
+      <div class="history-list" id="favorites-container">
+        No favorites yet.
       </div>
     </div>
   </div>

@@ -2,8 +2,8 @@
  * LLM Prompt Optimization client communication helper
  */
 
-export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, token = null) {
-  return optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token);
+export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, token = null, mode = 'standard') {
+  return optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode);
 }
 
 function createOptimizerError(status, payload = {}, statusText = '') {
@@ -33,7 +33,7 @@ function createOptimizerError(status, payload = {}, statusText = '') {
   return err;
 }
 
-async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token) {
+async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode) {
   const url = `https://promptiq-theta.vercel.app/api/optimize`;
 
   const headers = {
@@ -51,7 +51,8 @@ async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPromp
       originalPrompt,
       platform,
       locallyEnhancedPrompt,
-      detectedIntent
+      detectedIntent,
+      mode
     })
   });
 

@@ -1,6 +1,6 @@
 # Chrome Web Store Listing — PromptIQ
 
-> Last Updated: 2026-06-26
+> Last Updated: 2026-07-15
 
 ## Store Listing
 
@@ -26,11 +26,17 @@ Receive a real-time quality score as you type, with actionable suggestions for i
 🧠 **Platform-Aware Calibrations**
 PromptIQ automatically adapts its optimization strategy to match the formatting guidelines and nuances of your target AI platform.
 
+🎛️ **Optimization Modes**
+Choose Standard, Concise, Detailed, Creative, or Technical optimization depending on the job.
+
 📖 **Explanations Included**
 See exactly what was improved and why, helping you understand the principles behind effective prompt writing.
 
+⭐ **History and Favorites**
+Save useful optimized prompts, review before/after versions, and reuse favorites from the extension dashboard.
+
 ⚡ **One-Click Insert**
-Replace your original prompt with the optimized version instantly—no manual copy-pasting required.
+Replace your original prompt with the optimized version instantly, with undo available after insertion.
 
 ### How It Works:
 
@@ -67,7 +73,7 @@ English
 
 | Permission | Type | Justification |
 |------------|------|---------------|
-| `storage` | permissions | Used to persist user settings (Free vs Premium tier), local history logs, and unique installation UUIDs. |
+| `storage` | permissions | Used to persist user settings, local history, favorites, and signed-in session state. |
 | `contextMenus` | permissions | Used to add a right-click context menu option allowing users to highlight text on any webpage and optimize it as a prompt. |
 | `*://chatgpt.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in ChatGPT interfaces. |
 | `*://chat.openai.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in legacy ChatGPT interfaces. |
@@ -95,7 +101,7 @@ English
 | Location | No | No | N/A | No |
 | Web history | No | No | N/A | No |
 | User activity | Yes | Yes when signed in | To synchronize optimization history, feedback, account status, and subscriptions. | No |
-| Website content | Yes | Yes | To read input field values to calculate prompt scores. | No |
+| Website content | Yes | Only when the user chooses signed-in history sync or Premium optimization | To read the active prompt field, calculate local scores, save selected history, and optimize selected prompts. | Yes, Google Gemini API for Premium processing |
 
 ### Data Use Certification
 - [x] Data is NOT sold to third parties
@@ -132,7 +138,8 @@ shubhaangkataruka22012007@gmail.com
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 1.0.5 | 2026-07-07 | Redesigned popup dialog to premium dark mode glassmorphism layout, enabled payment bypass checkout, and restricted premium runs to a 1-prompt free trial. | Draft |
+| 1.0.6 | 2026-07-15 | Restored onboarding as the toolbar entry, added optimization modes, favorites, undo insertion, explicit version comparison, richer platform-aware local templates, and removed the accidental Premium one-run cap. | Draft |
+| 1.0.5 | 2026-07-07 | Redesigned popup dialog and account dashboard. Superseded before publication. | Superseded |
 | 1.0.4 | 2026-07-03 | Moved the toolbar entry to onboarding, repaired authentication and account navigation, introduced local Free templates and server-side Premium AI, and hardened storage and MV3 packaging. | Published |
 | 1.0.3 | 2026-06-29 | Removed website-only pages and all remote resources from the extension UI; added an automated Manifest V3 package compliance check. | Draft |
 | 1.0.2 | 2026-06-27 | Fixed metadata policy violation (keyword spam in description). | Rejected |

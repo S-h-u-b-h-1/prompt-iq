@@ -8,12 +8,23 @@ if (!DATABASE_URL) {
 }
 const sql = neon(DATABASE_URL);
 const OPTIMIZER_UNAVAILABLE_MESSAGE = 'PromptIQ optimization is temporarily unavailable. Please try again shortly.';
+const OPTIMIZATION_MODES = {
+  standard: 'Balance clarity, completeness, and practical structure without making the prompt unnecessarily long.',
+  concise: 'Make the optimized prompt compact and direct while preserving the task, context, constraints, and output format.',
+  detailed: 'Expand the optimized prompt with richer context, acceptance criteria, examples, and evaluation rules.',
+  creative: 'Add creative angles, alternative framing, tone guidance, and ideation instructions while preserving the user intent.',
+  technical: 'Prioritize precision, edge cases, implementation constraints, validation steps, and measurable acceptance criteria.'
+};
 
 function sendJsonError(res, status, code, message) {
   res.status(status).json({ error: message, code });
 }
 
-function getSystemPrompt(platform, intent) {
+function normalizeMode(mode) {
+  return OPTIMIZATION_MODES[mode] ? mode : 'standard';
+}
+
+function getSystemPrompt(platform, intent, mode) {
   let intentInstructions = '';
   switch (intent) {
     case 'coding':
@@ -57,6 +68,8 @@ function getSystemPrompt(platform, intent) {
 - Formatting: Ensure output structures (headings, tables, lists) are well-defined.`;
   }
 
+  const normalizedMode = normalizeMode(mode);
+
   return `You are PromptIQ, the world's best AI Prompt Optimizer. Your sole mission is to refine, polish, and validate text prompts to produce superior AI responses on ${platform}.
 
 Your task is to provide a premium-quality optimization of the pre-structured draft using the following intent-specific directives:
@@ -64,12 +77,16 @@ Your task is to provide a premium-quality optimization of the pre-structured dra
 [INTENT DIRECTIVES (${intent.toUpperCase()})]
 ${intentInstructions}
 
+[OPTIMIZATION MODE (${normalizedMode.toUpperCase()})]
+${OPTIMIZATION_MODES[normalizedMode]}
+
 [INSTRUCTION HIERARCHY RULES]
 - **Role Assignment:** Define a clear persona/role at the very beginning (e.g., "Act as an expert copywriter...").
 - **Task/Objective:** Frame the core task with precise action verbs.
 - **Context & Elaboration:** Synthesize background detail and target audience parameters.
 - **Explicit Constraints:** Add boundaries (e.g., "Do not include fluff", "Format strictly as...").
 - **Format Directive:** Specify markdown structure (tables, headers, etc.).
+- **Private Reasoning:** Evaluate intent, missing context, and platform fit internally. Do not include hidden chain-of-thought in the optimized prompt.
 - **Safety Integrity:** Never add instructions intended to evade or weaken an AI service's safety controls.
 
 Your response MUST be strict JSON matching this schema:
@@ -114,7 +131,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent } = req.body;
+    const { originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, mode } = req.body;
 
     if (!originalPrompt || !platform) {
       sendJsonError(res, 400, 'BAD_REQUEST', 'Missing originalPrompt or platform parameter');
@@ -150,26 +167,13 @@ export default async function handler(req, res) {
       user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
     );
 
-    // Enforce 1 premium prompt limit
-    const historyCount = await sql`
-      SELECT COUNT(*) as count 
-      FROM prompt_history 
-      WHERE user_id = ${userId.toString()} AND mode = 'premium'
-    `;
-    const premiumCount = historyCount[0]?.count ? parseInt(historyCount[0].count, 10) : 0;
-
-    if (premiumCount >= 1) {
-      sendJsonError(res, 403, 'PREMIUM_LIMIT_REACHED', 'You have used your 1 free Premium optimization. Additional runs are currently disabled.');
-      return;
-    }
-
     if (!isPremiumPlan(resolvedPlan)) {
       sendJsonError(res, 403, 'PREMIUM_REQUIRED', 'Cloud AI optimization requires PromptIQ Premium.');
       return;
     }
 
     const intent = detectedIntent || 'general';
-    const systemPrompt = getSystemPrompt(platform, intent);
+    const systemPrompt = getSystemPrompt(platform, intent, mode);
 
     const payload = {
       contents: [{

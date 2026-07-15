@@ -6,7 +6,9 @@ import {
   signupUser, 
   loginUser, 
   fetchUserProfile, 
-  checkoutSubscription
+  checkoutSubscription,
+  getFavoritePrompts,
+  toggleFavoritePrompt
 } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 
@@ -45,6 +47,7 @@ async function checkAuthStatus() {
     // Initialize authenticated layouts
     initTabs();
     initHistory();
+    initFavorites();
     initLibrary();
     initDashboard(user);
     initSignout();
@@ -142,21 +145,15 @@ function initPayments() {
 
   upgradeBtn.onclick = async () => {
     upgradeBtn.disabled = true;
-    upgradeBtn.textContent = 'Activating...';
+    upgradeBtn.textContent = 'Opening checkout...';
     try {
       const checkoutUrl = await checkoutSubscription();
-      if (checkoutUrl && checkoutUrl.includes('simulated=true')) {
-        // Success! Refetch profile and update UI instantly
-        const user = await fetchUserProfile();
-        renderDashboard(user);
-      } else {
-        window.open(checkoutUrl, '_blank');
-      }
+      window.open(checkoutUrl, '_blank');
     } catch (err) {
       alert(`Checkout failed: ${err.message}`);
     } finally {
       upgradeBtn.disabled = false;
-      upgradeBtn.textContent = 'Activate Premium Trial';
+      upgradeBtn.textContent = 'Upgrade to Premium';
     }
   };
 }
@@ -194,6 +191,8 @@ function initTabs() {
     // Refresh views on tab change
     if (tab.dataset.tab === 'history') {
       renderHistory();
+    } else if (tab.dataset.tab === 'favorites') {
+      renderFavorites();
     } else if (tab.dataset.tab === 'dashboard') {
       try {
         const user = await fetchUserProfile();
@@ -229,23 +228,17 @@ async function renderDashboard(user) {
   const upgradeBtn = document.getElementById('upgrade-pro-btn');
   
   const history = await getHistory();
-  const premiumRuns = history.filter(h => h.mode === 'premium').length;
 
   if (user) {
     loggedInUserText.textContent = `Logged in as: ${user.email}`;
     if (user.plan === 'premium') {
-      const left = Math.max(0, 1 - premiumRuns);
-      if (left > 0) {
-        planStatusText.innerHTML = `<span style="color: var(--accent-cyan); font-weight: 800;">Premium Active (${left} left)</span>`;
-      } else {
-        planStatusText.innerHTML = `<span style="color: var(--text-muted); font-weight: 700;">Premium (Trial Ended)</span>`;
-      }
+      planStatusText.innerHTML = `<span style="color: var(--accent-cyan); font-weight: 800;">Premium Active</span>`;
       if (upgradeBtn) upgradeBtn.style.display = 'none';
     } else {
-      planStatusText.innerHTML = `<span style="color: var(--text-secondary); font-weight: 700;">⚡ Free Plan</span>`;
+      planStatusText.innerHTML = `<span style="color: var(--text-secondary); font-weight: 700;">Free Plan</span>`;
       if (upgradeBtn) {
         upgradeBtn.style.display = 'block';
-        upgradeBtn.textContent = 'Activate Premium Trial';
+        upgradeBtn.textContent = 'Upgrade to Premium';
       }
     }
   }
@@ -358,11 +351,15 @@ async function renderHistory() {
     const deltaClass = delta >= 0 ? 'history-delta' : 'history-delta negative';
     const deltaText = delta >= 0 ? `+${delta}` : `${delta}`;
     const dateStr = new Date(run.timestamp).toLocaleDateString();
+    const modeLabel = run.mode ? run.mode.charAt(0).toUpperCase() + run.mode.slice(1) : 'Standard';
+    const intentLabel = run.intent ? run.intent.charAt(0).toUpperCase() + run.intent.slice(1) : 'General';
 
     return `
       <div class="history-item" data-index="${index}">
         <div class="history-top">
           <span class="history-platform">${run.platform}</span>
+          <span class="history-platform">${modeLabel}</span>
+          <span class="history-platform">${intentLabel}</span>
           <span style="font-size: 11px; color: #94a3b8;">${dateStr}</span>
           <span class="${deltaClass}">${deltaText} pts</span>
         </div>
@@ -373,7 +370,8 @@ async function renderHistory() {
           <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #475569;">Optimized:</div>
           <div class="history-detail-box">${escapeHtml(run.optimized)}</div>
           <div class="history-actions">
-            <button class="btn btn-secondary copy-hist-btn" data-text="${escapeDoubleQuotes(run.optimized)}" style="padding: 4px 8px; font-size: 11px; width: auto;">Copy Optimized</button>
+            <button class="btn btn-secondary favorite-hist-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Favorite</button>
+            <button class="btn btn-secondary copy-hist-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Use Optimized</button>
           </div>
         </div>
       </div>
@@ -394,7 +392,7 @@ async function renderHistory() {
   // Copy/Insert buttons
   container.querySelectorAll('.copy-hist-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      const text = btn.dataset.text;
+      const text = history[Number(btn.dataset.index)]?.optimized || '';
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab) {
@@ -407,7 +405,111 @@ async function renderHistory() {
         navigator.clipboard.writeText(text);
         btn.textContent = 'Copied!';
       }
-      setTimeout(() => { btn.textContent = 'Copy Optimized'; }, 2000);
+      setTimeout(() => { btn.textContent = 'Use Optimized'; }, 2000);
+    });
+  });
+
+  container.querySelectorAll('.favorite-hist-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const run = history[Number(btn.dataset.index)];
+      if (!run) return;
+      const result = await toggleFavoritePrompt({
+        original: run.original,
+        optimized: run.optimized,
+        platform: run.platform,
+        intent: run.intent,
+        mode: run.mode,
+        scoreOriginal: run.scoreOriginal,
+        scoreOptimized: run.scoreOptimized,
+        timestamp: Date.now()
+      });
+      btn.textContent = result.favorite ? 'Favorited' : 'Favorite';
+      renderFavorites();
+    });
+  });
+}
+
+function initFavorites() {
+  renderFavorites();
+}
+
+async function renderFavorites() {
+  const container = document.getElementById('favorites-container');
+  const summaryEl = document.getElementById('favorites-summary');
+  if (!container || !summaryEl) return;
+
+  const favorites = await getFavoritePrompts();
+  summaryEl.textContent = `${favorites.length} favorite prompt${favorites.length !== 1 ? 's' : ''}`;
+
+  if (favorites.length === 0) {
+    container.innerHTML = `<div style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">No favorites yet. Save strong optimized prompts from the in-page panel or history.</div>`;
+    return;
+  }
+
+  container.innerHTML = favorites.map((favorite, index) => {
+    const dateStr = new Date(favorite.timestamp).toLocaleDateString();
+    const modeLabel = favorite.mode ? favorite.mode.charAt(0).toUpperCase() + favorite.mode.slice(1) : 'Standard';
+    const scoreLabel = Number.isFinite(favorite.scoreOriginal) && Number.isFinite(favorite.scoreOptimized)
+      ? `${favorite.scoreOriginal} -> ${favorite.scoreOptimized}`
+      : 'Saved';
+
+    return `
+      <div class="history-item" data-index="${index}">
+        <div class="history-top">
+          <span class="history-platform">${escapeHtml(favorite.platform)}</span>
+          <span class="history-platform">${escapeHtml(modeLabel)}</span>
+          <span style="font-size: 11px; color: #94a3b8;">${dateStr}</span>
+          <span class="history-delta">${scoreLabel}</span>
+        </div>
+        <div class="history-prompt">${escapeHtml(favorite.optimized)}</div>
+        <div class="history-expanded" id="fav-exp-${index}">
+          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #475569;">Original Prompt:</div>
+          <div class="history-detail-box">${escapeHtml(favorite.original)}</div>
+          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #475569;">Favorite Optimized Prompt:</div>
+          <div class="history-detail-box">${escapeHtml(favorite.optimized)}</div>
+          <div class="history-actions">
+            <button class="btn btn-secondary remove-fav-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Remove</button>
+            <button class="btn btn-secondary use-fav-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Use Prompt</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      const index = item.dataset.index;
+      const expanded = container.querySelector(`#fav-exp-${index}`);
+      expanded.classList.toggle('visible');
+    });
+  });
+
+  container.querySelectorAll('.use-fav-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = favorites[Number(btn.dataset.index)]?.optimized || '';
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+          await chrome.tabs.sendMessage(tab.id, { action: 'INSERT_PROMPT', text });
+          btn.textContent = 'Used in Chat!';
+        } else {
+          throw new Error('No active tab');
+        }
+      } catch (err) {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+      }
+      setTimeout(() => { btn.textContent = 'Use Prompt'; }, 2000);
+    });
+  });
+
+  container.querySelectorAll('.remove-fav-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const favorite = favorites[Number(btn.dataset.index)];
+      if (!favorite) return;
+      await toggleFavoritePrompt(favorite);
+      renderFavorites();
     });
   });
 }

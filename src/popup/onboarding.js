@@ -154,18 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
     upgradeButton.textContent = 'Activating...';
     try {
       const checkoutUrl = await checkoutSubscription();
-      if (checkoutUrl && checkoutUrl.includes('simulated=true')) {
-        // Success! Refresh status immediately
-        await refreshAccount();
-      } else {
-        await chrome.tabs.create({ url: checkoutUrl });
-      }
+      await chrome.tabs.create({ url: checkoutUrl });
     } catch (error) {
       openAuth('login');
       showStatus(error.message || 'Unable to activate upgrade.');
     } finally {
       upgradeButton.disabled = false;
-      upgradeButton.textContent = 'Activate Premium Trial';
+      upgradeButton.textContent = 'Upgrade to Premium';
     }
   });
 

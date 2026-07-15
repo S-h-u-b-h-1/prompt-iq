@@ -17,14 +17,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { stripe_session_id, cancel, simulated } = req.query;
-
-  // Handle simulated free upgrade
-  if (simulated === 'true') {
-    res.setHeader('Content-Type', 'text/html');
-    res.status(200).send(renderResponsePage(true, 'Your account has been upgraded to PromptIQ Premium for free! You can close this window now.'));
-    return;
-  }
+  const { stripe_session_id, cancel } = req.query;
 
   // Handle cancellation redirect
   if (cancel === 'true') {

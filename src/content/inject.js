@@ -1,7 +1,14 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { saveOptimization, getUserTier, getSessionToken, clearSessionToken, toggleFavoritePrompt } from '../lib/storage.js';
+import {
+  saveOptimization,
+  getUserTier,
+  getSessionToken,
+  clearSessionToken,
+  toggleFavoritePrompt,
+  consumeSmartTemplateQuota
+} from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
 import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.js';
@@ -204,6 +211,7 @@ async function handleOptimize() {
   let tier = await getUserTier();
   const settings = panelApi.getSettings ? panelApi.getSettings() : { mode: 'standard', platform: adapter.platform };
   const mode = settings.mode || 'standard';
+  const engine = settings.engine || 'smart_template';
   if (!token && tier === 'premium') tier = 'free';
   if (panelApi) {
     panelApi.setLoggedState(!!token);
@@ -217,7 +225,9 @@ async function handleOptimize() {
   let optimizationTier = tier;
 
   try {
-    if (tier === 'premium' && token) {
+    const usePremiumAi = tier === 'premium' && token && engine === 'premium_ai';
+
+    if (usePremiumAi) {
       const response = await chrome.runtime.sendMessage({
         action: 'CALL_OPTIMIZER',
         originalPrompt: text,
@@ -231,10 +241,12 @@ async function handleOptimize() {
       if (!response || !response.success) {
         const error = new Error(response?.error || 'Failed to optimize prompt.');
         error.status = response?.status;
+        error.code = response?.code;
         throw error;
       }
       result = response.result;
     } else {
+      await consumeSmartTemplateQuota(tier);
       result = createLocalOptimization(localResult);
     }
 
@@ -263,10 +275,11 @@ async function handleOptimize() {
       platform: adapter.platform,
       intent: localResult.intent,
       mode,
+      engine: usePremiumAi ? 'premium_ai' : 'smart_template',
       tier: optimizationTier
     });
   } catch (err) {
-    if (err.code === 'PREMIUM_LIMIT_REACHED') {
+    if (err.code === 'PREMIUM_LIMIT_REACHED' || err.code === 'PREMIUM_DAILY_LIMIT_REACHED' || err.code === 'LOCAL_DAILY_LIMIT_REACHED') {
       if (panelApi) {
         panelApi.showError(err);
       }

@@ -41,7 +41,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       message.mode
     )
       .then(result => sendResponse({ success: true, result }))
-      .catch(error => sendResponse({ success: false, error: error.message, status: error.status }));
+      .catch(error => sendResponse({ success: false, error: error.message, status: error.status, code: error.code }));
     return true; // Keep message channel open for async response
   }
 });

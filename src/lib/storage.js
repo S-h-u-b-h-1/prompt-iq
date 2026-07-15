@@ -10,9 +10,25 @@ const REQUEST_TIMEOUT_MS = 15000;
 const MAX_LOCAL_HISTORY = 200;
 const MAX_FAVORITE_PROMPTS = 100;
 const FAVORITES_KEY = 'favoritePrompts';
+const DAILY_USAGE_KEY = 'dailyUsage';
+export const FREE_SMART_TEMPLATE_DAILY_LIMIT = 100;
+export const PREMIUM_SMART_TEMPLATE_DAILY_LIMIT = 200;
 
 export function normalizeTier(tier) {
   return tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
+}
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function getSmartTemplateDailyLimit(tier) {
+  return normalizeTier(tier) === 'premium'
+    ? PREMIUM_SMART_TEMPLATE_DAILY_LIMIT
+    : FREE_SMART_TEMPLATE_DAILY_LIMIT;
 }
 
 async function requestJson(path, options = {}) {
@@ -235,6 +251,49 @@ export async function toggleFavoritePrompt(record) {
   return {
     favorite: !exists,
     favorites: nextFavorites
+  };
+}
+
+export async function getSmartTemplateQuotaStatus(tier) {
+  const date = getLocalDateKey();
+  const usage = await getExtensionStorageValue(DAILY_USAGE_KEY, { date, smartTemplate: 0 });
+  const normalizedUsage = usage && usage.date === date
+    ? usage
+    : { date, smartTemplate: 0 };
+  const used = Number.isFinite(normalizedUsage.smartTemplate)
+    ? normalizedUsage.smartTemplate
+    : 0;
+  const limit = getSmartTemplateDailyLimit(tier);
+
+  return {
+    date,
+    used,
+    limit,
+    remaining: Math.max(0, limit - used)
+  };
+}
+
+export async function consumeSmartTemplateQuota(tier) {
+  const status = await getSmartTemplateQuotaStatus(tier);
+  if (status.remaining <= 0) {
+    const error = new Error(`Daily Smart Template limit reached. ${normalizeTier(tier) === 'premium' ? 'Premium includes 200 local optimizations per day.' : 'Free includes 100 local optimizations per day.'}`);
+    error.status = 429;
+    error.code = 'LOCAL_DAILY_LIMIT_REACHED';
+    error.limit = status.limit;
+    error.used = status.used;
+    throw error;
+  }
+
+  const nextUsage = {
+    date: status.date,
+    smartTemplate: status.used + 1
+  };
+  await setExtensionStorageValue(DAILY_USAGE_KEY, nextUsage);
+
+  return {
+    ...status,
+    used: nextUsage.smartTemplate,
+    remaining: Math.max(0, status.limit - nextUsage.smartTemplate)
   };
 }
 

@@ -8,6 +8,7 @@ if (!DATABASE_URL) {
 }
 const sql = neon(DATABASE_URL);
 const OPTIMIZER_UNAVAILABLE_MESSAGE = 'PromptIQ optimization is temporarily unavailable. Please try again shortly.';
+const PREMIUM_AI_DAILY_LIMIT = 20;
 const OPTIMIZATION_MODES = {
   standard: 'Balance clarity, completeness, and practical structure without making the prompt unnecessarily long.',
   concise: 'Make the optimized prompt compact and direct while preserving the task, context, constraints, and output format.',
@@ -22,6 +23,10 @@ function sendJsonError(res, status, code, message) {
 
 function normalizeMode(mode) {
   return OPTIMIZATION_MODES[mode] ? mode : 'standard';
+}
+
+function getUtcDateKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
 }
 
 function getSystemPrompt(platform, intent, mode) {
@@ -172,6 +177,23 @@ export default async function handler(req, res) {
       return;
     }
 
+    const today = getUtcDateKey();
+    const usageRows = await sql`
+      SELECT count
+      FROM usage_events
+      WHERE user_id = ${userId.toString()} AND date = ${today}
+    `;
+    const premiumAiCount = usageRows[0]?.count ? parseInt(usageRows[0].count, 10) : 0;
+    if (premiumAiCount >= PREMIUM_AI_DAILY_LIMIT) {
+      sendJsonError(
+        res,
+        429,
+        'PREMIUM_DAILY_LIMIT_REACHED',
+        `Daily Premium AI limit reached. Premium includes ${PREMIUM_AI_DAILY_LIMIT} AI optimizations per day.`
+      );
+      return;
+    }
+
     const intent = detectedIntent || 'general';
     const systemPrompt = getSystemPrompt(platform, intent, mode);
 
@@ -300,6 +322,13 @@ export default async function handler(req, res) {
       sendJsonError(res, 503, 'GEMINI_INVALID_FORMAT', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
+
+    await sql`
+      INSERT INTO usage_events (user_id, date, count, created_at)
+      VALUES (${userId.toString()}, ${today}, 1, NOW())
+      ON CONFLICT (user_id, date)
+      DO UPDATE SET count = usage_events.count + 1, created_at = NOW();
+    `;
 
     res.status(200).json(parsed);
   } catch (error) {

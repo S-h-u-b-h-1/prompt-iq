@@ -42,12 +42,12 @@ Replace your original prompt with the optimized version instantly, with undo ava
 
 1. **Write:** Open your preferred AI platform and start typing as usual.
 2. **Score:** Click the floating PromptIQ badge beside the chat input to check your draft's score.
-3. **Optimize:** Free uses a local Smart Template. Premium uses server-side AI with API keys kept outside the extension package.
+3. **Optimize:** Free includes 100 local Smart Template optimizations per day. Premium includes 20 Premium AI optimizations per day and 200 local Smart Template optimizations per day, with API keys kept outside the extension package.
 4. **Insert:** Insert the optimized prompt directly into the text area with a single click.
 
 ### Privacy & Security
 
-Free Smart Template optimization runs locally without sending prompt text to an optimization API. Premium sends only prompts the user chooses to optimize through the PromptIQ backend to Google Gemini. Signed-out history stays on the device; signed-in history is synchronized to the user's account. API keys remain on the server and are never included in the extension package.
+Free Smart Template optimization runs locally without sending prompt text to an optimization API and is limited to 100 local optimizations per day. Premium includes 20 server-side AI optimizations per day and 200 local Smart Template optimizations per day. Premium sends only prompts the user chooses to optimize through the PromptIQ backend to Google Gemini. Signed-out history stays on the device; signed-in history is synchronized to the user's account. API keys remain on the server and are never included in the extension package.
 
 **Category**
 Productivity
@@ -138,6 +138,7 @@ shubhaangkataruka22012007@gmail.com
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
+| 1.0.7 | 2026-07-15 | Added daily quotas: Free has 100 local Smart Template optimizations/day; Premium has 20 Premium AI optimizations/day and 200 local Smart Template optimizations/day. | Draft |
 | 1.0.6 | 2026-07-15 | Restored onboarding as the toolbar entry, added optimization modes, favorites, undo insertion, explicit version comparison, richer platform-aware local templates, and removed the accidental Premium one-run cap. | Draft |
 | 1.0.5 | 2026-07-07 | Redesigned popup dialog and account dashboard. Superseded before publication. | Superseded |
 | 1.0.4 | 2026-07-03 | Moved the toolbar entry to onboarding, repaired authentication and account navigation, introduced local Free templates and server-side Premium AI, and hardened storage and MV3 packaging. | Published |

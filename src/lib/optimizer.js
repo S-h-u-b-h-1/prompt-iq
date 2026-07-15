@@ -21,6 +21,8 @@ function createOptimizerError(status, payload = {}, statusText = '') {
     userMessage = 'Your session expired. Please log in again.';
   } else if (status === 403 || /pro mode|locked|premium/i.test(rawMessage)) {
     userMessage = 'Cloud AI optimization requires PromptIQ Premium.';
+  } else if (code === 'PREMIUM_DAILY_LIMIT_REACHED') {
+    userMessage = rawMessage;
   } else if (status === 429 || /daily limit|rate limit|quota/i.test(rawMessage)) {
     userMessage = 'You have reached your daily optimization limit.';
   } else if (isRawGeminiError || status >= 500 || code.startsWith('GEMINI_')) {

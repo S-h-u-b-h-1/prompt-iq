@@ -5,7 +5,10 @@ import {
   normalizeTier,
   getFavoritePrompts,
   toggleFavoritePrompt,
-  isFavoritePrompt
+  isFavoritePrompt,
+  getSmartTemplateDailyLimit,
+  getSmartTemplateQuotaStatus,
+  consumeSmartTemplateQuota
 } from './storage.js';
 import assert from 'assert';
 
@@ -67,9 +70,36 @@ async function testFavorites() {
   assert.strictEqual((await getFavoritePrompts()).length, 0);
 }
 
+async function testSmartTemplateQuotas() {
+  localStorage.clear();
+
+  assert.strictEqual(getSmartTemplateDailyLimit('free'), 100);
+  assert.strictEqual(getSmartTemplateDailyLimit('premium'), 200);
+
+  let freeStatus = await getSmartTemplateQuotaStatus('free');
+  assert.strictEqual(freeStatus.used, 0);
+  assert.strictEqual(freeStatus.remaining, 100);
+
+  for (let i = 0; i < 100; i += 1) {
+    freeStatus = await consumeSmartTemplateQuota('free');
+  }
+  assert.strictEqual(freeStatus.used, 100);
+  assert.strictEqual(freeStatus.remaining, 0);
+
+  await assert.rejects(
+    () => consumeSmartTemplateQuota('free'),
+    (error) => error.code === 'LOCAL_DAILY_LIMIT_REACHED' && error.status === 429
+  );
+
+  const premiumStatus = await getSmartTemplateQuotaStatus('premium');
+  assert.strictEqual(premiumStatus.used, 100);
+  assert.strictEqual(premiumStatus.remaining, 100);
+}
+
 Promise.resolve()
   .then(testSessionToken)
   .then(testFavorites)
+  .then(testSmartTemplateQuotas)
   .then(() => {
     console.log('All storage session tests passed!');
   })

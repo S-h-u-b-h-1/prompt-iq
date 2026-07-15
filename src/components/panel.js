@@ -9,6 +9,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   let isLoggedIn = false;
   let detectedPlatform = 'general';
   let lastResultRecord = null;
+  let hasStoredEnginePreference = false;
+  let storedEnginePreference = null;
   
   // Theme detection
   const isDark = document.documentElement.classList.contains('dark') || 
@@ -223,7 +225,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
     .settings-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
       margin-bottom: 10px;
     }
@@ -841,6 +843,10 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
           <option value="creative">Creative</option>
           <option value="technical">Technical</option>
         </select>
+        <select class="select-control" id="engine-select" aria-label="Optimization engine">
+          <option value="smart_template">Smart Template</option>
+          <option value="premium_ai">Premium AI</option>
+        </select>
         <div class="platform-pill" id="platform-pill">AI assistant</div>
       </div>
       <div class="engine-summary">
@@ -988,6 +994,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   const copyOriginalBtn = shadow.getElementById('copy-original-btn');
   const retryBtn = shadow.getElementById('retry-btn');
   const modeSelect = shadow.getElementById('mode-select');
+  const engineSelect = shadow.getElementById('engine-select');
   const platformPill = shadow.getElementById('platform-pill');
   const favoriteBtn = shadow.getElementById('favorite-btn');
   const compareBtn = shadow.getElementById('compare-btn');
@@ -998,14 +1005,43 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
   try {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get('optimizationMode', (data) => {
+      chrome.storage.local.get(['optimizationMode', 'optimizationEngine'], (data) => {
         if (data.optimizationMode && modeSelect.querySelector(`option[value="${data.optimizationMode}"]`)) {
           modeSelect.value = data.optimizationMode;
         }
+        if (data.optimizationEngine && engineSelect.querySelector(`option[value="${data.optimizationEngine}"]`)) {
+          hasStoredEnginePreference = true;
+          storedEnginePreference = data.optimizationEngine;
+          engineSelect.value = data.optimizationEngine;
+        }
+        updateEngineSummary();
       });
     }
   } catch (err) {
     // Extension storage may be unavailable after a hot reload.
+  }
+
+  function updateEngineSummary() {
+    const engineName = shadow.getElementById('engine-name');
+    const engineCopy = shadow.getElementById('engine-copy');
+    const requestedEngine = engineSelect.value;
+    const effectiveEngine = userTier === 'premium' && requestedEngine === 'premium_ai'
+      ? 'premium_ai'
+      : 'smart_template';
+
+    if (effectiveEngine !== requestedEngine) {
+      engineSelect.value = effectiveEngine;
+    }
+
+    if (effectiveEngine === 'premium_ai') {
+      engineName.textContent = 'Premium AI';
+      engineCopy.textContent = 'Uses PromptIQ server-side AI. Premium includes 20 AI optimizations per day.';
+    } else {
+      engineName.textContent = 'Smart Template';
+      engineCopy.textContent = userTier === 'premium'
+        ? 'Runs locally. Premium includes 200 Smart Template optimizations per day.'
+        : 'Runs locally. Free includes 100 Smart Template optimizations per day.';
+    }
   }
   
   // Event Listeners
@@ -1045,6 +1081,19 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     } catch (err) {
       // Non-fatal preference persistence failure.
     }
+  });
+
+  engineSelect.addEventListener('change', () => {
+    hasStoredEnginePreference = true;
+    storedEnginePreference = engineSelect.value;
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ optimizationEngine: engineSelect.value });
+      }
+    } catch (err) {
+      // Non-fatal preference persistence failure.
+    }
+    updateEngineSummary();
   });
 
   optimizeBtn.addEventListener('click', async () => {
@@ -1206,6 +1255,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     },
     getSettings: () => ({
       mode: modeSelect.value || 'standard',
+      engine: engineSelect.value || 'smart_template',
       platform: detectedPlatform || 'general'
     }),
     setPlatform: (platform) => {
@@ -1219,20 +1269,25 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     setTier: (tier) => {
       userTier = tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
       const proBadge = shadow.getElementById('header-pro-badge');
-      const engineName = shadow.getElementById('engine-name');
-      const engineCopy = shadow.getElementById('engine-copy');
 
       if (userTier === 'premium') {
         proBadge.textContent = 'PREMIUM';
         proBadge.className = 'status-badge status-premium';
-        engineName.textContent = 'Premium AI';
-        engineCopy.textContent = 'Uses PromptIQ server-side AI for deeper optimization.';
+        engineSelect.disabled = false;
+        if (!hasStoredEnginePreference) {
+          engineSelect.value = 'premium_ai';
+        } else if (storedEnginePreference && engineSelect.querySelector(`option[value="${storedEnginePreference}"]`)) {
+          engineSelect.value = storedEnginePreference;
+        } else if (engineSelect.value !== 'premium_ai' && engineSelect.value !== 'smart_template') {
+          engineSelect.value = 'smart_template';
+        }
       } else {
         proBadge.textContent = 'FREE';
         proBadge.className = 'status-badge status-free';
-        engineName.textContent = 'Smart Template';
-        engineCopy.textContent = 'Runs locally without an account or API call.';
+        engineSelect.value = 'smart_template';
+        engineSelect.disabled = true;
       }
+      updateEngineSummary();
     },
     showPaywall: (type, lockedMode = null) => {
       loaderShimmer.style.display = 'none';
@@ -1401,7 +1456,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       
       errorPanel.style.display = 'block';
       
-      if (err.status === 429 || err.message.includes('429') || err.message.includes('quota')) {
+      const isDailyLimit = err.code === 'LOCAL_DAILY_LIMIT_REACHED' || err.code === 'PREMIUM_DAILY_LIMIT_REACHED';
+      if (!isDailyLimit && (err.status === 429 || err.message.includes('429') || err.message.includes('quota'))) {
         isCooldownActive = true;
         const match = err.message.match(/retry in ([\d\.]+)s/i);
         let seconds = match ? Math.ceil(parseFloat(match[1])) : 60;

@@ -2,69 +2,107 @@ import {
   checkoutSubscription,
   clearSessionToken,
   fetchUserProfile,
+  getPremiumUsageStatus,
   getSessionToken,
+  getSmartTemplateQuotaStatus,
   loginUser,
-  signupUser
+  signupUser,
+  trackTelemetry
 } from '../lib/storage.js';
 
 let authMode = 'login';
+let currentUser = null;
 
-function openExtensionPage(path) {
-  const url = chrome.runtime.getURL(path);
-  if (chrome.tabs && chrome.tabs.create) {
-    chrome.tabs.create({ url });
-  } else {
-    window.open(url, '_blank', 'noopener,noreferrer');
+function canUseChromeTabs() {
+  return typeof chrome !== 'undefined' &&
+    chrome.runtime?.id &&
+    chrome.tabs?.create;
+}
+
+async function openUrl(url) {
+  if (canUseChromeTabs()) {
+    await chrome.tabs.create({ url });
+    return;
   }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function extensionUrl(path) {
+  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL(path);
+  }
+  return new URL(`/${String(path).replace(/^\/+/, '')}`, window.location.origin).href;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  let currentUser = null;
+  const notice = document.getElementById('notice');
   const dialog = document.getElementById('auth-dialog');
   const form = document.getElementById('auth-form');
   const emailInput = document.getElementById('auth-email');
   const passwordInput = document.getElementById('auth-password');
   const submitButton = document.getElementById('auth-submit-btn');
-  const status = document.getElementById('auth-status');
-  const title = document.getElementById('auth-dialog-title');
+  const authStatus = document.getElementById('auth-status');
+  const authTitle = document.getElementById('auth-title');
   const loginModeButton = document.getElementById('login-mode-btn');
   const signupModeButton = document.getElementById('signup-mode-btn');
-  const authOpenButton = document.getElementById('auth-open-btn');
-  const heroAuthButton = document.getElementById('hero-auth-btn');
+  const signInButton = document.getElementById('signin-btn');
+  const signUpButton = document.getElementById('signup-btn');
+  const logoutButton = document.getElementById('logout-btn');
   const upgradeButton = document.getElementById('upgrade-btn');
   const dashboardButton = document.getElementById('dashboard-btn');
-  const logoutButton = document.getElementById('logout-btn');
+  const openChatButton = document.getElementById('open-chat-btn');
   const tierBadge = document.getElementById('tier-badge');
+  const accountTitle = document.getElementById('account-title');
   const accountCopy = document.getElementById('account-copy');
+  const smartUsage = document.getElementById('smart-usage');
+  const smartMeter = document.getElementById('smart-meter');
+  const premiumUsage = document.getElementById('premium-usage');
+  const premiumMeter = document.getElementById('premium-meter');
+  const premiumHelp = document.getElementById('premium-help');
+  const usageDate = document.getElementById('usage-date');
+  const versionLabel = document.getElementById('version-label');
 
-  const showStatus = (message, type = 'error') => {
-    status.textContent = message;
-    status.className = `auth-status visible ${type}`;
+  if (versionLabel && globalThis.chrome?.runtime?.getManifest) {
+    versionLabel.textContent = `Version ${chrome.runtime.getManifest().version}`;
+  }
+
+  const showNotice = (message, type = '') => {
+    notice.textContent = message;
+    notice.className = `notice visible ${type}`.trim();
   };
 
-  const clearStatus = () => {
-    status.textContent = '';
-    status.className = 'auth-status';
+  const clearNotice = () => {
+    notice.textContent = '';
+    notice.className = 'notice';
+  };
+
+  const showAuthStatus = (message, type = 'error') => {
+    authStatus.textContent = message;
+    authStatus.className = `notice visible ${type}`;
+  };
+
+  const clearAuthStatus = () => {
+    authStatus.textContent = '';
+    authStatus.className = 'notice';
   };
 
   const setAuthMode = (mode) => {
     authMode = mode;
     const isLogin = mode === 'login';
-    title.textContent = isLogin ? 'Sign in' : 'Create account';
-    submitButton.textContent = isLogin ? 'Sign In' : 'Create Account';
+    authTitle.textContent = isLogin ? 'Sign in' : 'Create account';
+    submitButton.textContent = isLogin ? 'Sign in' : 'Create account';
     passwordInput.autocomplete = isLogin ? 'current-password' : 'new-password';
     loginModeButton.classList.toggle('active', isLogin);
     signupModeButton.classList.toggle('active', !isLogin);
     loginModeButton.setAttribute('aria-selected', String(isLogin));
     signupModeButton.setAttribute('aria-selected', String(!isLogin));
-    clearStatus();
+    clearAuthStatus();
   };
 
-  const openAuth = (mode = 'login', message = '') => {
+  const openAuth = (mode) => {
     setAuthMode(mode);
     if (!dialog.open) dialog.showModal();
-    if (message) showStatus(message, 'success');
-    setTimeout(() => emailInput.focus(), 0);
+    window.setTimeout(() => emailInput.focus(), 0);
   };
 
   const renderAccount = (user) => {
@@ -72,42 +110,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const isPremium = user?.plan === 'premium';
     tierBadge.textContent = isPremium ? 'PREMIUM' : 'FREE';
     tierBadge.classList.toggle('premium', isPremium);
-    accountCopy.textContent = user
-      ? `${user.email} - ${isPremium ? 'Premium AI is active.' : 'Free Smart Template is active.'}`
-      : 'Smart Template runs locally. No account required.';
-    authOpenButton.hidden = Boolean(user);
-    dashboardButton.hidden = !user;
+    accountTitle.textContent = user?.email || 'Free local mode';
+    accountCopy.textContent = isPremium
+      ? 'Premium AI and Smart Template are active.'
+      : user
+        ? 'Signed in. Smart Template is active.'
+        : 'No account required for Smart Template.';
+    signInButton.hidden = Boolean(user);
+    signUpButton.hidden = Boolean(user);
     logoutButton.hidden = !user;
     upgradeButton.hidden = isPremium;
-    heroAuthButton.textContent = isPremium ? 'Premium Active' : (user ? 'Upgrade to Premium' : 'Sign In for Premium');
   };
 
-  const refreshAccount = async () => {
-    const token = await getSessionToken();
-    if (!token) {
-      renderAccount(null);
+  const renderUsage = async () => {
+    const tier = currentUser?.plan === 'premium' ? 'premium' : 'free';
+    const local = await getSmartTemplateQuotaStatus(tier);
+    smartUsage.textContent = `${local.used} / ${local.limit}`;
+    smartMeter.style.width = `${Math.min(100, (local.used / local.limit) * 100)}%`;
+    usageDate.textContent = local.date;
+
+    if (tier !== 'premium') {
+      premiumUsage.textContent = 'Premium only';
+      premiumMeter.style.width = '0%';
+      premiumHelp.textContent = 'Server-side Gemini optimization with protected API keys.';
       return;
     }
 
     try {
-      renderAccount(await fetchUserProfile());
+      const usage = await getPremiumUsageStatus();
+      const premium = usage?.premiumAi;
+      if (!premium) throw new Error('Usage unavailable');
+      premiumUsage.textContent = `${premium.used} / ${premium.limit}`;
+      premiumMeter.style.width = `${Math.min(100, (premium.used / premium.limit) * 100)}%`;
+      premiumHelp.textContent = `${premium.remaining} Premium AI optimizations remaining today.`;
     } catch (error) {
-      accountCopy.textContent = 'Account check unavailable. Free Smart Template remains ready.';
+      premiumUsage.textContent = 'Unavailable';
+      premiumMeter.style.width = '0%';
+      premiumHelp.textContent = 'Usage will refresh when the service is reachable.';
+    }
+  };
+
+  const refreshAccount = async () => {
+    clearNotice();
+    const token = await getSessionToken();
+    if (!token) {
+      renderAccount(null);
+      await renderUsage();
+      return;
+    }
+
+    try {
+      const user = await fetchUserProfile();
+      renderAccount(user);
+      await renderUsage();
+    } catch (error) {
+      renderAccount(null);
+      await renderUsage();
+      showNotice('Account status could not be refreshed. Free Smart Template remains available.', 'error');
     }
   };
 
   loginModeButton.addEventListener('click', () => setAuthMode('login'));
   signupModeButton.addEventListener('click', () => setAuthMode('signup'));
-  authOpenButton.addEventListener('click', () => openAuth('login'));
-  heroAuthButton.addEventListener('click', async () => {
-    if (currentUser?.plan === 'premium') return;
-    const token = await getSessionToken();
-    if (token) {
-      upgradeButton.click();
-    } else {
-      openAuth('login');
-    }
-  });
+  signInButton.addEventListener('click', () => openAuth('login'));
+  signUpButton.addEventListener('click', () => openAuth('signup'));
   document.getElementById('auth-close-btn').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) dialog.close();
@@ -115,63 +181,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    clearStatus();
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+    clearAuthStatus();
     submitButton.disabled = true;
-    submitButton.textContent = authMode === 'login' ? 'Signing In...' : 'Creating Account...';
+    submitButton.textContent = authMode === 'login' ? 'Signing in...' : 'Creating account...';
 
     try {
       const result = authMode === 'login'
-        ? await loginUser(email, password)
-        : await signupUser(email, password);
-      renderAccount({ ...result.user, plan: result.user.plan === 'pro' ? 'premium' : result.user.plan });
-      showStatus(
-        authMode === 'login'
-          ? 'Signed in successfully.'
-          : 'Account created. Free Smart Template is ready.',
-        'success'
-      );
+        ? await loginUser(emailInput.value, passwordInput.value)
+        : await signupUser(emailInput.value, passwordInput.value);
+      renderAccount(result.user);
+      await renderUsage();
+      await trackTelemetry(authMode === 'login' ? 'login_completed' : 'signup_completed');
+      showAuthStatus(authMode === 'login' ? 'Signed in.' : 'Account created.', 'success');
       passwordInput.value = '';
-      setTimeout(() => dialog.close(), 650);
+      window.setTimeout(() => dialog.close(), 500);
     } catch (error) {
-      showStatus(error.message || 'Authentication failed. Please try again.');
+      showAuthStatus(error.message || 'Authentication failed. Please try again.');
     } finally {
       submitButton.disabled = false;
-      submitButton.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+      submitButton.textContent = authMode === 'login' ? 'Sign in' : 'Create account';
     }
+  });
+
+  logoutButton.addEventListener('click', async () => {
+    await clearSessionToken();
+    await refreshAccount();
+    showNotice('Signed out. Local Free mode remains available.', 'success');
   });
 
   upgradeButton.addEventListener('click', async () => {
     const token = await getSessionToken();
     if (!token) {
-      openAuth('login', 'Sign in or create an account before upgrading.');
+      openAuth('login');
+      showAuthStatus('Sign in or create an account before upgrading.');
       return;
     }
 
     upgradeButton.disabled = true;
-    upgradeButton.textContent = 'Activating...';
+    upgradeButton.textContent = 'Opening...';
+    clearNotice();
     try {
       const checkoutUrl = await checkoutSubscription();
-      await chrome.tabs.create({ url: checkoutUrl });
+      await trackTelemetry('checkout_started');
+      await openUrl(checkoutUrl);
+      showNotice('Razorpay checkout opened in a new tab. Refresh this popup after payment.', 'success');
     } catch (error) {
-      openAuth('login');
-      showStatus(error.message || 'Unable to activate upgrade.');
+      showNotice(error.message || 'Premium checkout is unavailable.', 'error');
     } finally {
       upgradeButton.disabled = false;
-      upgradeButton.textContent = 'Upgrade to Premium';
+      upgradeButton.textContent = 'Get Premium';
     }
   });
 
   dashboardButton.addEventListener('click', () => {
-    openExtensionPage('src/popup/popup.html');
+    openUrl(extensionUrl('src/popup/popup.html'));
   });
+  openChatButton.addEventListener('click', () => openUrl('https://chatgpt.com/'));
 
-  logoutButton.addEventListener('click', async () => {
-    await clearSessionToken();
-    renderAccount(null);
-  });
-
+  trackTelemetry('popup_opened');
   refreshAccount();
 });

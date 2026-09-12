@@ -6,37 +6,37 @@ const PLATFORMS = [
   {
     id: 'chatgpt',
     matches: ['chatgpt.com', 'chat.openai.com'],
-    selector: '#prompt-textarea',
+    selector: '#prompt-textarea, textarea[data-id="root"]',
     isContentEditable: false
   },
   {
     id: 'claude',
     matches: ['claude.ai'],
-    selector: 'div.ProseMirror',
+    selector: 'div.ProseMirror[contenteditable="true"], div.ProseMirror',
     isContentEditable: true
   },
   {
     id: 'gemini',
     matches: ['gemini.google.com'],
-    selector: 'rich-textarea p, .ql-editor p, rich-textarea, .text-input-field',
+    selector: 'rich-textarea div[contenteditable="true"], .ql-editor[contenteditable="true"], rich-textarea textarea, .text-input-field',
     isContentEditable: true
   },
   {
     id: 'perplexity',
     matches: ['www.perplexity.ai'],
-    selector: 'textarea',
+    selector: 'textarea, [data-lexical-editor="true"][contenteditable="true"]',
     isContentEditable: false
   },
   {
     id: 'copilot',
     matches: ['copilot.microsoft.com'],
-    selector: '#searchbox, textarea',
+    selector: '#searchbox, textarea, [contenteditable="true"][role="textbox"]',
     isContentEditable: false
   },
   {
     id: 'deepseek',
     matches: ['chat.deepseek.com'],
-    selector: '#chat-input, textarea',
+    selector: '#chat-input, textarea, [contenteditable="true"][role="textbox"]',
     isContentEditable: false
   }
 ];

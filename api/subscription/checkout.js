@@ -1,22 +1,52 @@
+import { neon } from '@neondatabase/serverless';
 import { authenticate } from '../_utils/auth-helper.js';
 
-const APP_URL = process.env.APP_URL || 'https://promptiq-theta.vercel.app';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+
+const sql = neon(DATABASE_URL);
+const RAZORPAY_API_BASE = 'https://api.razorpay.com/v1';
 
 function sendJsonError(res, status, code, message) {
   res.status(status).json({ error: message, code });
 }
 
+function getRazorpayConfig() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const planId = process.env.RAZORPAY_PLAN_ID;
+  const configuredTotalCount = Number.parseInt(process.env.RAZORPAY_TOTAL_COUNT || '120', 10);
+  const totalCount = Number.isSafeInteger(configuredTotalCount) && configuredTotalCount > 0
+    ? Math.min(configuredTotalCount, 1200)
+    : 120;
+
+  if (!keyId || !keySecret || !planId) return null;
+  return { keyId, keySecret, planId, totalCount };
+}
+
+async function razorpayRequest(path, config, options = {}) {
+  const response = await fetch(`${RAZORPAY_API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Authorization': `Basic ${Buffer.from(`${config.keyId}:${config.keySecret}`).toString('base64')}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+  const data = await response.json().catch(() => ({}));
+  return { response, data };
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.setHeader('Cache-Control', 'no-store');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
+    res.status(204).end();
     return;
   }
 
@@ -38,53 +68,101 @@ export default async function handler(req, res) {
       return;
     }
 
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const stripePriceId = process.env.STRIPE_PRICE_ID;
-    if (!stripeSecretKey || !stripePriceId) {
-      sendJsonError(res, 503, 'BILLING_NOT_CONFIGURED', 'Premium checkout is not configured yet.');
+    const config = getRazorpayConfig();
+    if (!config) {
+      sendJsonError(
+        res,
+        503,
+        'BILLING_NOT_CONFIGURED',
+        'Premium checkout is being connected to Razorpay. Free Smart Template remains available.'
+      );
       return;
     }
 
-    const successUrl = `${APP_URL}/api/subscription/status?stripe_session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${APP_URL}/api/subscription/status?cancel=true`;
-    const body = new URLSearchParams({
-      mode: 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      client_reference_id: String(userId),
-      'line_items[0][price]': stripePriceId,
-      'line_items[0][quantity]': '1',
-      'metadata[user_id]': String(userId),
-      'subscription_data[metadata][user_id]': String(userId),
-      allow_promotion_codes: 'true'
-    });
+    const existingRows = await sql`
+      SELECT status, razorpay_subscription_id
+      FROM subscriptions
+      WHERE user_id = ${String(userId)}
+      LIMIT 1
+    `;
+    const existing = existingRows[0];
 
-    if (session.email) {
-      body.set('customer_email', session.email);
+    if (existing?.status === 'active') {
+      sendJsonError(res, 409, 'ALREADY_PREMIUM', 'Premium is already active on this account.');
+      return;
     }
 
-    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    if (existing?.razorpay_subscription_id) {
+      const { response, data } = await razorpayRequest(
+        `/subscriptions/${encodeURIComponent(existing.razorpay_subscription_id)}`,
+        config
+      );
+      if (
+        response.ok &&
+        data.short_url &&
+        ['created', 'authenticated', 'pending'].includes(data.status)
+      ) {
+        res.status(200).json({ url: data.short_url, provider: 'razorpay', reused: true });
+        return;
+      }
+    }
+
+    const { response, data } = await razorpayRequest('/subscriptions', config, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${stripeSecretKey}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body
+      body: JSON.stringify({
+        plan_id: config.planId,
+        total_count: config.totalCount,
+        quantity: 1,
+        customer_notify: true,
+        notes: {
+          user_id: String(userId),
+          product: 'PromptIQ Premium'
+        }
+      })
     });
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.url) {
-      console.error('Stripe checkout session creation failed', {
+    if (!response.ok || !data.id || !data.short_url) {
+      console.error('Razorpay subscription creation failed', {
         status: response.status,
-        message: data.error?.message || response.statusText
+        code: data.error?.code,
+        description: data.error?.description
       });
-      sendJsonError(res, 502, 'STRIPE_CHECKOUT_FAILED', 'Unable to start Premium checkout right now.');
+      sendJsonError(res, 502, 'RAZORPAY_CHECKOUT_FAILED', 'Unable to start Premium checkout right now.');
       return;
     }
 
-    res.status(200).json({ url: data.url });
+    await sql`
+      INSERT INTO subscriptions (
+        user_id,
+        status,
+        plan,
+        payment_provider,
+        razorpay_subscription_id,
+        razorpay_plan_id,
+        updated_at
+      )
+      VALUES (
+        ${String(userId)},
+        'created',
+        'free',
+        'razorpay',
+        ${data.id},
+        ${data.plan_id || config.planId},
+        NOW()
+      )
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        status = 'created',
+        plan = 'free',
+        payment_provider = 'razorpay',
+        razorpay_subscription_id = ${data.id},
+        razorpay_plan_id = ${data.plan_id || config.planId},
+        updated_at = NOW()
+    `;
+
+    res.status(200).json({ url: data.short_url, provider: 'razorpay', reused: false });
   } catch (error) {
-    console.error('Stripe checkout creation error:', error);
+    console.error('Razorpay checkout creation error:', error);
     sendJsonError(res, 500, 'CHECKOUT_INTERNAL_ERROR', 'Unable to start Premium checkout right now.');
   }
 }

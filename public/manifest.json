@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "PromptIQ",
-  "version": "1.0.7",
-  "description": "A browser extension that scores your prompt, optimizes it for the specific AI you're using, and explains every change.",
+  "version": "1.0.8",
+  "description": "Score and improve prompts inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.",
+  "homepage_url": "https://promptiq-theta.vercel.app/",
   "permissions": [
     "storage",
     "contextMenus"

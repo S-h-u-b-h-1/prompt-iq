@@ -365,6 +365,39 @@ export async function fetchUserProfile() {
   }
 }
 
+export async function getPremiumUsageStatus() {
+  const token = await getSessionToken();
+  if (!token) return null;
+
+  try {
+    return await requestJson('/api/usage', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      await clearSessionToken();
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function trackTelemetry(eventType) {
+  const token = await getSessionToken();
+  try {
+    await requestJson('/api/telemetry', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ event_type: eventType })
+    });
+  } catch (error) {
+    // Analytics must never interrupt the extension workflow.
+  }
+}
+
 // Subscription Actions
 export async function checkoutSubscription() {
   const token = await getSessionToken();

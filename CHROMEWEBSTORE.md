@@ -1,148 +1,179 @@
-# Chrome Web Store Listing — PromptIQ
+# Chrome Web Store release - PromptIQ
 
-> Last Updated: 2026-07-15
+Last updated: 2026-09-13
 
-## Store Listing
+## Release
 
-**Extension Name**
+Extension ID: goheoijjaebpbcgifabpgmjkgiddkpek
+
+Package: dist.zip
+
+Version: 1.0.8
+
+Homepage: https://promptiq-theta.vercel.app/
+
+Privacy policy: https://promptiq-theta.vercel.app/privacy
+
+Support: https://promptiq-theta.vercel.app/support
+
+## Store listing
+
+Name
+
 PromptIQ
 
-**Short Description**
-Write normally. PromptIQ turns your idea into a professional AI prompt in one click.
+Short description
 
-**Detailed Description**
-PromptIQ helps you get better AI responses by transforming ordinary drafts into clear, structured, and high-quality instructions—right where you work. It integrates seamlessly with popular AI platforms, allowing you to optimize prompts without switching tabs or learning prompt engineering.
+Score and improve prompts inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
+
+Detailed description
+
+PromptIQ helps you get better AI responses by turning rough ideas into clear, structured instructions directly inside the AI tools you already use.
 
 Write normally. PromptIQ makes it AI-ready.
 
-### Key Features
+Key features
 
-🚀 **One-Click Prompt Optimization**
-Instantly rewrite vague or incomplete drafts into well-structured, AI-ready prompts for higher-quality responses.
+One-click prompt optimization
 
-📊 **Live Prompt Quality Score**
-Receive a real-time quality score as you type, with actionable suggestions for improving clarity, context, specificity, role definition, and constraints.
+Turn vague or incomplete drafts into clear, detailed prompts with a defined task, context, format, role, specificity, and constraints.
 
-🧠 **Platform-Aware Calibrations**
-PromptIQ automatically adapts its optimization strategy to match the formatting guidelines and nuances of your target AI platform.
+Live prompt quality score
 
-🎛️ **Optimization Modes**
-Choose Standard, Concise, Detailed, Creative, or Technical optimization depending on the job.
+See a real-time score as you type and identify the prompt dimensions that need more direction.
 
-📖 **Explanations Included**
-See exactly what was improved and why, helping you understand the principles behind effective prompt writing.
+Platform-aware optimization
 
-⭐ **History and Favorites**
-Save useful optimized prompts, review before/after versions, and reuse favorites from the extension dashboard.
+PromptIQ adapts prompts for ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
 
-⚡ **One-Click Insert**
-Replace your original prompt with the optimized version instantly, with undo available after insertion.
+Five optimization modes
 
-### How It Works:
+Choose Standard, Concise, Detailed, Creative, or Technical mode for the work you are doing.
 
-1. **Write:** Open your preferred AI platform and start typing as usual.
-2. **Score:** Click the floating PromptIQ badge beside the chat input to check your draft's score.
-3. **Optimize:** Free includes 100 local Smart Template optimizations per day. Premium includes 20 Premium AI optimizations per day and 200 local Smart Template optimizations per day, with API keys kept outside the extension package.
-4. **Insert:** Insert the optimized prompt directly into the text area with a single click.
+Compare, insert, and undo
 
-### Privacy & Security
+Review the original and optimized versions, insert the improved prompt into the chat composer, and undo the insertion when needed.
 
-Free Smart Template optimization runs locally without sending prompt text to an optimization API and is limited to 100 local optimizations per day. Premium includes 20 server-side AI optimizations per day and 200 local Smart Template optimizations per day. Premium sends only prompts the user chooses to optimize through the PromptIQ backend to Google Gemini. Signed-out history stays on the device; signed-in history is synchronized to the user's account. API keys remain on the server and are never included in the extension package.
+History, favorites, and templates
 
-**Category**
-Productivity
+Review previous optimizations, save useful prompts as favorites, and reuse templates from the PromptIQ dashboard.
 
-**Single Purpose**
-Evaluates, scores, and refines user prompts inline on major AI text platforms.
+Plans
 
-**Primary Language**
-English
+Free
 
+- 100 Smart Template optimizations per day
+- Prompt scoring and all five optimization modes
+- Local history, favorites, comparison, and undo
+- No account required
+- Free optimization runs locally and does not send prompt text to an AI API
 
-## Graphics & Assets
+Premium
 
-| Asset | Dimensions | Status | Filename |
-|-------|-----------|--------|----------|
-| Store Icon | 128×128 PNG | ✅ Ready | `public/store_icon.png` |
-| Screenshot 1 | 1280×800 PNG | ✅ Ready | `public/screenshot1.png` |
-| Screenshot 2 | 1280×800 PNG | ✅ Ready | `public/screenshot2.png` |
-| Screenshot 3 | 1280×800 PNG | ✅ Ready | `public/screenshot3.png` |
+- 20 Premium AI optimizations per day
+- 200 Smart Template optimizations per day
+- Server-side Google Gemini optimization
+- Signed-in history synchronization
+- Provider API keys remain secured on the PromptIQ server
 
+How it works
 
-## Permissions Justification
+1. Open a supported AI platform and write your prompt.
+2. Click the floating PromptIQ score beside the chat composer.
+3. Choose an optimization mode and engine.
+4. Review the optimized version and explanation.
+5. Insert the improved prompt with one click.
 
-| Permission | Type | Justification |
-|------------|------|---------------|
-| `storage` | permissions | Used to persist user settings, local history, favorites, and signed-in session state. |
-| `contextMenus` | permissions | Used to add a right-click context menu option allowing users to highlight text on any webpage and optimize it as a prompt. |
-| `*://chatgpt.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in ChatGPT interfaces. |
-| `*://chat.openai.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in legacy ChatGPT interfaces. |
-| `*://claude.ai/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in Claude interfaces. |
-| `*://gemini.google.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in Gemini interfaces. |
-| `*://www.perplexity.ai/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in Perplexity interfaces. |
-| `*://copilot.microsoft.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in Microsoft Copilot interfaces. |
-| `*://chat.deepseek.com/*` | host_permissions | Required to detect, read, and inject optimized text into input fields in DeepSeek interfaces. |
-| `https://promptiq-theta.vercel.app/*` | host_permissions | Used for account authentication, signed-in history synchronization, subscriptions, and Premium AI optimization. |
+Privacy and security
 
+Free Smart Template optimization runs locally. Premium sends only the prompts a user chooses to optimize through the PromptIQ backend to Google Gemini. Signed-out history remains on the device. Signed-in history is synchronized to the user's PromptIQ account. PromptIQ does not sell user data and does not include provider API keys in the extension package.
 
-## Privacy & Data Use
+Category: Productivity
 
-### Data Collection
+Single purpose: Evaluates, scores, and refines user prompts inline on supported AI text platforms.
 
-**Does the extension collect user data?** Yes
+Language: English
 
-| Data Type | Collected? | Transmitted Off-Device? | Purpose | Shared with Third Parties? |
-|-----------|-----------|------------------------|---------|---------------------------|
-| Personally identifiable info | Yes | Yes | Account email for login, support, and subscription status. | No |
-| Health info | No | No | N/A | No |
-| Financial info | No | No | N/A | No |
-| Authentication info | Yes | Yes | Email/password login; passwords are transmitted to the backend over HTTPS and stored as salted hashes. | No |
-| Personal communications | Yes | Only for signed-in history and Premium optimization | Free optimization is local; Premium sends selected prompts to backend/Gemini. | Yes, Google Gemini API for Premium processing |
-| Location | No | No | N/A | No |
-| Web history | No | No | N/A | No |
-| User activity | Yes | Yes when signed in | To synchronize optimization history, feedback, account status, and subscriptions. | No |
-| Website content | Yes | Only when the user chooses signed-in history sync or Premium optimization | To read the active prompt field, calculate local scores, save selected history, and optimize selected prompts. | Yes, Google Gemini API for Premium processing |
+## Permissions
 
-### Data Use Certification
-- [x] Data is NOT sold to third parties
-- [x] Data is NOT used for purposes unrelated to the extension's core functionality
-- [x] Data is NOT used for creditworthiness or lending purposes
+| Permission | Justification |
+|---|---|
+| storage | Saves settings, local history, favorites, usage counters, and signed-in session state. |
+| contextMenus | Adds an Optimize with PromptIQ action for selected text. |
+| chatgpt.com and chat.openai.com | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
+| claude.ai | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
+| gemini.google.com | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
+| perplexity.ai | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
+| copilot.microsoft.com | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
+| chat.deepseek.com | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
+| promptiq-theta.vercel.app | Handles account authentication, signed-in history synchronization, usage status, Premium checkout, and Premium AI optimization. |
 
+## Privacy disclosure
 
-## Privacy Policy
+Does the extension collect user data? Yes.
 
-**Homepage URL**
-https://promptiq-theta.vercel.app/
+| Chrome Web Store data type | Collected | Purpose |
+|---|---|---|
+| Personally identifiable information | Yes | Account email, when a user creates an account. |
+| Authentication information | Yes | Email and password are transmitted over HTTPS; passwords are stored as salted hashes. |
+| Personal communications | Yes | Signed-in history synchronization and prompts explicitly submitted for Premium AI optimization. |
+| User activity | Yes | Limited product events, prompt scores, platform, mode, history, feedback, and subscription status. |
+| Website content | Yes | The active prompt composer is read locally for scoring and user-requested optimization or insertion. |
+| Financial information | No | Razorpay processes payment details; PromptIQ stores only subscription/customer identifiers and status. |
+| Web history | No | PromptIQ does not collect browsing history. |
+| Location | No | PromptIQ does not collect location. |
+| Health information | No | PromptIQ does not intentionally collect health information. |
 
-**Privacy Policy URL**
-https://promptiq-theta.vercel.app/privacy
+Data use certifications
 
+- Data is not sold to third parties.
+- Data is not used for purposes unrelated to PromptIQ's single purpose.
+- Data is not used for creditworthiness or lending.
+- Chrome API data is handled under the Chrome Web Store User Data Policy and Limited Use requirements.
 
-## Distribution
+## Assets
 
-**Visibility**: Public
-**Regions**: All regions
-**Pricing**: Free (with paid subscription upgrade to Premium)
+| Asset | File |
+|---|---|
+| 128 x 128 icon | public/store_icon.png |
+| 1280 x 800 screenshot 1 | public/screenshot1.png |
+| 1280 x 800 screenshot 2 | public/screenshot2.png |
+| 1280 x 800 screenshot 3 | public/screenshot3.png |
 
+The screenshots should be replaced with captures of version 1.0.8 before submission because the current images contain older visual concepts and plan copy.
 
-## Developer Info
+## Razorpay setup
 
-**Publisher Name**
-PromptIQ Developer
+Required production environment variables:
 
-**Contact Email**
-shubhaangkataruka22012007@gmail.com
+- RAZORPAY_KEY_ID
+- RAZORPAY_KEY_SECRET
+- RAZORPAY_PLAN_ID
+- RAZORPAY_WEBHOOK_SECRET
+- RAZORPAY_TOTAL_COUNT, optional; defaults to 120 monthly billing cycles
 
+Webhook URL:
 
-## Version History
+https://promptiq-theta.vercel.app/api/subscription/webhook
 
-| Version | Date | Changes | Status |
-|---------|------|---------|--------|
-| 1.0.7 | 2026-07-15 | Added daily quotas: Free has 100 local Smart Template optimizations/day; Premium has 20 Premium AI optimizations/day and 200 local Smart Template optimizations/day. | Draft |
-| 1.0.6 | 2026-07-15 | Restored onboarding as the toolbar entry, added optimization modes, favorites, undo insertion, explicit version comparison, richer platform-aware local templates, and removed the accidental Premium one-run cap. | Draft |
-| 1.0.5 | 2026-07-07 | Redesigned popup dialog and account dashboard. Superseded before publication. | Superseded |
-| 1.0.4 | 2026-07-03 | Moved the toolbar entry to onboarding, repaired authentication and account navigation, introduced local Free templates and server-side Premium AI, and hardened storage and MV3 packaging. | Published |
-| 1.0.3 | 2026-06-29 | Removed website-only pages and all remote resources from the extension UI; added an automated Manifest V3 package compliance check. | Draft |
-| 1.0.2 | 2026-06-27 | Fixed metadata policy violation (keyword spam in description). | Rejected |
-| 1.0.1 | 2026-06-26 | UI/UX redesign of onboarding and inline optimizer panel; updated API keys for model compatibility. | Rejected |
-| 1.0.0 | 2026-06-22 | Initial Release. Live prompt scoring, inline optimizations, Vercel backend sync, and premium upgrade paths. | Published |
+Subscribe to these Razorpay events:
+
+- subscription.authenticated
+- subscription.activated
+- subscription.charged
+- subscription.updated
+- subscription.pending
+- subscription.halted
+- subscription.paused
+- subscription.resumed
+- subscription.cancelled
+- subscription.completed
+
+## Version history
+
+| Version | Date | Status | Changes |
+|---|---|---|---|
+| 1.0.8 | 2026-09-13 | Ready for submission | Compact usage popup, signed-out Free dashboard, Razorpay-ready Premium flow, atomic Premium quota, safer rendering, refreshed platform selectors, working production links, and corrected privacy/store disclosures. |
+| 1.0.7 | 2026-07-15 | Draft | Added daily quotas. |
+| 1.0.6 | 2026-07-15 | Draft | Added optimization modes, favorites, undo, comparison, and onboarding updates. |
+| 1.0.4 | 2026-07-03 | Published | Authentication and local Free templates. |

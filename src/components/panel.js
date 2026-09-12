@@ -1,7 +1,7 @@
 export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onFavorite) {
   const container = document.createElement('div');
   container.id = 'promptiq-container';
-  container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 999999; font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;';
+  container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 2147483000; font-family: Inter, system-ui, -apple-system, sans-serif;';
   
   let isCooldownActive = false;
   let currentRunId = null;
@@ -23,14 +23,18 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   }
 
   const shadow = container.attachShadow({ mode: 'open' });
-  const openPromptIqPopup = () => {
+  const openPromptIqPopup = async () => {
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage({ action: 'OPEN_ONBOARDING' });
+        const response = await chrome.runtime.sendMessage({ action: 'OPEN_ONBOARDING' });
+        if (!response?.success) {
+          throw new Error(response?.error || 'Account page could not be opened.');
+        }
         return;
       }
     } catch (err) {
-      // Fall through to the generic extension hint.
+      window.alert('PromptIQ was updated. Refresh this page, then try opening the account again.');
+      return;
     }
     window.alert('Open the PromptIQ extension from your browser toolbar.');
   };
@@ -151,6 +155,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       transform: translateX(0);
       opacity: 1;
       pointer-events: auto;
+    }
+    .panel-wrapper.has-result .signin-card,
+    .panel-wrapper.has-result .score-area,
+    .panel-wrapper.has-result .chips-container {
+      display: none;
     }
     .header {
       display: flex;
@@ -834,7 +843,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     </div>
     
     <div class="mode-selector-wrapper">
-      <label>Mode and Platform</label>
+      <label>Mode, engine, and platform</label>
       <div class="settings-grid">
         <select class="select-control" id="mode-select" aria-label="Optimization mode">
           <option value="standard">Standard</option>
@@ -844,7 +853,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
           <option value="technical">Technical</option>
         </select>
         <select class="select-control" id="engine-select" aria-label="Optimization engine">
-          <option value="smart_template">Smart Template</option>
+          <option value="smart_template">Local</option>
           <option value="premium_ai">Premium AI</option>
         </select>
         <div class="platform-pill" id="platform-pill">AI assistant</div>
@@ -1097,6 +1106,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   });
 
   optimizeBtn.addEventListener('click', async () => {
+    panel.classList.remove('has-result');
     loaderShimmer.style.display = 'block';
     errorPanel.style.display = 'none';
     shadow.getElementById('result-section').style.display = 'none';
@@ -1365,6 +1375,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     },
     showResult: (optimizedText, diffedTokens, explainedChanges, runId, scoreSummary = null, meta = {}) => {
       currentRunId = runId;
+      panel.classList.add('has-result');
       errorPanel.style.display = 'none';
       shadow.getElementById('result-section').style.display = 'block';
       optimizeBtn.textContent = 'Optimize Prompt';
@@ -1436,6 +1447,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       successSummary.classList.add('pulse');
     },
     showError: (err) => {
+      panel.classList.remove('has-result');
       loaderShimmer.style.display = 'none';
       optimizeBtn.disabled = false;
       shadow.getElementById('result-section').style.display = 'none';

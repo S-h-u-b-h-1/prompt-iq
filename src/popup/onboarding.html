@@ -1,710 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to PromptIQ</title>
-  <link rel="icon" href="../../favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PromptIQ</title>
+  <link rel="icon" href="/icon-16.png">
   <style>
     :root {
-      --pi-bg: #070a12;
-      --pi-card: rgba(13, 20, 34, 0.76);
-      --pi-card-strong: rgba(17, 26, 43, 0.94);
-      --pi-border: rgba(148, 163, 184, 0.18);
-      --pi-text: #f8fafc;
-      --pi-muted: #9aa8ba;
-      --pi-primary: #38bdf8;
-      --pi-success: #34d399;
-      --pi-warning: #fbbf24;
-      --pi-danger: #fb7185;
-      --pi-shadow: rgba(0, 0, 0, 0.36);
-      --pi-radius: 8px;
+      color-scheme: dark;
+      --bg: #0b0f14;
+      --surface: #121821;
+      --surface-2: #18202b;
+      --border: #2a3441;
+      --text: #f7f8fa;
+      --muted: #9ca8b7;
+      --blue: #58a6ff;
+      --green: #46c98b;
+      --amber: #f2b84b;
+      --danger: #f47b88;
     }
 
-    * {
-      box-sizing: border-box;
-      scroll-behavior: smooth;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     html {
-      background: var(--pi-bg);
+      min-width: 380px;
+      min-height: 590px;
+      background: #070a0e;
     }
 
     body {
-      min-height: 100vh;
-      min-width: 360px;
-      margin: 0;
-      color: var(--pi-text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.55;
-      background:
-        linear-gradient(120deg, rgba(56, 189, 248, 0.12), transparent 38%),
-        linear-gradient(180deg, #070a12 0%, #0b1120 46%, #080b13 100%);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent 76%);
-    }
-
-    a {
-      color: inherit;
-    }
-
-    button,
-    a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    a:focus-visible,
-    button:focus-visible {
-      outline: 2px solid var(--pi-primary);
-      outline-offset: 3px;
-    }
-
-    .section {
-      width: 100%;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-    }
-
-    .section-inner {
-      width: min(1120px, calc(100% - 40px));
+      width: 420px;
+      min-height: 590px;
       margin: 0 auto;
-      padding: 72px 0;
+      color: var(--text);
+      background: var(--bg);
+      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    .hero .section-inner {
-      min-height: min(820px, calc(100vh - 32px));
-      display: grid;
-      grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
-      gap: 44px;
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .app {
+      min-height: 590px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .topbar {
+      display: flex;
       align-items: center;
-      padding-top: 64px;
-      padding-bottom: 44px;
+      justify-content: space-between;
+      min-height: 50px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      background: #0e131a;
     }
 
-    .brand-row {
-      display: inline-flex;
+    .brand {
+      display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 22px;
-      color: var(--pi-muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .brand-mark {
-      display: grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      border-radius: var(--pi-radius);
-      background: linear-gradient(135deg, var(--pi-primary), var(--pi-success));
-      color: #06101f;
-      font-weight: 900;
-    }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin-top: 0;
-    }
-
-    h1 {
-      max-width: 760px;
-      margin-bottom: 18px;
-      font-size: 68px;
-      line-height: 1.02;
-      letter-spacing: 0;
-      font-weight: 850;
-    }
-
-    .hero-copy {
-      max-width: 660px;
-      margin-bottom: 30px;
-      color: var(--pi-muted);
-      font-size: 18px;
-    }
-
-    .cta-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .btn {
-      display: inline-flex;
-      min-height: 46px;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 0 18px;
-      border-radius: var(--pi-radius);
-      border: 1px solid transparent;
-      font-size: 14px;
-      font-weight: 800;
-      text-decoration: none;
-      cursor: pointer;
-      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
-    }
-
-    .btn-primary {
-      color: #04101d;
-      background: linear-gradient(135deg, #67e8f9, #38bdf8 54%, #34d399);
-      box-shadow: 0 16px 42px rgba(56, 189, 248, 0.24);
-    }
-
-    .btn-secondary {
-      color: var(--pi-text);
-      background: rgba(255, 255, 255, 0.055);
-      border-color: var(--pi-border);
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .proof-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      color: var(--pi-muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .proof-pill {
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      border-radius: 999px;
-      padding: 6px 10px;
-      background: rgba(255, 255, 255, 0.035);
-    }
-
-    .hero-visual {
-      position: relative;
-      min-height: 510px;
-    }
-
-    .browser-shell {
-      position: relative;
-      height: 510px;
-      overflow: hidden;
-      border: 1px solid rgba(203, 213, 225, 0.18);
-      border-radius: var(--pi-radius);
-      background:
-        linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(8, 13, 24, 0.96)),
-        #0f172a;
-      box-shadow: 0 28px 80px var(--pi-shadow);
-    }
-
-    .browser-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      height: 42px;
-      padding: 0 14px;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-      background: rgba(255, 255, 255, 0.035);
-    }
-
-    .window-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: rgba(148, 163, 184, 0.5);
-    }
-
-    .browser-url {
-      flex: 1;
-      height: 24px;
-      margin-left: 10px;
-      border-radius: var(--pi-radius);
-      background: rgba(15, 23, 42, 0.8);
-      color: var(--pi-muted);
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .chat-preview {
-      display: grid;
-      grid-template-columns: 1fr 238px;
-      gap: 16px;
-      padding: 18px;
-      height: calc(100% - 42px);
-    }
-
-    .chat-feed {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-width: 0;
-    }
-
-    .message-stack {
-      display: grid;
-      gap: 12px;
-    }
-
-    .message {
-      padding: 13px 14px;
-      border: 1px solid rgba(148, 163, 184, 0.12);
-      border-radius: var(--pi-radius);
-      background: rgba(255, 255, 255, 0.045);
-      color: #e5edf7;
-      font-size: 13px;
-    }
-
-    .message.user {
-      justify-self: end;
-      max-width: 86%;
-      background: rgba(56, 189, 248, 0.12);
-      border-color: rgba(56, 189, 248, 0.22);
-    }
-
-    .composer {
-      min-height: 96px;
-      border: 1px solid rgba(52, 211, 153, 0.28);
-      border-radius: var(--pi-radius);
-      background: rgba(2, 6, 23, 0.62);
-      padding: 14px;
-      color: var(--pi-muted);
-      font-size: 13px;
-    }
-
-    .panel-preview {
-      min-width: 0;
-      border: 1px solid rgba(203, 213, 225, 0.18);
-      border-radius: var(--pi-radius);
-      background: rgba(7, 10, 18, 0.82);
-      padding: 14px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    }
-
-    .panel-preview-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .panel-title {
-      font-size: 15px;
-      font-weight: 850;
-    }
-
-    .score-badge {
-      display: grid;
-      place-items: center;
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      border: 7px solid rgba(52, 211, 153, 0.68);
-      color: var(--pi-success);
-      font-size: 19px;
-      font-weight: 900;
-    }
-
-    .mini-label {
-      margin-bottom: 7px;
-      color: var(--pi-muted);
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .chip-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-
-    .mini-chip {
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      border-radius: 999px;
-      padding: 4px 7px;
-      color: var(--pi-muted);
-      font-size: 10px;
-      font-weight: 800;
-    }
-
-    .mini-chip.ready {
-      color: var(--pi-success);
-      border-color: rgba(52, 211, 153, 0.28);
-      background: rgba(52, 211, 153, 0.08);
-    }
-
-    .output-box {
-      max-height: 190px;
-      overflow: auto;
-      border: 1px solid rgba(148, 163, 184, 0.14);
-      border-radius: var(--pi-radius);
-      padding: 12px;
-      background: rgba(15, 23, 42, 0.72);
-      color: #dbeafe;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .section-eyebrow {
-      margin-bottom: 10px;
-      color: var(--pi-primary);
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    .section-heading {
-      max-width: 720px;
-      margin-bottom: 18px;
-      font-size: 42px;
-      line-height: 1.1;
-      letter-spacing: 0;
-      font-weight: 850;
-    }
-
-    .section-lede {
-      max-width: 720px;
-      margin-bottom: 28px;
-      color: var(--pi-muted);
       font-size: 16px;
+      font-weight: 800;
     }
 
-    .comparison-grid {
-      display: grid;
-      grid-template-columns: 0.86fr 1.14fr;
-      gap: 14px;
-    }
-
-    .prompt-card,
-    .feature-card,
-    .plan-card,
-    .step-card,
-    .trust-note {
-      border: 1px solid var(--pi-border);
-      border-radius: var(--pi-radius);
-      background: var(--pi-card);
-      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.2);
-    }
-
-    .prompt-card {
-      padding: 20px;
-    }
-
-    .prompt-card.after {
-      background: linear-gradient(180deg, rgba(52, 211, 153, 0.08), var(--pi-card));
-      border-color: rgba(52, 211, 153, 0.28);
-    }
-
-    .card-kicker {
-      display: inline-flex;
-      margin-bottom: 14px;
-      border-radius: 999px;
-      padding: 5px 9px;
-      background: rgba(255, 255, 255, 0.055);
-      color: var(--pi-muted);
-      font-size: 11px;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .card-kicker.good {
-      color: var(--pi-success);
-      background: rgba(52, 211, 153, 0.09);
-    }
-
-    .prompt-text {
-      margin: 0;
-      color: #dbeafe;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
-      white-space: pre-wrap;
-    }
-
-    .platform-grid,
-    .feature-grid,
-    .steps-grid,
-    .plans-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .platform-grid {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-
-    .platform-item {
-      min-height: 84px;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--pi-border);
-      border-radius: var(--pi-radius);
-      background: rgba(255, 255, 255, 0.035);
-      color: #dbeafe;
-      font-weight: 850;
-      text-align: center;
-    }
-
-    .feature-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .feature-card,
-    .step-card,
-    .plan-card {
-      padding: 20px;
-    }
-
-    .feature-number,
-    .step-number {
+    .mark {
       display: grid;
       place-items: center;
       width: 30px;
       height: 30px;
-      margin-bottom: 16px;
-      border-radius: var(--pi-radius);
-      background: rgba(56, 189, 248, 0.11);
-      color: var(--pi-primary);
+      border-radius: 7px;
+      color: #071019;
+      background: var(--blue);
       font-size: 12px;
       font-weight: 900;
     }
 
-    .feature-title,
-    .step-title,
-    .plan-title {
-      margin-bottom: 7px;
-      color: var(--pi-text);
-      font-size: 16px;
-      font-weight: 850;
-    }
-
-    .feature-copy,
-    .step-copy,
-    .plan-copy {
-      margin: 0;
-      color: var(--pi-muted);
-      font-size: 13px;
-    }
-
-    .steps-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .plans-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .plan-card.premium {
-      border-color: rgba(56, 189, 248, 0.32);
-      background: linear-gradient(180deg, rgba(56, 189, 248, 0.08), var(--pi-card));
-    }
-
-    .plan-price {
-      margin-bottom: 14px;
-      color: var(--pi-text);
-      font-size: 28px;
-      font-weight: 900;
-    }
-
-    .plan-price span {
-      color: var(--pi-muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .plan-list {
-      display: grid;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      color: var(--pi-muted);
-      font-size: 13px;
-    }
-
-    .plan-list li {
-      display: flex;
-      gap: 9px;
-    }
-
-    .plan-list li::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      margin-top: 8px;
-      border-radius: 50%;
-      background: var(--pi-success);
-      flex: 0 0 auto;
-    }
-
-    .trust-note {
-      display: grid;
-      grid-template-columns: 38px 1fr;
-      gap: 14px;
-      align-items: start;
-      padding: 18px;
-      background: rgba(15, 23, 42, 0.86);
-    }
-
-    .trust-mark {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      border-radius: var(--pi-radius);
-      background: rgba(52, 211, 153, 0.1);
-      color: var(--pi-success);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .trust-note h3 {
-      margin-bottom: 5px;
-      font-size: 16px;
-    }
-
-    .trust-note p {
-      margin: 0;
-      color: var(--pi-muted);
-      font-size: 13px;
-    }
-
-    .data-use-list {
-      display: grid;
-      gap: 7px;
-      margin: 10px 0 0;
-      padding-left: 18px;
-      color: var(--pi-muted);
-      font-size: 12px;
-    }
-
-    .account-bar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      min-height: 58px;
-      padding: 8px max(20px, calc((100% - 1120px) / 2));
-      border-bottom: 1px solid var(--pi-border);
-      background: rgba(7, 10, 18, 0.94);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .account-state {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .tier-badge {
-      flex: 0 0 auto;
-      border: 1px solid var(--pi-border);
-      border-radius: 6px;
-      padding: 4px 8px;
-      color: var(--pi-muted);
+    .plan-badge {
+      min-width: 60px;
+      padding: 5px 8px;
+      border: 1px solid #35506d;
+      border-radius: 999px;
+      color: #bdddff;
+      background: #10243a;
+      text-align: center;
       font-size: 10px;
       font-weight: 900;
     }
 
-    .tier-badge.premium {
-      color: var(--pi-primary);
-      border-color: rgba(56, 189, 248, 0.34);
-      background: rgba(56, 189, 248, 0.09);
+    .plan-badge.premium {
+      color: #ffe8aa;
+      border-color: #665127;
+      background: #2b2313;
+    }
+
+    main { padding: 12px; }
+
+    .account {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .account-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
     }
 
     .account-copy {
-      min-width: 0;
-      color: var(--pi-muted);
+      margin: 4px 0 0;
+      color: var(--muted);
       font-size: 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .account-actions {
       display: flex;
+      flex-shrink: 0;
+      gap: 6px;
+    }
+
+    .btn {
+      min-height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0 12px;
+      color: var(--text);
+      background: var(--surface-2);
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    .btn:hover { border-color: #4a5a6d; }
+    .btn:disabled { cursor: not-allowed; opacity: .55; }
+    .btn-primary {
+      color: #06111c;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+    .btn-quiet { background: transparent; }
+    .btn-danger { color: #ffd0d5; border-color: #62323a; background: #261318; }
+    .btn-small { min-height: 32px; padding: 0 9px; font-size: 12px; }
+
+    .section { padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .section:last-child { border-bottom: 0; }
+
+    .section-head {
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .section-title { margin: 0; font-size: 13px; font-weight: 850; }
+    .date-label { color: var(--muted); font-size: 10px; }
+
+    .usage-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .usage-row {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+    }
+
+    .usage-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .usage-name { font-size: 12px; font-weight: 800; }
+    .usage-count { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .usage-help { display: none; }
+
+    .meter {
+      height: 5px;
+      margin-top: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #27313d;
+    }
+
+    .meter > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+      transition: width .2s ease;
+    }
+
+    .meter.premium > span { background: var(--amber); }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
 
-    .account-actions .btn {
-      min-height: 36px;
-      padding: 0 12px;
-      font-size: 12px;
-    }
+    .action-grid .btn { width: 100%; }
 
-    .auth-dialog {
-      width: min(440px, calc(100% - 28px));
-      max-height: calc(100vh - 28px);
-      overflow: auto;
-      padding: 0;
-      border: 1px solid var(--pi-border);
-      border-radius: var(--pi-radius);
-      color: var(--pi-text);
-      background: #0c1322;
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58);
-    }
-
-    .auth-dialog::backdrop {
-      background: rgba(2, 6, 23, 0.78);
-      backdrop-filter: blur(6px);
-    }
-
-    .auth-dialog-inner {
-      padding: 22px;
-    }
-
-    .auth-dialog-header {
-      display: flex;
-      align-items: start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    .auth-dialog-title {
-      margin-bottom: 5px;
-      font-size: 20px;
-    }
-
-    .auth-dialog-copy {
-      margin: 0;
-      color: var(--pi-muted);
-      font-size: 13px;
-    }
-
-    .icon-button {
+    .plan-grid {
       display: grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--pi-border);
-      border-radius: var(--pi-radius);
-      color: var(--pi-text);
-      background: rgba(255, 255, 255, 0.04);
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    .plan {
+      min-height: 104px;
+      padding: 10px;
+      background: var(--surface);
+    }
+
+    .plan + .plan { border-left: 1px solid var(--border); }
+    .plan-name { font-size: 12px; font-weight: 900; }
+    .plan-price { margin-top: 2px; font-size: 18px; font-weight: 900; }
+    .plan-price span { color: var(--muted); font-size: 10px; font-weight: 650; }
+    .plan p { margin: 5px 0 0; color: var(--muted); font-size: 10px; }
+    .plan .btn { width: 100%; margin-top: 6px; }
+
+    .notice {
+      display: none;
+      margin: 0 0 12px;
+      padding: 10px 11px;
+      border: 1px solid #3b566f;
+      border-radius: 7px;
+      color: #cfe8ff;
+      background: #101f2d;
+      font-size: 11px;
+    }
+
+    .notice.visible { display: block; }
+    .notice.error { color: #ffd1d6; border-color: #67333b; background: #28151a; }
+    .notice.success { color: #c7f5df; border-color: #285b43; background: #10231a; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      background: #0e131a;
+      font-size: 10px;
+    }
+
+    footer a { color: #b9c8d8; text-decoration: none; }
+
+    dialog {
+      width: min(360px, calc(100vw - 28px));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0;
+      color: var(--text);
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+    }
+
+    dialog::backdrop { background: rgba(0, 0, 0, .72); }
+    .dialog-inner { padding: 16px; }
+    .dialog-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .dialog-title { margin: 0; font-size: 17px; }
+    .icon-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      background: transparent;
       cursor: pointer;
       font-size: 20px;
     }
@@ -713,449 +300,153 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 4px;
-      margin-bottom: 18px;
-      padding: 4px;
-      border: 1px solid var(--pi-border);
-      border-radius: var(--pi-radius);
-      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 14px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
     }
 
     .auth-mode {
-      min-height: 36px;
+      min-height: 34px;
       border: 0;
       border-radius: 5px;
-      color: var(--pi-muted);
+      color: var(--muted);
       background: transparent;
       cursor: pointer;
       font-weight: 800;
     }
 
-    .auth-mode.active {
-      color: var(--pi-text);
-      background: rgba(56, 189, 248, 0.12);
-    }
-
-    .form-group {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-
-    .form-group label {
-      color: var(--pi-muted);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .form-group input {
+    .auth-mode.active { color: var(--text); background: var(--surface-2); }
+    .field { display: grid; gap: 5px; margin-bottom: 12px; }
+    .field label { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .field input {
       width: 100%;
-      min-height: 44px;
-      border: 1px solid var(--pi-border);
-      border-radius: var(--pi-radius);
-      padding: 0 12px;
-      color: var(--pi-text);
-      background: rgba(2, 6, 23, 0.62);
-      font: inherit;
-      outline: none;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0 11px;
+      color: var(--text);
+      background: #0a0f15;
     }
+    .dialog-copy { margin: 12px 0 0; color: var(--muted); font-size: 10px; }
+    .dialog-copy a { color: #bddcff; }
 
-    .form-group input:focus {
-      border-color: var(--pi-primary);
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
-    }
-
-    .auth-submit {
-      width: 100%;
-      margin-top: 4px;
-    }
-
-    .auth-status {
-      display: none;
-      margin: 12px 0 0;
-      border-radius: var(--pi-radius);
-      padding: 10px 12px;
-      font-size: 12px;
-    }
-
-    .auth-status.visible {
-      display: block;
-    }
-
-    .auth-status.error {
-      color: #fecdd3;
-      background: rgba(251, 113, 133, 0.1);
-      border: 1px solid rgba(251, 113, 133, 0.22);
-    }
-
-    .auth-status.success {
-      color: #a7f3d0;
-      background: rgba(52, 211, 153, 0.1);
-      border: 1px solid rgba(52, 211, 153, 0.22);
-    }
-
-    .auth-privacy {
-      margin: 14px 0 0;
-      color: var(--pi-muted);
-      font-size: 11px;
-      text-align: center;
-    }
-
-    @media (max-width: 940px) {
-      .hero .section-inner {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-
-      .hero-visual {
-        min-height: 440px;
-      }
-
-      .browser-shell {
-        height: 440px;
-      }
-
-      .platform-grid,
-      .feature-grid,
-      .steps-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      h1 {
-        font-size: 54px;
-      }
-
-      .section-heading {
-        font-size: 36px;
-      }
-    }
-
-    @media (max-width: 680px) {
-      .account-bar {
-        align-items: stretch;
-        flex-direction: column;
-        padding: 10px 14px;
-      }
-
-      .account-actions {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .account-actions .btn {
-        width: 100%;
-      }
-
-      .section-inner {
-        width: min(100% - 28px, 1120px);
-        padding: 52px 0;
-      }
-
-      .hero .section-inner {
-        padding-top: 40px;
-      }
-
-      h1 {
-        font-size: 40px;
-      }
-
-      .section-heading {
-        font-size: 30px;
-      }
-
-      .hero-copy {
-        font-size: 16px;
-      }
-
-      .cta-group {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-      }
-
-      .chat-preview,
-      .comparison-grid,
-      .plans-grid,
-      .platform-grid,
-      .feature-grid,
-      .steps-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-visual,
-      .browser-shell {
-        min-height: auto;
-        height: auto;
-      }
-
-      .panel-preview {
-        min-height: 320px;
-      }
+    @media (max-width: 419px) {
+      html, body { min-width: 340px; width: 100%; }
+      .account { flex-direction: column; }
+      .account-actions { width: 100%; }
+      .account-actions .btn { flex: 1; }
     }
   </style>
 </head>
 <body>
-  <header class="account-bar">
-    <div class="account-state">
-      <span class="tier-badge" id="tier-badge">FREE</span>
-      <span class="account-copy" id="account-copy">Smart Template runs locally. No account required.</span>
-    </div>
-    <div class="account-actions">
-      <button class="btn btn-secondary" id="auth-open-btn" type="button">Sign In</button>
-      <button class="btn btn-primary" id="upgrade-btn" type="button">Get Premium</button>
-      <button class="btn btn-secondary" id="dashboard-btn" type="button" hidden>Dashboard</button>
-      <button class="btn btn-secondary" id="logout-btn" type="button" hidden>Log Out</button>
-    </div>
-  </header>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="mark">IQ</span><span>PromptIQ</span></div>
+      <span class="plan-badge" id="tier-badge">FREE</span>
+    </header>
 
-  <dialog class="auth-dialog" id="auth-dialog">
-    <div class="auth-dialog-inner">
-      <div class="auth-dialog-header">
+    <main>
+      <p class="notice" id="notice" role="status"></p>
+
+      <section class="account">
         <div>
-          <h2 class="auth-dialog-title" id="auth-dialog-title">Sign in</h2>
-          <p class="auth-dialog-copy">Access your account and Premium AI status.</p>
+          <p class="eyebrow">Account</p>
+          <p class="account-title" id="account-title">Free local mode</p>
+          <p class="account-copy" id="account-copy">No account required for Smart Template.</p>
         </div>
-        <button class="icon-button" id="auth-close-btn" type="button" aria-label="Close account dialog">&times;</button>
-      </div>
+        <div class="account-actions">
+          <button class="btn btn-small" id="signin-btn" type="button">Sign in</button>
+          <button class="btn btn-small btn-primary" id="signup-btn" type="button">Sign up</button>
+          <button class="btn btn-small btn-danger" id="logout-btn" type="button" hidden>Log out</button>
+        </div>
+      </section>
 
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">Today's usage</h2>
+          <span class="date-label" id="usage-date">Local day</span>
+        </div>
+        <div class="usage-list">
+          <div class="usage-row">
+            <div class="usage-top">
+              <span class="usage-name">Smart Template</span>
+              <span class="usage-count" id="smart-usage">0 / 100</span>
+            </div>
+            <div class="meter"><span id="smart-meter"></span></div>
+            <p class="usage-help">Runs on this device. Prompt text is not sent to an AI API.</p>
+          </div>
+          <div class="usage-row">
+            <div class="usage-top">
+              <span class="usage-name">Premium AI</span>
+              <span class="usage-count" id="premium-usage">Premium only</span>
+            </div>
+            <div class="meter premium"><span id="premium-meter"></span></div>
+            <p class="usage-help" id="premium-help">Server-side Gemini optimization with protected API keys.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><h2 class="section-title">Open PromptIQ</h2></div>
+        <div class="action-grid">
+          <button class="btn btn-primary" id="open-chat-btn" type="button">Open ChatGPT</button>
+          <button class="btn" id="dashboard-btn" type="button">Dashboard</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><h2 class="section-title">Plans</h2></div>
+        <div class="plan-grid">
+          <div class="plan">
+            <div class="plan-name">Free</div>
+            <div class="plan-price">₹0</div>
+            <p>100 local Smart Template optimizations per day.</p>
+          </div>
+          <div class="plan">
+            <div class="plan-name">Premium</div>
+            <div class="plan-price">₹199 <span>/ month</span></div>
+            <p>20 Premium AI and 200 local optimizations per day.</p>
+            <button class="btn btn-primary btn-small" id="upgrade-btn" type="button">Get Premium</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span id="version-label">Version 1.0.8</span>
+      <span><a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy</a> · <a href="https://promptiq-theta.vercel.app/support" target="_blank" rel="noreferrer">Support</a></span>
+    </footer>
+  </div>
+
+  <dialog id="auth-dialog">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">PromptIQ account</p>
+          <h2 class="dialog-title" id="auth-title">Sign in</h2>
+        </div>
+        <button class="icon-btn" id="auth-close-btn" type="button" aria-label="Close">&times;</button>
+      </div>
       <div class="auth-modes" role="tablist" aria-label="Account action">
-        <button class="auth-mode active" id="login-mode-btn" type="button" role="tab" aria-selected="true">Sign In</button>
-        <button class="auth-mode" id="signup-mode-btn" type="button" role="tab" aria-selected="false">Create Account</button>
+        <button class="auth-mode active" id="login-mode-btn" type="button" role="tab" aria-selected="true">Sign in</button>
+        <button class="auth-mode" id="signup-mode-btn" type="button" role="tab" aria-selected="false">Create account</button>
       </div>
-
       <form id="auth-form">
-        <div class="form-group">
+        <div class="field">
           <label for="auth-email">Email address</label>
-          <input id="auth-email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+          <input id="auth-email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
         </div>
-        <div class="form-group">
+        <div class="field">
           <label for="auth-password">Password</label>
-          <input id="auth-password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="At least 8 characters">
+          <input id="auth-password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required placeholder="At least 8 characters">
         </div>
-        <button class="btn btn-primary auth-submit" id="auth-submit-btn" type="submit">Sign In</button>
-        <p class="auth-status" id="auth-status" role="alert"></p>
+        <button class="btn btn-primary" id="auth-submit-btn" type="submit" style="width:100%">Sign in</button>
+        <p class="notice" id="auth-status" role="alert" style="margin-top:12px"></p>
       </form>
-
-      <p class="auth-privacy">Creating an account sends your email and password over HTTPS. Passwords are stored as salted hashes. Signed-in history is synchronized to your account. Premium sends prompts you choose to optimize to Google Gemini. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
+      <p class="dialog-copy">Account credentials are sent over HTTPS and passwords are stored as salted hashes. Signed-in history is synchronized. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
     </div>
   </dialog>
-
-  <main>
-    <section class="section hero">
-      <div class="section-inner">
-        <div>
-          <div class="brand-row">
-            <span class="brand-mark">IQ</span>
-            <span>PromptIQ for AI workspaces</span>
-          </div>
-          <h1>Write normally. PromptIQ turns your idea into a professional AI prompt.</h1>
-          <p class="hero-copy">Upgrade prompts instantly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.</p>
-          <div class="cta-group">
-            <a class="btn btn-primary" href="https://chatgpt.com" target="_blank" rel="noreferrer">Use Free Template</a>
-            <button class="btn btn-secondary" id="hero-auth-btn" type="button">Sign In for Premium</button>
-            <a class="btn btn-secondary" href="#how-it-works">See How It Works</a>
-          </div>
-          <div class="proof-row" aria-label="Key PromptIQ outcomes">
-            <span class="proof-pill">Inline optimizer</span>
-            <span class="proof-pill">Prompt scoring</span>
-            <span class="proof-pill">Before and after diff</span>
-          </div>
-        </div>
-
-        <div class="hero-visual" aria-label="PromptIQ optimizer preview">
-          <div class="browser-shell">
-            <div class="browser-bar">
-              <span class="window-dot"></span>
-              <span class="window-dot"></span>
-              <span class="window-dot"></span>
-              <div class="browser-url">chat workspace / promptiq active</div>
-            </div>
-            <div class="chat-preview">
-              <div class="chat-feed">
-                <div class="message-stack">
-                  <div class="message">How can I help refine your idea today?</div>
-                  <div class="message user">write a launch plan for my app</div>
-                  <div class="message">PromptIQ found missing role, audience, format, and success criteria.</div>
-                </div>
-                <div class="composer">Type a rough idea here. PromptIQ scores it before you send.</div>
-              </div>
-              <aside class="panel-preview">
-                <div class="panel-preview-top">
-                  <div>
-                    <div class="panel-title">PromptIQ Optimizer</div>
-                    <div class="mini-label">Draft quality</div>
-                  </div>
-                  <div class="score-badge">92</div>
-                </div>
-                <div class="mini-label">Prompt dimensions</div>
-                <div class="chip-grid">
-                  <span class="mini-chip ready">Task</span>
-                  <span class="mini-chip ready">Role</span>
-                  <span class="mini-chip ready">Context</span>
-                  <span class="mini-chip ready">Format</span>
-                  <span class="mini-chip">Constraints</span>
-                  <span class="mini-chip ready">Specificity</span>
-                </div>
-                <div class="mini-label">Optimized output</div>
-                <div class="output-box">
-                  Act as a senior product marketing strategist. Create a 30-day launch plan for a productivity app targeting solo founders. Include positioning, channels, launch assets, metrics, and weekly execution milestones.
-                </div>
-              </aside>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="comparison">
-      <div class="section-inner">
-        <div class="section-eyebrow">Before and after</div>
-        <h2 class="section-heading">Turn loose thoughts into prompts that give AI enough direction to help.</h2>
-        <p class="section-lede">PromptIQ adds role, task, context, format, constraints, and specificity without forcing you to learn prompt engineering first.</p>
-        <div class="comparison-grid">
-          <div class="prompt-card">
-            <span class="card-kicker">Original draft</span>
-            <p class="prompt-text">Write a marketing campaign for my startup.</p>
-          </div>
-          <div class="prompt-card after">
-            <span class="card-kicker good">PromptIQ optimized</span>
-            <p class="prompt-text">Act as a senior B2B SaaS growth strategist.
-
-Create a multi-channel marketing campaign for a startup targeting founders and SMB decision makers.
-
-Include positioning, LinkedIn content, email outreach, launch timeline, budget allocation, and success metrics.
-
-Format the result as an actionable 30-day plan.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="platforms">
-      <div class="section-inner">
-        <div class="section-eyebrow">Supported platforms</div>
-        <h2 class="section-heading">Works where you already write prompts.</h2>
-        <div class="platform-grid">
-          <div class="platform-item">ChatGPT</div>
-          <div class="platform-item">Claude</div>
-          <div class="platform-item">Gemini</div>
-          <div class="platform-item">Perplexity</div>
-          <div class="platform-item">Copilot</div>
-          <div class="platform-item">DeepSeek</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="benefits">
-      <div class="section-inner">
-        <div class="section-eyebrow">Key benefits</div>
-        <h2 class="section-heading">Built for fast, repeatable AI work.</h2>
-        <div class="feature-grid">
-          <article class="feature-card">
-            <div class="feature-number">01</div>
-            <h3 class="feature-title">Instant prompt upgrades</h3>
-            <p class="feature-copy">Turn short instructions into structured prompts with a clear role, objective, and expected output.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-number">02</div>
-            <h3 class="feature-title">Quality scoring</h3>
-            <p class="feature-copy">See whether your draft is weak, good, or strong before you spend a message.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-number">03</div>
-            <h3 class="feature-title">Readable diffs</h3>
-            <p class="feature-copy">Review exactly what changed so every optimization teaches you better prompting habits.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-number">04</div>
-            <h3 class="feature-title">Prompt history</h3>
-            <p class="feature-copy">Keep useful runs available from the extension popup for review, reuse, and improvement tracking.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="how-it-works">
-      <div class="section-inner">
-        <div class="section-eyebrow">How it works</div>
-        <h2 class="section-heading">Optimize without leaving the chat flow.</h2>
-        <div class="steps-grid">
-          <article class="step-card">
-            <div class="step-number">1</div>
-            <h3 class="step-title">Write normally</h3>
-            <p class="step-copy">Type the rough prompt you already had in mind inside a supported AI chat.</p>
-          </article>
-          <article class="step-card">
-            <div class="step-number">2</div>
-            <h3 class="step-title">Check the score</h3>
-            <p class="step-copy">PromptIQ identifies missing dimensions and shows a clear quality state.</p>
-          </article>
-          <article class="step-card">
-            <div class="step-number">3</div>
-            <h3 class="step-title">Optimize</h3>
-            <p class="step-copy">Free uses a local Smart Template. Premium can use Premium AI or the local Smart Template engine.</p>
-          </article>
-          <article class="step-card">
-            <div class="step-number">4</div>
-            <h3 class="step-title">Use it</h3>
-            <p class="step-copy">Copy, edit, or insert the optimized prompt back into the active chat box.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="plans">
-      <div class="section-inner">
-        <div class="section-eyebrow">Free vs Premium</div>
-        <h2 class="section-heading">Start free. Upgrade when PromptIQ becomes part of your daily workflow.</h2>
-        <div class="plans-grid">
-          <article class="plan-card">
-            <h3 class="plan-title">Free</h3>
-            <div class="plan-price">Rs 0</div>
-            <p class="plan-copy">For reliable everyday prompt structure without an account.</p>
-            <ul class="plan-list">
-              <li>100 local Smart Template optimizations per day</li>
-              <li>No prompt is sent to an optimization API</li>
-              <li>Prompt scoring and missing item chips</li>
-              <li>Local prompt history on this device</li>
-            </ul>
-          </article>
-          <article class="plan-card premium">
-            <h3 class="plan-title">Premium</h3>
-            <div class="plan-price">Rs 99 <span>/ month</span></div>
-            <p class="plan-copy">For deeper, context-aware optimization using PromptIQ's server-side AI.</p>
-            <ul class="plan-list">
-              <li>20 Premium AI optimizations per day</li>
-              <li>200 local Smart Template optimizations per day</li>
-              <li>API keys remain secured on the server</li>
-              <li>Cloud-synced prompt history</li>
-              <li>Account access across supported browsers</li>
-            </ul>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="privacy">
-      <div class="section-inner">
-        <div class="trust-note">
-          <div class="trust-mark">SEC</div>
-          <div>
-            <h3>Secure and transparent by design</h3>
-            <p>Data handling is limited to providing prompt optimization, account access, history, feedback, and subscriptions.</p>
-            <ul class="data-use-list">
-              <li>Free optimization and signed-out history remain on this device.</li>
-              <li>Signed-in history is synchronized to your PromptIQ account.</li>
-              <li>Premium sends prompts you choose to optimize to the PromptIQ backend and Google Gemini.</li>
-              <li>Stripe processes Premium payments. PromptIQ does not store full card numbers.</li>
-              <li>Prompt data is not sold or used for personalized advertising.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
 
   <script type="module" src="./onboarding.js"></script>
 </body>

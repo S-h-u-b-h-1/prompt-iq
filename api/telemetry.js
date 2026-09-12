@@ -6,6 +6,16 @@ if (!DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 const sql = neon(DATABASE_URL);
+const ALLOWED_EVENTS = new Set([
+  'extension_installed',
+  'extension_updated',
+  'popup_opened',
+  'login_completed',
+  'signup_completed',
+  'checkout_started',
+  'website_viewed',
+  'store_link_clicked'
+]);
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -34,8 +44,8 @@ export default async function handler(req, res) {
 
     const { event_type } = req.body;
 
-    if (!event_type) {
-      res.status(400).json({ error: 'Missing required field: event_type' });
+    if (!ALLOWED_EVENTS.has(event_type)) {
+      res.status(400).json({ error: 'Invalid event type' });
       return;
     }
 

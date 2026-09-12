@@ -16,6 +16,7 @@ import { scorePrompt } from '../lib/scorer.js';
 import libraryPrompts from '../../data/library.json' with { type: 'json' };
 
 let currentMode = 'login'; // login or signup
+let appInitialized = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthStatus();
@@ -25,43 +26,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function checkAuthStatus() {
   const authContainer = document.getElementById('auth-container');
   const authenticatedWrapper = document.getElementById('authenticated-wrapper');
-  
+  let user = null;
   const token = await getSessionToken();
-  if (!token) {
-    authContainer.style.display = 'block';
-    authenticatedWrapper.style.display = 'none';
-    initAuthListeners();
-    return;
+  if (token) {
+    try {
+      user = await fetchUserProfile();
+    } catch (err) {
+      console.warn('Account status unavailable; using local Free dashboard:', err);
+    }
   }
 
-  try {
-    // Verify token with server profile request
-    const user = await fetchUserProfile();
-    if (!user) {
-      throw new Error('Session invalid');
-    }
-
-    authContainer.style.display = 'none';
-    authenticatedWrapper.style.display = 'block';
-
-    // Initialize authenticated layouts
+  authContainer.style.display = 'none';
+  authenticatedWrapper.style.display = 'block';
+  if (!appInitialized) {
     initTabs();
     initHistory();
     initFavorites();
     initLibrary();
-    initDashboard(user);
     initSignout();
     initPayments();
-  } catch (err) {
-    console.warn('Session expired or server error:', err);
-    authContainer.style.display = 'block';
-    authenticatedWrapper.style.display = 'none';
-    initAuthListeners();
-    const statusEl = document.getElementById('auth-status');
-    statusEl.textContent = err.message || 'Unable to verify your account. Free mode remains available.';
-    statusEl.className = 'status-msg status-error';
-    statusEl.style.display = 'block';
+    appInitialized = true;
   }
+  await initDashboard(user);
 }
 
 // Authentication Forms Handlers
@@ -147,13 +133,18 @@ function initPayments() {
     upgradeBtn.disabled = true;
     upgradeBtn.textContent = 'Opening checkout...';
     try {
+      const token = await getSessionToken();
+      if (!token) {
+        await chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/onboarding.html') });
+        return;
+      }
       const checkoutUrl = await checkoutSubscription();
-      window.open(checkoutUrl, '_blank');
+      await chrome.tabs.create({ url: checkoutUrl });
     } catch (err) {
       alert(`Checkout failed: ${err.message}`);
     } finally {
       upgradeBtn.disabled = false;
-      upgradeBtn.textContent = 'Upgrade to Premium';
+      upgradeBtn.textContent = (await getSessionToken()) ? 'Upgrade to Premium' : 'Sign in for Premium';
     }
   };
 }
@@ -241,7 +232,17 @@ async function renderDashboard(user) {
         upgradeBtn.textContent = 'Upgrade to Premium';
       }
     }
+  } else {
+    loggedInUserText.textContent = 'Free local mode - no account required';
+    planStatusText.textContent = 'Free Plan';
+    if (upgradeBtn) {
+      upgradeBtn.style.display = 'block';
+      upgradeBtn.textContent = 'Sign in for Premium';
+    }
   }
+
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.style.display = user ? 'block' : 'none';
 
   const avgScoreEl = document.getElementById('avg-score');
   const trendDescEl = document.getElementById('trend-desc');
@@ -357,9 +358,9 @@ async function renderHistory() {
     return `
       <div class="history-item" data-index="${index}">
         <div class="history-top">
-          <span class="history-platform">${run.platform}</span>
-          <span class="history-platform">${modeLabel}</span>
-          <span class="history-platform">${intentLabel}</span>
+          <span class="history-platform">${escapeHtml(run.platform)}</span>
+          <span class="history-platform">${escapeHtml(modeLabel)}</span>
+          <span class="history-platform">${escapeHtml(intentLabel)}</span>
           <span style="font-size: 11px; color: #94a3b8;">${dateStr}</span>
           <span class="${deltaClass}">${deltaText} pts</span>
         </div>
@@ -568,8 +569,8 @@ function renderLibrary(prompts) {
 
   container.innerHTML = prompts.map(item => `
     <div class="library-item">
-      <div class="library-category">${item.category}</div>
-      <div class="library-title">${item.title}</div>
+      <div class="library-category">${escapeHtml(item.category)}</div>
+      <div class="library-title">${escapeHtml(item.title)}</div>
       <div class="library-prompt-text">${escapeHtml(item.prompt)}</div>
       <button class="btn btn-secondary copy-lib-btn" data-text="${escapeDoubleQuotes(item.prompt)}" style="padding: 4px 8px; font-size: 11px;">Use Prompt Template</button>
     </div>

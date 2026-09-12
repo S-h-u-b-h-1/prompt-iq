@@ -128,6 +128,8 @@ export default async function handler(req, res) {
     return;
   }
 
+  let releaseReservedUsage = null;
+
   try {
     // 1. Authenticate user JWT session
     const session = authenticate(req);
@@ -178,13 +180,15 @@ export default async function handler(req, res) {
     }
 
     const today = getUtcDateKey();
-    const usageRows = await sql`
-      SELECT count
-      FROM usage_events
-      WHERE user_id = ${userId.toString()} AND date = ${today}
+    const reservation = await sql`
+      INSERT INTO usage_events (user_id, date, count, created_at)
+      VALUES (${userId.toString()}, ${today}, 1, NOW())
+      ON CONFLICT (user_id, date)
+      DO UPDATE SET count = usage_events.count + 1, created_at = NOW()
+      WHERE usage_events.count < ${PREMIUM_AI_DAILY_LIMIT}
+      RETURNING count
     `;
-    const premiumAiCount = usageRows[0]?.count ? parseInt(usageRows[0].count, 10) : 0;
-    if (premiumAiCount >= PREMIUM_AI_DAILY_LIMIT) {
+    if (reservation.length === 0) {
       sendJsonError(
         res,
         429,
@@ -193,6 +197,20 @@ export default async function handler(req, res) {
       );
       return;
     }
+
+    releaseReservedUsage = async () => {
+      try {
+        await sql`
+          UPDATE usage_events
+          SET count = GREATEST(count - 1, 0), created_at = NOW()
+          WHERE user_id = ${userId.toString()} AND date = ${today}
+        `;
+      } catch (releaseError) {
+        console.error('Failed to release Premium AI usage reservation:', releaseError);
+      } finally {
+        releaseReservedUsage = null;
+      }
+    };
 
     const intent = detectedIntent || 'general';
     const systemPrompt = getSystemPrompt(platform, intent, mode);
@@ -285,6 +303,7 @@ export default async function handler(req, res) {
         model: activeModel,
         error: lastError ? lastError.message : 'Unknown error'
       });
+      await releaseReservedUsage();
       sendJsonError(res, 503, 'GEMINI_NETWORK_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
@@ -297,6 +316,7 @@ export default async function handler(req, res) {
         status: response.status,
         message
       });
+      await releaseReservedUsage();
       sendJsonError(res, 503, 'GEMINI_UPSTREAM_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
@@ -306,6 +326,7 @@ export default async function handler(req, res) {
       console.error('Gemini API returned an empty response', {
         model: activeModel
       });
+      await releaseReservedUsage();
       sendJsonError(res, 503, 'GEMINI_EMPTY_RESPONSE', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
@@ -319,19 +340,17 @@ export default async function handler(req, res) {
         model: activeModel,
         error: err.message
       });
+      await releaseReservedUsage();
       sendJsonError(res, 503, 'GEMINI_INVALID_FORMAT', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
 
-    await sql`
-      INSERT INTO usage_events (user_id, date, count, created_at)
-      VALUES (${userId.toString()}, ${today}, 1, NOW())
-      ON CONFLICT (user_id, date)
-      DO UPDATE SET count = usage_events.count + 1, created_at = NOW();
-    `;
-
+    releaseReservedUsage = null;
     res.status(200).json(parsed);
   } catch (error) {
+    if (releaseReservedUsage) {
+      await releaseReservedUsage();
+    }
     console.error('Error optimizing prompt:', error);
     sendJsonError(res, 500, 'OPTIMIZE_INTERNAL_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
   }

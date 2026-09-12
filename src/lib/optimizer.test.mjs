@@ -48,6 +48,23 @@ await expectOptimizerError(
   }
 );
 
+await expectOptimizerError(
+  {
+    ok: false,
+    status: 429,
+    statusText: 'Too Many Requests',
+    json: async () => ({
+      error: 'Daily AI trial limit reached. Free accounts include 5 AI optimizations per day.',
+      code: 'CLOUD_AI_DAILY_LIMIT_REACHED'
+    })
+  },
+  {
+    status: 429,
+    code: 'CLOUD_AI_DAILY_LIMIT_REACHED',
+    message: 'Daily AI trial limit reached. Free accounts include 5 AI optimizations per day.'
+  }
+);
+
 global.fetch = originalFetch;
 
 console.log('All optimizer error handling tests passed!');

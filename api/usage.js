@@ -1,6 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from './_utils/auth-helper.js';
 import { normalizePlan } from './_utils/plans.js';
+import {
+  getCloudAiDailyLimit,
+  getSmartTemplateDailyLimit
+} from './_utils/usage-limits.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -8,10 +12,6 @@ if (!DATABASE_URL) {
 }
 
 const sql = neon(DATABASE_URL);
-const PREMIUM_AI_DAILY_LIMIT = 20;
-const FREE_SMART_TEMPLATE_DAILY_LIMIT = 100;
-const PREMIUM_SMART_TEMPLATE_DAILY_LIMIT = 200;
-
 function getUtcDateKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
 }
@@ -63,6 +63,7 @@ export default async function handler(req, res) {
         ? users[0].sub_plan
         : users[0].base_plan
     );
+    const cloudAiLimit = getCloudAiDailyLimit(plan);
     const date = getUtcDateKey();
     const usageRows = await sql`
       SELECT count
@@ -77,15 +78,11 @@ export default async function handler(req, res) {
       plan,
       premiumAi: {
         used: premiumAiUsed,
-        limit: plan === 'premium' ? PREMIUM_AI_DAILY_LIMIT : 0,
-        remaining: plan === 'premium'
-          ? Math.max(0, PREMIUM_AI_DAILY_LIMIT - premiumAiUsed)
-          : 0
+        limit: cloudAiLimit,
+        remaining: Math.max(0, cloudAiLimit - premiumAiUsed)
       },
       smartTemplate: {
-        limit: plan === 'premium'
-          ? PREMIUM_SMART_TEMPLATE_DAILY_LIMIT
-          : FREE_SMART_TEMPLATE_DAILY_LIMIT
+        limit: getSmartTemplateDailyLimit(plan)
       }
     });
   } catch (error) {

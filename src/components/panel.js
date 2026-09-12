@@ -866,7 +866,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
     <div class="signin-card" id="signin-card">
       <div class="signin-title">Free mode is ready</div>
-      <div class="signin-copy">Sign in only when you want Premium cloud AI optimization.</div>
+      <div class="signin-copy">Sign in for 5 free AI optimizations each day, or upgrade for 50 per day.</div>
       <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%; padding: 8px 10px; font-size: 12px;">Open Account</button>
     </div>
 
@@ -1034,7 +1034,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     const engineName = shadow.getElementById('engine-name');
     const engineCopy = shadow.getElementById('engine-copy');
     const requestedEngine = engineSelect.value;
-    const effectiveEngine = userTier === 'premium' && requestedEngine === 'premium_ai'
+    const effectiveEngine = isLoggedIn && requestedEngine === 'premium_ai'
       ? 'premium_ai'
       : 'smart_template';
 
@@ -1044,13 +1044,32 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
     if (effectiveEngine === 'premium_ai') {
       engineName.textContent = 'Premium AI';
-      engineCopy.textContent = 'Uses PromptIQ server-side AI. Premium includes 20 AI optimizations per day.';
+      engineCopy.textContent = userTier === 'premium'
+        ? 'Uses secure server-side AI. Premium includes 50 optimizations per day.'
+        : 'Free account trial: 5 secure server-side AI optimizations per day.';
     } else {
       engineName.textContent = 'Smart Template';
       engineCopy.textContent = userTier === 'premium'
         ? 'Runs locally. Premium includes 200 Smart Template optimizations per day.'
         : 'Runs locally. Free includes 100 Smart Template optimizations per day.';
     }
+  }
+
+  function refreshEngineAvailability() {
+    engineSelect.disabled = !isLoggedIn;
+
+    if (!isLoggedIn) {
+      engineSelect.value = 'smart_template';
+    } else if (userTier === 'premium' && !hasStoredEnginePreference) {
+      engineSelect.value = 'premium_ai';
+    } else if (
+      storedEnginePreference &&
+      engineSelect.querySelector(`option[value="${storedEnginePreference}"]`)
+    ) {
+      engineSelect.value = storedEnginePreference;
+    }
+
+    updateEngineSummary();
   }
   
   // Event Listeners
@@ -1262,6 +1281,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       isLoggedIn = Boolean(loggedIn);
       logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
       signInCard.classList.toggle('visible', !isLoggedIn);
+      refreshEngineAvailability();
     },
     getSettings: () => ({
       mode: modeSelect.value || 'standard',
@@ -1283,21 +1303,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       if (userTier === 'premium') {
         proBadge.textContent = 'PREMIUM';
         proBadge.className = 'status-badge status-premium';
-        engineSelect.disabled = false;
-        if (!hasStoredEnginePreference) {
-          engineSelect.value = 'premium_ai';
-        } else if (storedEnginePreference && engineSelect.querySelector(`option[value="${storedEnginePreference}"]`)) {
-          engineSelect.value = storedEnginePreference;
-        } else if (engineSelect.value !== 'premium_ai' && engineSelect.value !== 'smart_template') {
-          engineSelect.value = 'smart_template';
-        }
       } else {
         proBadge.textContent = 'FREE';
         proBadge.className = 'status-badge status-free';
-        engineSelect.value = 'smart_template';
-        engineSelect.disabled = true;
       }
-      updateEngineSummary();
+      refreshEngineAvailability();
     },
     showPaywall: (type, lockedMode = null) => {
       loaderShimmer.style.display = 'none';

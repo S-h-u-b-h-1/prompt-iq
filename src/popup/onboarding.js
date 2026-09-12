@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     accountCopy.textContent = isPremium
       ? 'Premium AI and Smart Template are active.'
       : user
-        ? 'Signed in. Smart Template is active.'
+        ? 'Signed in. 5 daily AI trials and Smart Template are active.'
         : 'No account required for Smart Template.';
     signInButton.hidden = Boolean(user);
     signUpButton.hidden = Boolean(user);
@@ -129,10 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
     smartMeter.style.width = `${Math.min(100, (local.used / local.limit) * 100)}%`;
     usageDate.textContent = local.date;
 
-    if (tier !== 'premium') {
-      premiumUsage.textContent = 'Premium only';
+    if (!currentUser) {
+      premiumUsage.textContent = 'Sign in for 5/day';
       premiumMeter.style.width = '0%';
-      premiumHelp.textContent = 'Server-side Gemini optimization with protected API keys.';
+      premiumHelp.textContent = 'Create a free account to test secure cloud AI.';
       return;
     }
 
@@ -142,7 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!premium) throw new Error('Usage unavailable');
       premiumUsage.textContent = `${premium.used} / ${premium.limit}`;
       premiumMeter.style.width = `${Math.min(100, (premium.used / premium.limit) * 100)}%`;
-      premiumHelp.textContent = `${premium.remaining} Premium AI optimizations remaining today.`;
+      premiumHelp.textContent = tier === 'premium'
+        ? `${premium.remaining} Premium AI optimizations remaining today.`
+        : `${premium.remaining} free AI trial optimizations remaining today.`;
     } catch (error) {
       premiumUsage.textContent = 'Unavailable';
       premiumMeter.style.width = '0%';

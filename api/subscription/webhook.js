@@ -64,7 +64,8 @@ export default async function handler(req, res) {
   }
 
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  if (!webhookSecret) {
+  const expectedPlanId = process.env.RAZORPAY_PLAN_ID;
+  if (!webhookSecret || !expectedPlanId) {
     res.status(503).json({ error: 'Razorpay webhook is not configured' });
     return;
   }
@@ -100,6 +101,16 @@ export default async function handler(req, res) {
     }
 
     if (!subscription || !eventType.startsWith('subscription.')) {
+      await sql`
+        UPDATE billing_webhook_events
+        SET processed_at = NOW()
+        WHERE provider = 'razorpay' AND event_id = ${eventId}
+      `;
+      res.status(200).json({ received: true, ignored: true });
+      return;
+    }
+
+    if (String(subscription.plan_id || '') !== expectedPlanId) {
       await sql`
         UPDATE billing_webhook_events
         SET processed_at = NOW()

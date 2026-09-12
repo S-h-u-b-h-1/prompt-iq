@@ -225,7 +225,7 @@ async function handleOptimize() {
   let optimizationTier = tier;
 
   try {
-    const usePremiumAi = tier === 'premium' && token && engine === 'premium_ai';
+    const usePremiumAi = Boolean(token) && engine === 'premium_ai';
 
     if (usePremiumAi) {
       const response = await chrome.runtime.sendMessage({

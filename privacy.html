@@ -69,7 +69,7 @@
     <h2>1. What Data We Collect</h2>
     <p>To provide prompt optimization and scoring, PromptIQ collects the following data types:</p>
     <ul>
-      <li><strong>Prompt Text (Personal Communications):</strong> Free Smart Template optimization runs locally in your browser and does not send prompt text to an optimization API. When a Premium user chooses to optimize a prompt, we send that prompt through our serverless backend to the Google Gemini API.</li>
+      <li><strong>Prompt Text (Personal Communications):</strong> Smart Template optimization runs locally in your browser and does not send prompt text to an optimization API. When a signed-in user deliberately chooses cloud AI optimization, we send that prompt through our serverless backend to OpenRouter and an eligible model provider. Google Gemini may be used as a service fallback.</li>
       <li><strong>Website Content:</strong> We read the active chatbox input field content locally on supported AI platforms (e.g. ChatGPT, Claude, Gemini) solely to calculate the prompt quality score (0-100) dynamically as you type.</li>
       <li><strong>User Activity Metadata:</strong> We collect metadata about optimization events (such as the AI platform name, the original score, the optimized score, and the time of the event) to populate your history logs and dashboard statistics.</li>
       <li><strong>Account Information:</strong> If you create an account, we collect your email address and password authentication data. Passwords are stored only as salted hashes.</li>
@@ -87,7 +87,7 @@
     <p>We use the collected data solely for the following purposes:</p>
     <ul>
       <li>To calculate your prompt scores in real-time.</li>
-      <li>To perform Premium prompt optimizations using the Google Gemini API.</li>
+      <li>To perform user-requested cloud AI prompt optimizations, including Free account trials and Premium usage.</li>
       <li>To save and synchronize your optimization runs history so you can retrieve them in your extension popup.</li>
       <li>To operate the service, prevent abuse, and process user-requested feedback and subscriptions.</li>
     </ul>
@@ -95,7 +95,7 @@
     <h2>4. Data Sharing & Third Parties</h2>
     <ul>
       <li><strong>No Sale of Data:</strong> We do not sell, rent, or trade your data to third parties.</li>
-      <li><strong>Third-Party APIs:</strong> Premium prompt optimizations are processed using the Google Gemini API. The prompt text, selected AI platform, detected request category, and related optimization instructions are shared with Google's API to complete the request. We do not include your account email or password in these requests.</li>
+      <li><strong>Third-Party APIs:</strong> Cloud AI optimizations are processed through OpenRouter and an eligible model provider, with Google Gemini available as a fallback. The prompt text, selected AI platform, detected request category, and related optimization instructions are shared only to complete the requested optimization. We do not include your account email or password. OpenRouter requests require zero-data-retention endpoints and deny provider data collection; OpenRouter may retain operational metadata such as token counts and latency under its own terms.</li>
       <li><strong>Payments:</strong> Paid subscriptions are processed by Razorpay. Razorpay receives the information needed to authorise and manage your subscription under its own privacy terms.</li>
       <li><strong>Chrome Web Store Analytics:</strong> Google may provide aggregate Store listing traffic and installation analytics to PromptIQ through the Chrome Web Store developer tools.</li>
     </ul>
@@ -105,7 +105,7 @@
 
     <h2>6. Policy Certifications</h2>
     <ul>
-      <li>We do not sell or transfer user data to third parties outside of the approved Gemini API use case.</li>
+      <li>We do not sell user data or transfer it outside the service providers needed for PromptIQ's user-requested optimization, storage, hosting, authentication, analytics, and billing functions.</li>
       <li>We do not use or transfer user data for purposes unrelated to PromptIQ's single core function.</li>
       <li>We do not use or transfer user data to determine creditworthiness or for lending purposes.</li>
       <li>We do not use prompt, account, or browsing data for personalized advertising.</li>

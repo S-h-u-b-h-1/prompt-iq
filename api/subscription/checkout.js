@@ -1,5 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from '../_utils/auth-helper.js';
+import { isExpectedRazorpayPlan } from '../_utils/razorpay-plan.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -75,6 +76,30 @@ export default async function handler(req, res) {
         503,
         'BILLING_NOT_CONFIGURED',
         'Premium checkout is being connected to Razorpay. Free Smart Template remains available.'
+      );
+      return;
+    }
+
+    const { response: planResponse, data: planData } = await razorpayRequest(
+      `/plans/${encodeURIComponent(config.planId)}`,
+      config
+    );
+    const validPlan = planResponse.ok && isExpectedRazorpayPlan(planData);
+
+    if (!validPlan) {
+      console.error('Razorpay plan validation failed', {
+        status: planResponse.status,
+        planId: config.planId,
+        amount: planData.item?.amount,
+        currency: planData.item?.currency,
+        period: planData.period,
+        interval: planData.interval
+      });
+      sendJsonError(
+        res,
+        503,
+        'RAZORPAY_PLAN_MISMATCH',
+        'Premium billing is not ready. The configured plan must be ₹50 INR billed monthly.'
       );
       return;
     }

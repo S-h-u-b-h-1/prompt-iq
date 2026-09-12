@@ -3,7 +3,7 @@
  */
 
 export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, token = null, mode = 'standard') {
-  return optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode);
+  return optimizeWithCloudAi(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode);
 }
 
 function createOptimizerError(status, payload = {}, statusText = '') {
@@ -11,21 +11,21 @@ function createOptimizerError(status, payload = {}, statusText = '') {
   const code = payload.code || '';
   let userMessage = rawMessage;
 
-  const isRawGeminiError = /gemini api error/i.test(rawMessage);
+  const isRawProviderError = /(gemini|openrouter) api error/i.test(rawMessage);
   const isPromptIqAuthError =
     status === 401 &&
-    !isRawGeminiError &&
+    !isRawProviderError &&
     (code.startsWith('AUTH') || /unauthorized|invalid or missing token|session/i.test(rawMessage));
 
   if (isPromptIqAuthError) {
     userMessage = 'Your session expired. Please log in again.';
   } else if (status === 403 || /pro mode|locked|premium/i.test(rawMessage)) {
     userMessage = 'Cloud AI optimization requires PromptIQ Premium.';
-  } else if (code === 'PREMIUM_DAILY_LIMIT_REACHED') {
+  } else if (code === 'CLOUD_AI_DAILY_LIMIT_REACHED' || code === 'PREMIUM_DAILY_LIMIT_REACHED') {
     userMessage = rawMessage;
   } else if (status === 429 || /daily limit|rate limit|quota/i.test(rawMessage)) {
     userMessage = 'You have reached your daily optimization limit.';
-  } else if (isRawGeminiError || status >= 500 || code.startsWith('GEMINI_')) {
+  } else if (isRawProviderError || status >= 500 || code.startsWith('GEMINI_') || code.startsWith('OPTIMIZER_')) {
     userMessage = 'PromptIQ optimization is temporarily unavailable. Please try again shortly.';
   }
 
@@ -35,7 +35,7 @@ function createOptimizerError(status, payload = {}, statusText = '') {
   return err;
 }
 
-async function optimizeWithGemini(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode) {
+async function optimizeWithCloudAi(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode) {
   const url = `https://promptiq-theta.vercel.app/api/optimize`;
 
   const headers = {

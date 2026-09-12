@@ -8,7 +8,7 @@ Extension ID: goheoijjaebpbcgifabpgmjkgiddkpek
 
 Package: dist.zip
 
-Version: 1.0.8
+Version: 1.0.9
 
 Homepage: https://promptiq-theta.vercel.app/
 
@@ -63,16 +63,17 @@ Plans
 Free
 
 - 100 Smart Template optimizations per day
+- 5 cloud AI trial optimizations per day after sign-in
 - Prompt scoring and all five optimization modes
 - Local history, favorites, comparison, and undo
-- No account required
+- No account required for local optimization
 - Free optimization runs locally and does not send prompt text to an AI API
 
 Premium
 
-- 20 Premium AI optimizations per day
+- 50 Premium AI optimizations per day
 - 200 Smart Template optimizations per day
-- Server-side Google Gemini optimization
+- Secure server-side AI optimization through OpenRouter, with Google fallback
 - Signed-in history synchronization
 - Provider API keys remain secured on the PromptIQ server
 
@@ -86,7 +87,7 @@ How it works
 
 Privacy and security
 
-Free Smart Template optimization runs locally. Premium sends only the prompts a user chooses to optimize through the PromptIQ backend to Google Gemini. Signed-out history remains on the device. Signed-in history is synchronized to the user's PromptIQ account. PromptIQ does not sell user data and does not include provider API keys in the extension package.
+Smart Template optimization runs locally. When a signed-in user deliberately selects cloud AI, PromptIQ sends only that prompt through the PromptIQ backend to OpenRouter and an eligible model provider; Google Gemini may be used as a fallback. OpenRouter requests enforce zero-data-retention routing and deny provider data collection. Signed-out history remains on the device. Signed-in history is synchronized to the user's PromptIQ account. PromptIQ does not sell user data and does not include provider API keys in the extension package.
 
 Category: Productivity
 
@@ -106,7 +107,7 @@ Language: English
 | perplexity.ai | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
 | copilot.microsoft.com | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
 | chat.deepseek.com | Reads and writes only the active prompt composer for scoring and user-requested insertion. |
-| promptiq-theta.vercel.app | Handles account authentication, signed-in history synchronization, usage status, Premium checkout, and Premium AI optimization. |
+| promptiq-theta.vercel.app | Handles account authentication, signed-in history synchronization, usage status, Premium checkout, and user-requested cloud AI optimization. |
 
 ## Privacy disclosure
 
@@ -116,10 +117,10 @@ Does the extension collect user data? Yes.
 |---|---|---|
 | Personally identifiable information | Yes | Account email, when a user creates an account. |
 | Authentication information | Yes | Email and password are transmitted over HTTPS; passwords are stored as salted hashes. |
-| Personal communications | Yes | Signed-in history synchronization and prompts explicitly submitted for Premium AI optimization. |
+| Personal communications | Yes | Signed-in history synchronization and prompts explicitly submitted for cloud AI optimization. |
 | User activity | Yes | Limited product events, prompt scores, platform, mode, history, feedback, and subscription status. |
 | Website content | Yes | The active prompt composer is read locally for scoring and user-requested optimization or insertion. |
-| Financial information | No | Razorpay processes payment details; PromptIQ stores only subscription/customer identifiers and status. |
+| Financial information | Yes | Razorpay directly processes payment details; PromptIQ stores only subscription/customer identifiers and status. |
 | Web history | No | PromptIQ does not collect browsing history. |
 | Location | No | PromptIQ does not collect location. |
 | Health information | No | PromptIQ does not intentionally collect health information. |
@@ -140,7 +141,11 @@ Data use certifications
 | 1280 x 800 screenshot 2 | public/screenshot2.png |
 | 1280 x 800 screenshot 3 | public/screenshot3.png |
 
-The screenshots should be replaced with captures of version 1.0.8 before submission because the current images contain older visual concepts and plan copy.
+All three screenshots are 1280 x 800 captures of version 1.0.9. They show the real floating optimizer, the signed-in Free cloud AI trial, and the current account and plan popup.
+
+## Cloud AI setup
+
+Add `OPENROUTER_API_KEY` to Vercel. Optional model overrides are `OPENROUTER_MODEL` and `OPENROUTER_FALLBACK_MODEL`. The defaults are `mistralai/mistral-small-24b-instruct-2501` and `mistralai/mistral-small-3.2-24b-instruct`. Keep `GEMINI_API_KEY` configured as the service fallback until OpenRouter has been verified in production.
 
 ## Razorpay setup
 
@@ -151,6 +156,8 @@ Required production environment variables:
 - RAZORPAY_PLAN_ID
 - RAZORPAY_WEBHOOK_SECRET
 - RAZORPAY_TOTAL_COUNT, optional; defaults to 120 monthly billing cycles
+
+The configured Razorpay plan must be INR 50 (5000 paise), billed monthly with an interval of 1. Checkout refuses a mismatched plan.
 
 Webhook URL:
 
@@ -173,7 +180,8 @@ Subscribe to these Razorpay events:
 
 | Version | Date | Status | Changes |
 |---|---|---|---|
-| 1.0.8 | 2026-09-13 | Ready for submission | Compact usage popup, signed-out Free dashboard, Razorpay-ready Premium flow, atomic Premium quota, safer rendering, refreshed platform selectors, working production links, and corrected privacy/store disclosures. |
+| 1.0.9 | 2026-09-13 | Ready for submission | Adds 5 daily cloud AI trials for signed-in Free users, 50 daily Premium AI optimizations, INR 50 monthly billing validation, OpenRouter support with Google fallback, and updated privacy disclosures. |
+| 1.0.8 | 2026-09-13 | Superseded | Compact usage popup, signed-out Free dashboard, Razorpay-ready Premium flow, atomic Premium quota, safer rendering, refreshed platform selectors, working production links, and corrected privacy/store disclosures. |
 | 1.0.7 | 2026-07-15 | Draft | Added daily quotas. |
 | 1.0.6 | 2026-07-15 | Draft | Added optimization modes, favorites, undo, comparison, and onboarding updates. |
 | 1.0.4 | 2026-07-03 | Published | Authentication and local Free templates. |

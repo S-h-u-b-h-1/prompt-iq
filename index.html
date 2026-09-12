@@ -10,12 +10,12 @@
   <meta property="og:title" content="PromptIQ - Better prompts inside your AI workspace">
   <meta property="og:description" content="Score, improve, compare, and insert stronger prompts without leaving the AI tool you use.">
   <meta property="og:url" content="https://promptiq-theta.vercel.app/">
-  <meta property="og:image" content="https://promptiq-theta.vercel.app/screenshot2.png">
+  <meta property="og:image" content="https://promptiq-theta.vercel.app/website-assets/product-workspace-v11.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PromptIQ - Better prompts inside your AI workspace">
   <meta name="twitter:description" content="Turn rough ideas into clear AI instructions in one click.">
-  <meta name="twitter:image" content="https://promptiq-theta.vercel.app/screenshot2.png">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="twitter:image" content="https://promptiq-theta.vercel.app/website-assets/product-workspace-v11.png">
+  <link rel="icon" type="image/svg+xml" href="/brand-mark.svg">
   <link rel="alternate icon" href="/store_icon.png" type="image/png">
   <script type="application/ld+json">
   {
@@ -43,147 +43,132 @@
     ]
   }
   </script>
-  <link rel="stylesheet" href="/website.css">
+  <link rel="stylesheet" href="/website.css?v=1.0.11">
 </head>
 <body>
   <header class="nav">
     <div class="wrap nav-inner">
-      <a class="brand" href="/" aria-label="PromptIQ home"><span class="brand-mark">IQ</span><span>PromptIQ</span></a>
+      <a class="brand" href="/" aria-label="PromptIQ home"><img class="brand-mark" src="/brand-mark.svg" alt="" width="36" height="36"><span>PromptIQ</span></a>
       <nav class="nav-links" aria-label="Primary navigation">
-        <a href="#how">How it works</a>
-        <a href="#plans">Plans</a>
-        <a class="button button-secondary button-small store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add to Chrome</a>
+        <a href="#how">The extension</a><a href="#try">Try it</a><a href="#plans">Pricing</a>
+        <a class="button button-dark button-small store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add to Chrome <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
   </header>
-
   <main>
-    <section class="hero">
+    <section class="hero" aria-labelledby="hero-title">
+      <img class="hero-art" src="/website-assets/clarity-studio-v11.jpg" alt="" width="1536" height="1024" fetchpriority="high">
       <div class="wrap hero-inner">
         <div class="hero-copy">
-          <div class="kicker">A little clarity goes a long way</div>
-          <h1>PromptIQ</h1>
-          <p class="hero-subtitle">Your ideas. Better expressed.</p>
-          <p class="hero-description">Turn a rough thought into a better prompt, right inside the AI tools you already use.</p>
+          <div class="kicker">A sharper start to every conversation</div>
+          <h1 id="hero-title">PromptIQ</h1>
+          <p class="hero-subtitle">Good ideas deserve<br><span>better prompts.</span></p>
+          <p class="hero-description">Bring clarity to your next AI conversation. Turn what you mean into a prompt that says it.</p>
           <div class="hero-actions">
-            <a class="button button-primary store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add to Chrome - Free</a>
-            <a class="button button-secondary" href="#try">Try it here <span aria-hidden="true">↓</span></a>
+            <a class="button button-primary store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add to Chrome - Free <span aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#try">Try it first <span aria-hidden="true">↓</span></a>
           </div>
-          <p class="hero-note">Free to start. Local by default. Ready when you are.</p>
+          <p class="hero-note">No card. No API key. Just your next good idea.</p>
         </div>
       </div>
     </section>
+    <section class="platforms" aria-label="Supported AI platforms">
+      <div class="wrap platform-inner"><span class="platform-caption">A little extra clarity.<br>In the tools you love.</span><div class="platform-names"><span>ChatGPT</span><span>Claude</span><span>Gemini</span><span>Perplexity</span><span>Copilot</span><span>DeepSeek</span></div></div>
+    </section>
 
-    <section class="demo-section" id="try" aria-labelledby="demo-title">
+    <section class="band demo-section" id="try" aria-labelledby="demo-title">
       <div class="wrap">
-        <div class="demo-heading"><h2 id="demo-title">Give your next idea a little more direction.</h2><span class="local-label">On-device preview</span></div>
+        <div class="section-head"><div><p class="eyebrow">A small change. A stronger starting point.</p><h2 id="demo-title">Same idea.<br>More direction.</h2></div><p class="section-lede">Bring your own draft. Smart Template adds structure on your device, without sending your words to an AI provider.</p></div>
         <form class="demo" id="demo-form">
           <div class="demo-toolbar">
-            <label for="demo-platform">For</label>
-            <select id="demo-platform"><option value="chatgpt">ChatGPT</option><option value="claude">Claude</option><option value="gemini">Gemini</option></select>
-            <label for="demo-mode" class="sr-only">Optimization mode</label>
+            <label for="demo-platform">Optimize for</label>
+            <select id="demo-platform" aria-label="AI platform"><option value="chatgpt">ChatGPT</option><option value="claude">Claude</option><option value="gemini">Gemini</option></select>
+            <label class="sr-only" for="demo-mode">Optimization mode</label>
             <select id="demo-mode"><option value="standard">Standard</option><option value="concise">Concise</option><option value="detailed">Detailed</option><option value="creative">Creative</option><option value="technical">Technical</option></select>
-            <output class="score" id="demo-score" aria-label="Prompt quality score"></output>
+            <span class="local-label">On-device</span>
           </div>
-          <label class="sr-only" for="demo-prompt">Your draft prompt</label>
-          <textarea id="demo-prompt" maxlength="6000" required placeholder="What would you like your AI to help with?">Write a launch email for my productivity app</textarea>
+          <div class="demo-columns">
+            <div class="draft-side">
+              <div class="editor-heading"><label for="demo-prompt">Your starting point</label><output id="demo-score" class="score" aria-label="Prompt quality score"></output></div>
+              <textarea id="demo-prompt" maxlength="6000" required placeholder="What would you like your AI to help with?">Write a launch email for my productivity app</textarea>
+            </div>
+            <div class="result-side">
+              <div id="demo-empty"><div class="editor-heading">A little more clarity</div><div class="result-placeholder">Your idea, with a clearer brief.<span class="placeholder-rule" aria-hidden="true"></span><span class="placeholder-rule" aria-hidden="true"></span><span class="placeholder-rule" aria-hidden="true"></span></div></div>
+              <div class="demo-result" id="demo-result" hidden>
+                <div class="result-heading"><span>Your refined prompt</span><button class="button button-secondary button-small" type="button" id="demo-copy">Copy prompt</button></div>
+                <p id="demo-output" tabindex="0" aria-label="Refined prompt"></p>
+              </div>
+            </div>
+          </div>
           <div class="demo-actions"><span id="demo-status" role="status">Your draft stays in this browser.</span><button class="button button-primary" id="demo-optimize" type="submit">Optimize prompt <span aria-hidden="true">↗</span></button></div>
-          <div class="demo-result" id="demo-result" hidden>
-            <div class="result-heading"><span>Your refined prompt</span><button class="button button-secondary button-small" type="button" id="demo-copy">Copy prompt</button></div>
-            <p id="demo-output"></p>
-          </div>
         </form>
-        <p class="platform-line">At home in ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.</p>
+        <div class="proof-grid">
+          <div class="proof-item"><span class="proof-value">100/day</span><span class="proof-label">Free local optimizations<br>with the extension</span></div>
+          <div class="proof-item"><span class="proof-value">5 free</span><span class="proof-label">Cloud AI trials every day<br>when you sign in</span></div>
+          <div class="proof-item"><span class="proof-value">Your words.</span><span class="proof-label">On your device.<br>Local by default.</span></div>
+        </div>
       </div>
     </section>
 
-    <section class="proof-bar" aria-label="PromptIQ plan highlights">
-      <div class="wrap proof-grid">
-        <div class="proof-item"><span class="proof-value">100/day</span><span class="proof-label">Free local Smart Template optimizations</span></div>
-        <div class="proof-item"><span class="proof-value">5 free</span><span class="proof-label">Daily cloud AI trials with an account</span></div>
-        <div class="proof-item"><span class="proof-value">Private by default</span><span class="proof-label">Local Smart Template stays on your device</span></div>
-      </div>
-    </section>
-
-    <section class="band" id="how">
+    <section class="band product-band" id="how">
       <div class="wrap">
-        <div class="section-head">
-          <div><p class="eyebrow">One small addition to your day</p><h2>From thought to thoughtful.</h2></div>
-          <p class="section-lede">PromptIQ works beside the chat composer, so scoring, optimization, comparison, and insertion happen without changing tabs.</p>
-        </div>
+        <div class="section-head"><div><p class="eyebrow">No new workflow required</p><h2>Right beside your draft.<br>Right when it matters.</h2></div><p class="section-lede">A quiet companion inside your AI workspace. Check the score, refine your request, and keep the conversation moving.</p></div>
+        <figure class="product-frame">
+          <img class="product-image" src="/website-assets/product-workspace-v11.png" alt="The PromptIQ extension refining a launch email prompt in a demonstration workspace" width="2400" height="1600" loading="lazy">
+          <figcaption><span>PromptIQ extension · Smart Template · Demonstration workspace</span><span>Actual interface, captured at high resolution</span></figcaption>
+        </figure>
         <div class="workflow">
-          <article class="step"><span class="step-number">01</span><h3>Write</h3><p>Start with the request already in your head.</p></article>
-          <article class="step"><span class="step-number">02</span><h3>Score</h3><p>See which prompt dimensions need more direction.</p></article>
-          <article class="step"><span class="step-number">03</span><h3>Optimize</h3><p>Choose a mode and generate a stronger version.</p></article>
-          <article class="step"><span class="step-number">04</span><h3>Insert</h3><p>Compare the change, then place it back in the chat.</p></article>
+          <article class="step"><span class="step-number">01 / WRITE</span><h3>Start naturally.</h3><p>A rough idea is enough. No special formula needed.</p></article>
+          <article class="step"><span class="step-number">02 / REFINE</span><h3>Give it direction.</h3><p>Add a clearer role, context, and expected outcome.</p></article>
+          <article class="step"><span class="step-number">03 / COMPARE</span><h3>Keep the good parts.</h3><p>See the original and refined versions side by side.</p></article>
+          <article class="step"><span class="step-number">04 / INSERT</span><h3>Back to the conversation.</h3><p>Use the result in your chat. Undo when you need to.</p></article>
         </div>
       </div>
     </section>
 
-    <section class="band product-band">
-      <div class="wrap product-grid">
-        <div class="product-copy">
-          <p class="eyebrow">Right where you work</p>
-          <h2>A better prompt.<br>A clearer answer.</h2>
-          <p>Use Standard, Concise, Detailed, Creative, or Technical mode. PromptIQ adapts the result for the AI platform you are using and explains what changed.</p>
-          <ul class="feature-list">
-            <li>Live score across role, task, context, format, constraints, and specificity</li>
-            <li>Before-and-after comparison with undo</li>
-            <li>Local history, favorites, and reusable prompt library</li>
-          </ul>
+    <section class="band modes-band">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">One idea. Five ways forward.</p><h2>Make it sound<br>like the task at hand.</h2></div><p class="section-lede">From a quick email to a careful technical brief, choose the direction that fits. Every mode is included in Free.</p></div>
+        <div class="mode-list">
+          <article class="mode-item"><span>01</span><h3>Standard</h3><p>A balanced brief for everyday questions.</p></article>
+          <article class="mode-item"><span>02</span><h3>Concise</h3><p>Less noise. A focused request.</p></article>
+          <article class="mode-item"><span>03</span><h3>Detailed</h3><p>More context for the bigger picture.</p></article>
+          <article class="mode-item"><span>04</span><h3>Creative</h3><p>Room for a fresh perspective.</p></article>
+          <article class="mode-item"><span>05</span><h3>Technical</h3><p>Clear requirements and constraints.</p></article>
         </div>
-        <img class="product-image" src="/screenshot2.png" alt="PromptIQ optimizer beside an AI chat window" width="1280" height="800" loading="lazy">
       </div>
     </section>
 
     <section class="band" id="plans">
       <div class="wrap">
-        <div class="section-head">
-          <div><p class="eyebrow">Simple, from the start</p><h2>A little upgrade.<br>A lot more clarity.</h2></div>
-          <p class="section-lede">No personal API key is required. Premium provider keys stay on the PromptIQ server.</p>
-        </div>
+        <div class="section-head"><div><p class="eyebrow">A fair price for a little more clarity</p><h2>Start free.<br>Go further for ₹50.</h2></div><p class="section-lede">Local tools for your everyday ideas. Cloud AI when you need deeper refinement. No personal API key required.</p></div>
         <div class="plans">
-          <article class="plan">
-            <div class="plan-name">Free</div>
-            <div class="price">₹0</div>
-            <ul>
-              <li>100 Smart Template optimizations per day</li>
-              <li>5 cloud AI trial optimizations per day after sign-in</li>
-              <li>All five optimization modes</li>
-              <li>Local scoring, history, favorites, compare, and undo</li>
-              <li>No account required for local mode</li>
-            </ul>
-            <a class="button button-dark store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Install Free</a>
+          <article class="plan"><div class="plan-name">Free</div><div class="price">₹0 <small>/ always</small></div><p class="plan-summary">A better starting point, every day.</p>
+            <ul><li>100 local Smart Template optimizations / day</li><li>5 cloud AI trials / day after sign-in</li><li>All five optimization modes</li><li>Local history, favorites, compare, and undo</li><li>No account needed for local mode</li></ul>
+            <a class="button button-dark store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add to Chrome - Free <span aria-hidden="true">↗</span></a>
           </article>
-          <article class="plan">
-            <div class="plan-name">Premium</div>
-            <div class="price">₹50 <small>/ month</small></div>
-            <ul>
-              <li>50 Premium AI optimizations per day</li>
-              <li>200 Smart Template optimizations per day</li>
-              <li>Secure server-side AI optimization</li>
-              <li>Signed-in history synchronization</li>
-            </ul>
-            <a class="button button-dark store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Install and upgrade</a>
-            <p class="plan-note">Premium checkout appears after signing in to the extension.</p>
+          <article class="plan"><div class="plan-name">Premium</div><span class="plan-tag">A little extra thinking</span><div class="price">₹50 <small>/ month</small></div><p class="plan-summary">For the ideas that need more.</p>
+            <ul><li>50 Premium AI optimizations / day</li><li>200 local Smart Template optimizations / day</li><li>All five optimization modes</li><li>Secure server-side AI processing</li><li>Signed-in history synchronization</li></ul>
+            <a class="button button-primary store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Get the extension <span aria-hidden="true">↗</span></a>
+            <p class="plan-note">Premium activation is being prepared. Start with the free daily AI trials.</p>
           </article>
         </div>
       </div>
     </section>
+
+    <section class="band">
+      <div class="wrap faq"><div><p class="eyebrow">A few good questions</p><h2>Before you<br>start writing.</h2></div>
+        <div class="faq-list">
+          <details><summary>Do I need an account?</summary><p>No. Local scoring and Smart Template work without an account. Sign in to use your five daily cloud AI trials and synchronize your history.</p></details>
+          <details><summary>Where does my prompt go?</summary><p>Local Smart Template keeps your draft on your device. Choosing cloud AI sends your prompt to PromptIQ's server and its AI provider for optimization. Signed-in history is synchronized. Read our <a href="/privacy">privacy policy</a> for the details.</p></details>
+          <details><summary>Will it work with my AI subscription?</summary><p>PromptIQ works beside the chat input in supported platforms. It does not replace or include a ChatGPT, Claude, Gemini, or other AI service subscription.</p></details>
+          <details><summary>Can I change the optimized prompt?</summary><p>Yes. You can edit it, compare it with your original, or undo the replacement. Your prompt is still yours.</p></details>
+        </div>
+      </div>
+    </section>
+    <section class="closing"><div class="wrap closing-inner"><div><h2>Your next good idea starts here.</h2><p>Write normally. Give your AI a clearer starting point.</p></div><a class="button button-dark store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add PromptIQ to Chrome <span aria-hidden="true">↗</span></a></div></section>
   </main>
-
-  <footer>
-    <div class="wrap footer-inner">
-      <span>© 2026 PromptIQ</span>
-      <nav class="footer-links" aria-label="Footer navigation">
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-        <a href="/support">Support</a>
-        <a href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek/reviews">Reviews</a>
-      </nav>
-    </div>
-  </footer>
-
-  <script type="module" src="/website.js"></script>
+  <footer><div class="wrap footer-inner"><div class="footer-brand"><a class="brand" href="/" aria-label="PromptIQ home"><img class="brand-mark" src="/brand-mark.svg" width="36" height="36" alt=""><span>PromptIQ</span></a><span>© 2026 PromptIQ</span></div><nav class="footer-links" aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Support</a><a href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek/reviews">Reviews</a></nav></div></footer>
+  <script type="module" src="/website.js?v=1.0.11"></script>
 </body>
 </html>

@@ -833,7 +833,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   panel.innerHTML = `
     <div class="header">
       <div class="header-logo-group">
-        <div class="title">PromptIQ Optimizer</div>
+        <svg width="24" height="24" viewBox="0 0 128 128" aria-hidden="true" style="flex-shrink:0"><rect width="128" height="128" rx="26" fill="#2454eb"/><path fill="#fff" d="M31 31h42l24 25v18L73 98H53l-22 13V31zm17 17v34l17-10h5l12-12-12-12H48z" fill-rule="evenodd"/></svg>
+        <div class="title">PromptIQ</div>
         <div class="status-badge status-free" id="header-pro-badge">FREE</div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">

@@ -4,6 +4,7 @@ import { scorePrompt } from './src/lib/scorer.js';
 const prompt = document.getElementById('demo-prompt');
 const score = document.getElementById('demo-score');
 const result = document.getElementById('demo-result');
+const empty = document.getElementById('demo-empty');
 const output = document.getElementById('demo-output');
 const status = document.getElementById('demo-status');
 const copy = document.getElementById('demo-copy');
@@ -15,6 +16,7 @@ const refreshScore = () => {
 prompt.addEventListener('input', () => {
   refreshScore();
   result.hidden = true;
+  empty.hidden = false;
   status.textContent = 'Your draft stays in this browser.';
 });
 refreshScore();
@@ -22,6 +24,7 @@ refreshScore();
 for (const id of ['demo-platform', 'demo-mode']) {
   document.getElementById(id).addEventListener('change', () => {
     result.hidden = true;
+    empty.hidden = false;
     status.textContent = 'Your draft stays in this browser.';
   });
 }
@@ -39,6 +42,7 @@ document.getElementById('demo-form').addEventListener('submit', (event) => {
   });
   output.textContent = optimized.enhancedPrompt;
   result.hidden = false;
+  empty.hidden = true;
   status.textContent = 'Ready. Refined locally with Smart Template.';
   copy.textContent = 'Copy prompt';
 });

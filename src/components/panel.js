@@ -7,6 +7,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   let currentRunId = null;
   let userTier = 'free';
   let isLoggedIn = false;
+  let isStorageReady = false;
   let detectedPlatform = 'general';
   let lastResultRecord = null;
   let hasStoredEnginePreference = false;
@@ -848,14 +849,14 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       </div>
       <div class="engine-summary">
         <div class="engine-name" id="engine-name">Smart Template</div>
-        <div class="engine-copy" id="engine-copy">Runs locally without an account or API call.</div>
+        <div class="engine-copy" id="engine-copy">Create an account to score, save, and optimize prompts.</div>
       </div>
     </div>
 
     <div class="signin-card" id="signin-card">
-      <div class="signin-title">Free mode is ready</div>
-      <div class="signin-copy">Sign in for 5 free AI optimizations each day, or upgrade for 50 per day.</div>
-      <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%; padding: 8px 10px; font-size: 12px;">Open Account</button>
+      <div class="signin-title" id="signin-title">Account required</div>
+      <div class="signin-copy" id="signin-copy">Create an account or sign in before PromptIQ reads and stores prompt drafts.</div>
+      <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%; padding: 8px 10px; font-size: 12px;">Continue to Account</button>
     </div>
 
     <!-- Visual Score Circle & Info -->
@@ -1022,7 +1023,16 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     const engineName = shadow.getElementById('engine-name');
     const engineCopy = shadow.getElementById('engine-copy');
     const requestedEngine = engineSelect.value;
-    const effectiveEngine = isLoggedIn && requestedEngine === 'premium_ai'
+    if (!isLoggedIn || !isStorageReady) {
+      engineSelect.value = 'smart_template';
+      engineName.textContent = 'Account required';
+      engineCopy.textContent = isLoggedIn
+        ? 'Review prompt storage and finish account setup to continue.'
+        : 'Create an account to score, save, and optimize prompts.';
+      return;
+    }
+
+    const effectiveEngine = requestedEngine === 'premium_ai'
       ? 'premium_ai'
       : 'smart_template';
 
@@ -1044,9 +1054,28 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   }
 
   function refreshEngineAvailability() {
-    engineSelect.disabled = !isLoggedIn;
+    const hasAccess = isLoggedIn && isStorageReady;
+    modeSelect.disabled = !hasAccess;
+    engineSelect.disabled = !hasAccess;
+    optimizeBtn.disabled = !hasAccess || isCooldownActive;
+    signInCard.classList.toggle('visible', !hasAccess);
 
+    const signInTitle = shadow.getElementById('signin-title');
+    const signInCopy = shadow.getElementById('signin-copy');
+    const badgeText = shadow.getElementById('score-text');
     if (!isLoggedIn) {
+      signInTitle.textContent = 'Account required';
+      signInCopy.textContent = 'Create an account or sign in before PromptIQ reads and stores prompt drafts.';
+      badgeText.textContent = 'PromptIQ: Sign in';
+    } else if (!isStorageReady) {
+      signInTitle.textContent = 'Finish privacy setup';
+      signInCopy.textContent = 'Prompt storage must be enabled before PromptIQ can access the chat composer.';
+      badgeText.textContent = 'PromptIQ: Finish setup';
+    } else if (badgeText.textContent.includes('Sign in') || badgeText.textContent.includes('Finish setup')) {
+      badgeText.textContent = 'PromptIQ: 0';
+    }
+
+    if (!hasAccess) {
       engineSelect.value = 'smart_template';
     } else if (userTier === 'premium' && !hasStoredEnginePreference) {
       engineSelect.value = 'premium_ai';
@@ -1113,6 +1142,10 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   });
 
   optimizeBtn.addEventListener('click', async () => {
+    if (!isLoggedIn || !isStorageReady) {
+      openPromptIqPopup();
+      return;
+    }
     panel.classList.remove('has-result');
     loaderShimmer.style.display = 'block';
     errorPanel.style.display = 'none';
@@ -1125,7 +1158,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       console.error('onOptimize failed:', err);
     } finally {
       loaderShimmer.style.display = 'none';
-      if (!isCooldownActive) {
+      if (!isCooldownActive && isLoggedIn && isStorageReady) {
         optimizeBtn.disabled = false;
       }
     }
@@ -1268,7 +1301,15 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     setLoggedState: (loggedIn) => {
       isLoggedIn = Boolean(loggedIn);
       logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
-      signInCard.classList.toggle('visible', !isLoggedIn);
+      refreshEngineAvailability();
+    },
+    setStorageReady: (ready) => {
+      isStorageReady = Boolean(ready);
+      refreshEngineAvailability();
+    },
+    showAccountRequired: (reason = 'signin') => {
+      panel.classList.add('visible');
+      container.classList.add('panel-open');
       refreshEngineAvailability();
     },
     getSettings: () => ({
@@ -1299,7 +1340,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     },
     showPaywall: (type, lockedMode = null) => {
       loaderShimmer.style.display = 'none';
-      optimizeBtn.disabled = false;
+      optimizeBtn.disabled = !isLoggedIn || !isStorageReady;
       
       const titleEl = shadow.getElementById('paywall-title');
       const descEl = shadow.getElementById('paywall-desc');
@@ -1447,7 +1488,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     showError: (err) => {
       panel.classList.remove('has-result');
       loaderShimmer.style.display = 'none';
-      optimizeBtn.disabled = false;
+      optimizeBtn.disabled = !isLoggedIn || !isStorageReady;
       shadow.getElementById('result-section').style.display = 'none';
       
       const errorIcon = shadow.getElementById('error-panel-icon');

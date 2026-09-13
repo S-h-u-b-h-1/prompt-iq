@@ -1,4 +1,4 @@
-# PromptIQ visual identity, release 1.0.14
+# PromptIQ visual identity, release 1.0.15
 
 The two dominant brand colors are graphite (#101414) and electric mint (#9fffc8). Soft neutral text (#f1f7f3), muted text (#a8b8af), and a raised graphite surface (#171e1b) preserve readability without competing with the accent. The website and extension use the same dark identity.
 

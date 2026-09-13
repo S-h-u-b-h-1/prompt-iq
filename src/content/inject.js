@@ -1,6 +1,8 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
+import { getCapturePreferences, saveActivity } from '../lib/activity.js';
+import { createDraftRecorder } from '../lib/draft-recorder.js';
 import {
   saveOptimization,
   getUserTier,
@@ -19,6 +21,31 @@ let adapter = null;
 let lastOptimizedPrompt = '';
 let previousPromptBeforeUse = '';
 let observer = null;
+let accountReady = false;
+const draftRecorder = createDraftRecorder(saveActivity);
+
+async function syncAccountAccess(tokenOverride) {
+  const token = tokenOverride === undefined ? await getSessionToken() : tokenOverride;
+  let storageReady = false;
+
+  if (token) {
+    try {
+      const preferences = await getCapturePreferences(true);
+      storageReady = preferences.saveDrafts === true;
+    } catch {
+      storageReady = false;
+    }
+  }
+
+  accountReady = Boolean(token && storageReady);
+  draftRecorder.reset();
+  panelApi?.setLoggedState(Boolean(token));
+  panelApi?.setStorageReady(storageReady);
+
+  if (accountReady && currentInputEl) {
+    handleInput();
+  }
+}
 
 function isContextValid() {
   if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id) {
@@ -29,6 +56,7 @@ function isContextValid() {
 }
 
 function cleanup() {
+  draftRecorder.reset();
   try {
     if (currentInputEl) {
       currentInputEl.removeEventListener('input', handleInput);
@@ -54,10 +82,12 @@ function setupStorageListener() {
         if (areaName !== 'local' || !panelApi) return;
 
         if (changes.sessionToken) {
+          draftRecorder.reset();
           const newToken = changes.sessionToken.newValue;
-          if (panelApi) {
-            panelApi.setLoggedState(!!newToken);
-          }
+          void syncAccountAccess(newToken);
+        }
+        if (changes.promptIqCapturePreferencesVersion) {
+          void syncAccountAccess();
         }
         if (changes.userTier) {
           panelApi.setTier(changes.userTier.newValue || 'free');
@@ -80,8 +110,8 @@ async function init() {
 
   // Sync initial logged state and user tier
   const token = await getSessionToken();
+  await syncAccountAccess(token);
   if (panelApi) {
-    panelApi.setLoggedState(!!token);
     try {
       const tier = await getUserTier();
       panelApi.setTier(tier);
@@ -102,7 +132,11 @@ async function init() {
 function handleInput() {
   if (!isContextValid()) return;
   if (!currentInputEl || !panelApi) return;
+  if (!accountReady) return;
   const text = adapter.getText(currentInputEl);
+  if (typeof text === 'string') {
+    draftRecorder.schedule(text, adapter.platform, panelApi.getSettings().mode);
+  }
   const scoreData = scorePrompt(text);
   
   // Local structure check to identify missing prompt elements
@@ -116,18 +150,14 @@ function updateActiveInput(el) {
   if (!el || !panelApi) return;
   
   if (currentInputEl && currentInputEl !== el) {
+    draftRecorder.reset();
     currentInputEl.removeEventListener('input', handleInput);
   }
   
   currentInputEl = el;
   currentInputEl.addEventListener('input', handleInput);
   
-  const initialText = adapter.getText(currentInputEl);
-  const scoreData = scorePrompt(initialText);
-  const structure = checkStructure(initialText);
-  scoreData.missing = structure.missing;
-  
-  panelApi.updateScore(scoreData);
+  if (accountReady) handleInput();
 }
 
 function setupObserver() {
@@ -143,10 +173,13 @@ function setupObserver() {
 
 async function handleLogout() {
   await clearSessionToken();
+  accountReady = false;
+  draftRecorder.reset();
   if (panelApi) {
     panelApi.setLoggedState(false);
+    panelApi.setStorageReady(false);
     panelApi.setTier('free');
-    panelApi.showError(new Error('Signed out. Free Smart Template optimization remains available.'));
+    panelApi.showError(new Error('Signed out. Create an account or sign in to use PromptIQ.'));
   }
 }
 
@@ -201,20 +234,24 @@ function setupMessageListeners() {
 
 async function handleOptimize() {
   if (!isContextValid()) return;
+  const token = await getSessionToken();
+  if (!token || !accountReady) {
+    panelApi.showAccountRequired(token ? 'consent' : 'signin');
+    return;
+  }
   const text = (adapter.getText(currentInputEl) || '').trim();
   if (!text) {
     panelApi.showError(new Error('Prompt is empty.'));
     return;
   }
 
-  const token = await getSessionToken();
   let tier = await getUserTier();
   const settings = panelApi.getSettings ? panelApi.getSettings() : { mode: 'standard', platform: adapter.platform };
   const mode = settings.mode || 'standard';
   const engine = settings.engine || 'smart_template';
-  if (!token && tier === 'premium') tier = 'free';
   if (panelApi) {
-    panelApi.setLoggedState(!!token);
+    panelApi.setLoggedState(true);
+    panelApi.setStorageReady(true);
     panelApi.setTier(tier);
   }
   const localResult = analyzeAndEnhancePrompt(text, {
@@ -261,7 +298,8 @@ async function handleOptimize() {
       localResult.intent,
       mode,
       originalScore,
-      newScore
+      newScore,
+      usePremiumAi ? 'premium_ai' : 'smart_template'
     );
 
     const diffedTokens = diffPrompt(text, result.optimized);
@@ -285,11 +323,14 @@ async function handleOptimize() {
       }
     } else if (err.status === 401 || err.status === 403) {
       await clearSessionToken();
+      accountReady = false;
+      draftRecorder.reset();
       if (panelApi) {
         panelApi.setLoggedState(false);
+        panelApi.setStorageReady(false);
         panelApi.setTier('free');
       }
-      panelApi.showError(new Error('Premium access could not be verified. Sign in again, or continue with Free Smart Template.'));
+      panelApi.showError(new Error('Your account session expired. Sign in again to continue.'));
     } else if (err.message && err.message.includes('Extension context invalidated')) {
       const reloadErr = new Error('PromptIQ has been updated. Please refresh the page to continue.');
       panelApi.showError(reloadErr);

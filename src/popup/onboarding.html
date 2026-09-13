@@ -20,12 +20,13 @@
       <section class="account">
         <div>
           <p class="eyebrow">Account</p>
-          <p class="account-title" id="account-title">Free local mode</p>
-          <p class="account-copy" id="account-copy">No account required for Smart Template.</p>
+          <p class="account-title" id="account-title">Account required</p>
+          <p class="account-copy" id="account-copy">Create an account to use PromptIQ and keep your prompt history available.</p>
         </div>
         <div class="account-actions">
           <button class="btn btn-small" id="signin-btn" type="button">Sign in</button>
           <button class="btn btn-small btn-primary" id="signup-btn" type="button">Sign up</button>
+          <button class="btn btn-small btn-primary" id="finish-setup-btn" type="button" hidden>Finish setup</button>
           <button class="btn btn-small btn-danger" id="logout-btn" type="button" hidden>Log out</button>
         </div>
       </section>
@@ -42,7 +43,7 @@
               <span class="usage-count" id="smart-usage">0 / 100</span>
             </div>
             <div class="meter"><span id="smart-meter"></span></div>
-            <p class="usage-help">Runs on this device. Prompt text is not sent to an AI API.</p>
+            <p class="usage-help">Optimization runs on this device; your account keeps the latest draft revision.</p>
           </div>
           <div class="usage-row">
             <div class="usage-top">
@@ -69,7 +70,7 @@
           <div class="plan">
             <div class="plan-name">Free</div>
             <div class="plan-price">$0</div>
-            <p>100 local prompts daily. Sign in for 5 daily AI trials.</p>
+            <p>Account required. 100 Smart Template prompts and 5 AI trials daily.</p>
           </div>
           <div class="plan">
             <div class="plan-name">Premium</div>
@@ -82,7 +83,7 @@
     </main>
 
     <footer>
-      <span id="version-label">Version 1.0.14</span>
+      <span id="version-label">Version 1.0.15</span>
       <span><a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy</a> · <a href="https://promptiq-theta.vercel.app/support" target="_blank" rel="noreferrer">Support</a></span>
     </footer>
   </div>
@@ -101,18 +102,26 @@
         <button class="auth-mode" id="signup-mode-btn" type="button" role="tab" aria-selected="false">Create account</button>
       </div>
       <form id="auth-form">
-        <div class="field">
+        <div class="field" id="auth-email-field">
           <label for="auth-email">Email address</label>
           <input id="auth-email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
         </div>
-        <div class="field">
+        <div class="field" id="auth-password-field">
           <label for="auth-password">Password</label>
           <input id="auth-password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required placeholder="At least 8 characters">
         </div>
-        <button class="btn btn-primary" id="auth-submit-btn" type="submit" style="width:100%">Sign in</button>
+        <label class="consent-row" for="prompt-storage-consent">
+          <input id="prompt-storage-consent" type="checkbox" required>
+          <span>I understand PromptIQ saves the latest prompt draft I type on supported AI sites to my account, including unsent text, for up to 30 days. This is required to use the extension.</span>
+        </label>
+        <label class="consent-row optional" for="search-storage-consent">
+          <input id="search-storage-consent" type="checkbox">
+          <span>Also save searches I make inside the PromptIQ prompt library.</span>
+        </label>
+        <button class="btn btn-primary" id="auth-submit-btn" type="submit" style="width:100%">Sign in and continue</button>
         <p class="notice" id="auth-status" role="alert" style="margin-top:12px"></p>
       </form>
-      <p class="dialog-copy">Account credentials are sent over HTTPS and passwords are stored as salted hashes. Signed-in history is synchronized. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
+      <p class="dialog-copy">Only supported chat composers are observed. PromptIQ does not collect AI responses, unrelated page fields, conversation URLs, or browser search history. Passwords are stored as salted hashes. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
     </div>
   </dialog>
 

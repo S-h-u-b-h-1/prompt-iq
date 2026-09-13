@@ -481,6 +481,18 @@
     .tab-content.active { animation: view-enter .3s ease both; }
     @keyframes view-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    [hidden] { display:none !important; }
+    .saved-activity { margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--card-border); }
+    .saved-activity h3 { margin:0 0 10px; font-size:16px; }
+    .saved-activity p { font-size:11px; line-height:1.6; color:var(--text-secondary); }
+    .saved-activity label { display:flex; align-items:center; gap:9px; margin:12px 0; font-size:12px; text-transform:none; font-weight:500; }
+    .saved-activity input { width:16px; height:16px; accent-color:#9fffc8; }
+    .activity-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    .activity-actions .btn, #more-activity { width:auto; padding:8px 12px; font-size:11px; }
+    .activity-entry { border-top:1px solid var(--card-border); padding:12px 0; }
+    .activity-entry h4 { margin:0; font-size:11px; color:var(--text-secondary); }
+    .activity-entry p { white-space:pre-wrap; overflow-wrap:anywhere; max-height:160px; overflow:auto; color:var(--text-primary); }
+    .activity-entry button { width:auto; padding:6px 10px; font-size:11px; }
   </style>
 </head>
 <body>
@@ -490,7 +502,7 @@
     <div class="welcome-card" style="text-align: center; margin-bottom: 20px;">
       <img src="/brand-mark.svg" alt="" width="40" height="40">
       <h2 class="welcome-title">PromptIQ</h2>
-      <p class="welcome-desc" style="margin-bottom: 0;">Free optimization works without an account. Sign in for synced history and Premium AI.</p>
+      <p class="welcome-desc" style="margin-bottom: 0;">An account and prompt-storage consent are required before PromptIQ accesses a chat composer.</p>
     </div>
     
     <form id="auth-form-wrapper">
@@ -505,6 +517,15 @@
         <label for="auth-password">Password</label>
         <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
       </div>
+
+      <label style="display:flex; align-items:flex-start; gap:9px; margin:12px 0; color:var(--text-secondary); font-size:11px; line-height:1.5;">
+        <input type="checkbox" id="auth-storage-consent" style="width:16px; height:16px; margin-top:1px; accent-color:#9fffc8;" />
+        <span>I understand PromptIQ saves the latest prompt drafts I type on supported AI sites to my account for up to 30 days. This is required to use PromptIQ.</span>
+      </label>
+      <label style="display:flex; align-items:flex-start; gap:9px; margin:10px 0 14px; color:var(--text-muted); font-size:11px; line-height:1.5;">
+        <input type="checkbox" id="auth-search-consent" style="width:16px; height:16px; margin-top:1px; accent-color:#9fffc8;" />
+        <span>Also save my PromptIQ library searches.</span>
+      </label>
       
       <button class="btn" id="auth-submit-btn" type="button" style="margin-top: 6px;">Log In</button>
       
@@ -536,6 +557,10 @@
         <img src="/brand-mark.svg" alt="" width="40" height="40">
         <h2 class="welcome-title">Write normally. PromptIQ makes it AI-ready.</h2>
         <p class="welcome-desc" style="color: var(--text-secondary); margin-top: 8px;">Optimize your prompts in one click directly inside your favorite chat interfaces.</p>
+        <div class="alert-card" id="account-setup-notice" hidden>
+          <div class="alert-icon" aria-hidden="true">i</div>
+          <div class="alert-text">Prompt storage is off, so the in-page optimizer is locked. <a href="#" class="view-onboarding-link">Finish account setup</a>.</div>
+        </div>
         
         <div class="benefits-title">Core Features:</div>
         <ul class="benefits-list">
@@ -585,7 +610,7 @@
     <!-- Library Tab -->
     <div class="tab-content" id="tab-library">
       <div class="search-box">
-        <input type="text" id="library-search" placeholder="Search prompts..." />
+        <input type="search" id="library-search" maxlength="500" aria-label="Search prompt library" placeholder="Search prompts..." />
       </div>
       <div class="category-filter" id="category-list">
         <div class="category-tag active" data-category="all">All</div>
@@ -597,6 +622,20 @@
 
     <!-- History Tab -->
     <div class="tab-content" id="tab-history">
+      <section class="saved-activity" aria-labelledby="saved-activity-title">
+        <h3 id="saved-activity-title">Drafts &amp; searches</h3>
+        <p>Prompt drafts are saved to your PromptIQ account after a typing pause so they can be recovered in history. Only the latest revision of each composer session is kept. Searches remain optional. Neither is used for advertising or model training.</p>
+        <label><input type="checkbox" id="save-drafts" disabled> Enable required prompt draft storage</label>
+        <label><input type="checkbox" id="save-searches" disabled> Save my PromptIQ library searches</label>
+        <p>Draft storage must stay on to use the in-page optimizer. Drafts and searches are available for 30 days. Turning a setting off stops new saves; delete saved entries below to remove them. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy details</a></p>
+        <div class="activity-actions">
+          <button type="button" class="btn btn-secondary" id="refresh-activity">Refresh</button>
+          <button type="button" class="btn btn-danger" id="delete-activity">Delete drafts &amp; searches</button>
+        </div>
+        <p id="activity-status" role="status">Sign in to manage saved activity.</p>
+        <div id="activity-list"></div>
+        <button type="button" class="btn btn-secondary" id="more-activity" hidden>Load more</button>
+      </section>
       <div class="history-header">
         <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary);" id="history-summary">0 saved runs</span>
         <button class="btn btn-danger" id="clear-history-btn" style="padding: 6px 12px; font-size: 11px; width: auto;">Clear All</button>

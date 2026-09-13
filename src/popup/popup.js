@@ -11,12 +11,83 @@ import {
   toggleFavoritePrompt
 } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
+import { getCapturePreferences, setCapturePreferences, saveActivity, getSavedActivity, clearSavedActivity } from '../lib/activity.js';
 
 // Import library data
 import libraryPrompts from '../../data/library.json' with { type: 'json' };
 
+let activityOffset = null;
+function initSavedActivity() {
+  const draft = document.getElementById('save-drafts');
+  const search = document.getElementById('save-searches');
+  const status = document.getElementById('activity-status');
+  const update = async () => {
+    if (!draft.checked && !confirm('Turn off prompt storage? The in-page optimizer will be locked until you enable it again. Existing entries are kept until you delete them or they expire.')) {
+      draft.checked = true;
+      return;
+    }
+    draft.disabled = search.disabled = true;
+    try {
+      const saved = await setCapturePreferences({saveDrafts:draft.checked,saveSearches:search.checked});
+      document.getElementById('account-setup-notice').hidden = saved.saveDrafts;
+      status.textContent = saved.saveDrafts
+        ? 'Preferences saved. Changes apply to new activity.'
+        : 'Prompt storage is off. The in-page optimizer is now locked.';
+    } catch (error) {
+      status.textContent = error.message;
+      await loadSavedActivity();
+    } finally { draft.disabled = search.disabled = !(await getSessionToken()); }
+  };
+  draft.addEventListener('change',update);
+  search.addEventListener('change',update);
+  document.getElementById('refresh-activity').addEventListener('click',()=>loadSavedActivity());
+  document.getElementById('more-activity').addEventListener('click',()=>loadSavedActivity(true));
+  document.getElementById('delete-activity').addEventListener('click',async () => {
+    if(!confirm('Delete all saved drafts and searches from your account and turn off their capture? Optimization history is separate.')) return;
+    try {
+      await clearSavedActivity();
+      await loadSavedActivity();
+      status.textContent='Drafts and searches deleted. Capture is now off.';
+    } catch(error) { status.textContent=error.message; }
+  });
+}
+async function loadSavedActivity(append=false) {
+  const status=document.getElementById('activity-status');
+  const list=document.getElementById('activity-list');
+  const more=document.getElementById('more-activity');
+  const draft=document.getElementById('save-drafts');
+  const search=document.getElementById('save-searches');
+  const token=await getSessionToken();
+  if(!append) { list.replaceChildren(); activityOffset=null; more.hidden=true; }
+  draft.disabled=search.disabled=!token;
+  document.getElementById('delete-activity').disabled=!token;
+  if(!token) { draft.checked=search.checked=false;status.textContent='Sign in to manage saved activity.';return; }
+  status.textContent='Loading saved activity...';
+  more.disabled=true;
+  try {
+    const preferences=await getCapturePreferences(true);
+    draft.checked=preferences.saveDrafts;search.checked=preferences.saveSearches;
+    document.getElementById('account-setup-notice').hidden=preferences.saveDrafts;
+    const data=await getSavedActivity(append?activityOffset:0);
+    if(token !== await getSessionToken()) { list.replaceChildren(); return; }
+    for(const entry of data.entries) {
+      const article=document.createElement('article');article.className='activity-entry';
+      const heading=document.createElement('h4');
+      heading.textContent=(entry.kind==='draft'?'Draft':'Search')+' / '+entry.platform+' / '+new Date(entry.timestamp).toLocaleString();
+      const text=document.createElement('p');text.textContent=entry.text;
+      const copy=document.createElement('button');copy.type='button';copy.className='btn btn-secondary';copy.textContent='Copy';
+      copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(entry.text);copy.textContent='Copied';}catch{status.textContent='Could not copy. Select the text to copy it.';}});
+      article.append(heading,text,copy);list.append(article);
+    }
+    activityOffset=data.nextOffset;more.hidden=activityOffset===null;
+    status.textContent=list.children.length?list.children.length+' recent entries.':'No saved drafts or searches yet.';
+  } catch(error) { draft.disabled=search.disabled=true;status.textContent=error.message; }
+  finally {more.disabled=false;}
+}
+
 let currentMode = 'login'; // login or signup
 let appInitialized = false;
+let authListenersInitialized = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthStatus();
@@ -32,8 +103,19 @@ async function checkAuthStatus() {
     try {
       user = await fetchUserProfile();
     } catch (err) {
-      console.warn('Account status unavailable; using local Free dashboard:', err);
+      console.warn('Account status unavailable:', err);
     }
+  }
+
+  if (!authListenersInitialized) {
+    initAuthListeners();
+    authListenersInitialized = true;
+  }
+
+  if (!user) {
+    authContainer.style.display = 'block';
+    authenticatedWrapper.style.display = 'none';
+    return;
   }
 
   authContainer.style.display = 'none';
@@ -41,12 +123,15 @@ async function checkAuthStatus() {
   if (!appInitialized) {
     initTabs();
     initHistory();
+    initSavedActivity();
     initFavorites();
     initLibrary();
     initSignout();
     initPayments();
     appInitialized = true;
   }
+  const preferences = await getCapturePreferences(true).catch(() => ({saveDrafts:false}));
+  document.getElementById('account-setup-notice').hidden = preferences.saveDrafts === true;
   await initDashboard(user);
 }
 
@@ -59,6 +144,8 @@ function initAuthListeners() {
   const statusEl = document.getElementById('auth-status');
   const emailInput = document.getElementById('auth-email');
   const passwordInput = document.getElementById('auth-password');
+  const storageConsent = document.getElementById('auth-storage-consent');
+  const searchConsent = document.getElementById('auth-search-consent');
   
   statusEl.className = 'status-msg';
   statusEl.style.display = 'none';
@@ -101,6 +188,12 @@ function initAuthListeners() {
       statusEl.style.display = 'block';
       return;
     }
+    if (!storageConsent.checked) {
+      statusEl.textContent = 'Prompt storage consent is required to use PromptIQ.';
+      statusEl.className = 'status-msg status-error';
+      statusEl.style.display = 'block';
+      return;
+    }
 
     submitBtn.disabled = true;
     submitBtn.textContent = currentMode === 'login' ? 'Logging in...' : 'Registering...';
@@ -111,9 +204,11 @@ function initAuthListeners() {
       } else {
         await signupUser(email, password);
       }
+      await setCapturePreferences({saveDrafts:true,saveSearches:searchConsent.checked});
       // Successful authentication! Reload status checks
       await checkAuthStatus();
     } catch (err) {
+      await clearSessionToken();
       statusEl.textContent = err.message;
       statusEl.className = 'status-msg status-error';
       statusEl.style.display = 'block';
@@ -182,6 +277,7 @@ function initTabs() {
     // Refresh views on tab change
     if (tab.dataset.tab === 'history') {
       renderHistory();
+      loadSavedActivity();
     } else if (tab.dataset.tab === 'favorites') {
       renderFavorites();
     } else if (tab.dataset.tab === 'dashboard') {
@@ -231,13 +327,6 @@ async function renderDashboard(user) {
         upgradeBtn.style.display = 'block';
         upgradeBtn.textContent = 'Upgrade to Premium';
       }
-    }
-  } else {
-    loggedInUserText.textContent = 'Free local mode - no account required';
-    planStatusText.textContent = 'Free Plan';
-    if (upgradeBtn) {
-      upgradeBtn.style.display = 'block';
-      upgradeBtn.textContent = 'Sign in for Premium';
     }
   }
 
@@ -543,6 +632,21 @@ function initLibrary() {
   });
 
   searchInput.addEventListener('input', filterLibrary);
+  let lastSearch = {key:'',time:0};
+  const saveSearch = async () => {
+    const text = searchInput.value.trim();
+    const category = document.querySelector('.category-tag.active').dataset.category;
+    const key = JSON.stringify([text, category]);
+    if (!text || (key === lastSearch.key && Date.now()-lastSearch.time<750)) return;
+    lastSearch = {key,time:Date.now()};
+    await saveActivity({
+      kind:'search', clientId:crypto.randomUUID(), text, category, resultCount:filterLibrary()
+    });
+  };
+  searchInput.addEventListener('change', saveSearch);
+  searchInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); saveSearch(); }
+  });
 
   renderLibrary(libraryPrompts);
 }
@@ -558,6 +662,7 @@ function filterLibrary() {
   });
 
   renderLibrary(filtered);
+  return filtered.length;
 }
 
 function renderLibrary(prompts) {

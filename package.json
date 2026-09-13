@@ -1,6 +1,6 @@
 {
   "name": "promptiq",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
     "verify:brand": "node scripts/verify-brand-palette.mjs",
     "package:extension": "npm run build && npm run verify:extension && cd dist && zip -qrFS ../dist.zip .",
     "preview": "vite preview",
-    "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/local-optimizer.test.mjs && node src/lib/storage.test.mjs && node src/lib/optimizer.test.mjs && node api/_utils/usage-limits.test.mjs && node api/_utils/optimizer-response.test.mjs && node api/_utils/razorpay-plan.test.mjs"
+    "test": "node src/lib/scorer.test.mjs && node src/lib/diff-explain.test.mjs && node src/lib/local-optimizer.test.mjs && node src/lib/storage.test.mjs && node src/lib/optimizer.test.mjs && node api/_utils/usage-limits.test.mjs && node api/_utils/optimizer-response.test.mjs && node api/_utils/razorpay-plan.test.mjs && node api/_utils/activity-validation.test.mjs && node src/lib/activity.test.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"

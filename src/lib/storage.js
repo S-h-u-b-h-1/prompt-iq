@@ -415,12 +415,15 @@ export async function checkoutSubscription() {
 }
 
 // IndexedDB Actions (Synchronized via JWT Authorization)
-export async function saveOptimization(original, optimized, scoreDelta, platform, intent = null, mode = null, scoreOriginal = null, scoreOptimized = null) {
+export async function saveOptimization(original, optimized, scoreDelta, platform, intent = null, mode = null, scoreOriginal = null, scoreOptimized = null, engine = null) {
   try {
+    const clientEventId = crypto.randomUUID();
     const db = await initDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
     const addRequest = store.add({
+      clientEventId,
+      engine,
       original,
       optimized,
       scoreDelta,
@@ -451,6 +454,8 @@ export async function saveOptimization(original, optimized, scoreDelta, platform
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          clientEventId,
+          engine,
           original,
           optimized,
           scoreDelta,

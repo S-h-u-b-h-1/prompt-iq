@@ -4,9 +4,11 @@ PromptIQ is a Manifest V3 Chrome extension that improves prompts directly inside
 
 ## Plans
 
-- Free: 100 Smart Template optimizations per day, plus 5 cloud AI trials per day after sign-in.
+- Free: account required; 100 Smart Template optimizations and 5 cloud AI trials per day.
 - Premium: 200 Smart Template optimizations plus 50 cloud AI optimizations per day.
 - Premium price: US$1 per month, excluding applicable taxes, through Razorpay.
+
+The extension requires an account and explicit prompt-storage consent before it reads a supported chat composer. It stores the latest revision of each prompt draft for 30 days, not every keystroke. Users can inspect and delete saved activity from Dashboard > History.
 
 ## Local development
 

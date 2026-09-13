@@ -74,6 +74,9 @@ dialog::backdrop{background:rgba(159, 255, 200, 0.251);backdrop-filter:blur(4px)
 .field label{font-size:11px;color:var(--muted)}
 .field input{width:100%;min-height:42px;padding:0 11px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;transition:border-color .2s}
 .field input:focus{border-color:var(--blue)}
+.consent-row{display:grid;grid-template-columns:18px 1fr;gap:9px;align-items:start;margin:2px 0 13px;color:var(--text);font-size:10px;line-height:1.55;cursor:pointer}
+.consent-row.optional{color:var(--muted);margin-bottom:16px}
+.consent-row input{width:16px;height:16px;margin:1px 0 0;accent-color:var(--blue)}
 .dialog-copy{margin:16px 0 0;color:var(--muted);font-size:10px;line-height:1.6}
 .dialog-copy a{color:var(--blue)}
 @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}

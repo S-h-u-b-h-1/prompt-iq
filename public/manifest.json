@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PromptIQ",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Score and improve prompts inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.",
   "homepage_url": "https://promptiq-theta.vercel.app/",
   "permissions": [

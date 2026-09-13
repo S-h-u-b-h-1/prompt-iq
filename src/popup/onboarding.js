@@ -9,9 +9,11 @@ import {
   signupUser,
   trackTelemetry
 } from '../lib/storage.js';
+import { getCapturePreferences, setCapturePreferences } from '../lib/activity.js';
 
 let authMode = 'login';
 let currentUser = null;
+let promptStorageReady = false;
 
 function canUseChromeTabs() {
   return typeof chrome !== 'undefined' &&
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const signupModeButton = document.getElementById('signup-mode-btn');
   const signInButton = document.getElementById('signin-btn');
   const signUpButton = document.getElementById('signup-btn');
+  const finishSetupButton = document.getElementById('finish-setup-btn');
   const logoutButton = document.getElementById('logout-btn');
   const upgradeButton = document.getElementById('upgrade-btn');
   const dashboardButton = document.getElementById('dashboard-btn');
@@ -61,6 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const premiumHelp = document.getElementById('premium-help');
   const usageDate = document.getElementById('usage-date');
   const versionLabel = document.getElementById('version-label');
+  const authModes = document.querySelector('.auth-modes');
+  const emailField = document.getElementById('auth-email-field');
+  const passwordField = document.getElementById('auth-password-field');
+  const promptStorageConsent = document.getElementById('prompt-storage-consent');
+  const searchStorageConsent = document.getElementById('search-storage-consent');
 
   if (versionLabel && globalThis.chrome?.runtime?.getManifest) {
     versionLabel.textContent = `Version ${chrome.runtime.getManifest().version}`;
@@ -88,10 +96,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const setAuthMode = (mode) => {
     authMode = mode;
+    const isConsent = mode === 'consent';
     const isLogin = mode === 'login';
-    authTitle.textContent = isLogin ? 'Sign in' : 'Create account';
-    submitButton.textContent = isLogin ? 'Sign in' : 'Create account';
+    authTitle.textContent = isConsent ? 'Finish account setup' : isLogin ? 'Sign in' : 'Create account';
+    submitButton.textContent = isConsent ? 'Enable and continue' : isLogin ? 'Sign in and continue' : 'Create account';
     passwordInput.autocomplete = isLogin ? 'current-password' : 'new-password';
+    authModes.hidden = isConsent;
+    emailField.hidden = isConsent;
+    passwordField.hidden = isConsent;
+    emailInput.required = !isConsent;
+    passwordInput.required = !isConsent;
     loginModeButton.classList.toggle('active', isLogin);
     signupModeButton.classList.toggle('active', !isLogin);
     loginModeButton.setAttribute('aria-selected', String(isLogin));
@@ -101,38 +115,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openAuth = (mode) => {
     setAuthMode(mode);
+    promptStorageConsent.checked = false;
+    searchStorageConsent.checked = false;
     if (!dialog.open) dialog.showModal();
-    window.setTimeout(() => emailInput.focus(), 0);
+    window.setTimeout(() => (mode === 'consent' ? promptStorageConsent : emailInput).focus(), 0);
   };
 
-  const renderAccount = (user) => {
+  const renderAccount = (user, storageReady = false) => {
     currentUser = user;
+    promptStorageReady = Boolean(user && storageReady);
     const isPremium = user?.plan === 'premium';
     tierBadge.textContent = isPremium ? 'PREMIUM' : 'FREE';
     tierBadge.classList.toggle('premium', isPremium);
-    accountTitle.textContent = user?.email || 'Free local mode';
+    accountTitle.textContent = user?.email || 'Account required';
     accountCopy.textContent = isPremium
-      ? 'Premium AI and Smart Template are active.'
+      ? promptStorageReady ? 'Premium AI, prompt storage, and Smart Template are active.' : 'Finish privacy setup to use PromptIQ.'
       : user
-        ? 'Signed in. 5 daily AI trials and Smart Template are active.'
-        : 'No account required for Smart Template.';
+        ? promptStorageReady ? 'Free account active with saved prompt history and 5 daily AI trials.' : 'Finish privacy setup to use PromptIQ.'
+        : 'Create an account to use PromptIQ and keep your prompt history available.';
     signInButton.hidden = Boolean(user);
     signUpButton.hidden = Boolean(user);
+    finishSetupButton.hidden = !user || promptStorageReady;
     logoutButton.hidden = !user;
     upgradeButton.hidden = isPremium;
+    openChatButton.disabled = !promptStorageReady;
+    dashboardButton.disabled = !promptStorageReady;
   };
 
   const renderUsage = async () => {
     const tier = currentUser?.plan === 'premium' ? 'premium' : 'free';
     const local = await getSmartTemplateQuotaStatus(tier);
-    smartUsage.textContent = `${local.used} / ${local.limit}`;
-    smartMeter.style.width = `${Math.min(100, (local.used / local.limit) * 100)}%`;
+    smartUsage.textContent = promptStorageReady ? `${local.used} / ${local.limit}` : 'Locked';
+    smartMeter.style.width = promptStorageReady ? `${Math.min(100, (local.used / local.limit) * 100)}%` : '0%';
     usageDate.textContent = local.date;
 
     if (!currentUser) {
-      premiumUsage.textContent = 'Sign in for 5/day';
+      premiumUsage.textContent = 'Account required';
       premiumMeter.style.width = '0%';
-      premiumHelp.textContent = 'Create a free account to test secure cloud AI.';
+      premiumHelp.textContent = 'Create a free account to access PromptIQ.';
+      return;
+    }
+
+    if (!promptStorageReady) {
+      premiumUsage.textContent = 'Setup required';
+      premiumMeter.style.width = '0%';
+      premiumHelp.textContent = 'Review prompt storage and finish account setup.';
       return;
     }
 
@@ -156,19 +183,20 @@ document.addEventListener('DOMContentLoaded', () => {
     clearNotice();
     const token = await getSessionToken();
     if (!token) {
-      renderAccount(null);
+      renderAccount(null, false);
       await renderUsage();
       return;
     }
 
     try {
       const user = await fetchUserProfile();
-      renderAccount(user);
+      const preferences = await getCapturePreferences(true);
+      renderAccount(user, preferences.saveDrafts === true);
       await renderUsage();
     } catch (error) {
-      renderAccount(null);
+      renderAccount(null, false);
       await renderUsage();
-      showNotice('Account status could not be refreshed. Free Smart Template remains available.', 'error');
+      showNotice('Account status could not be refreshed. Sign in again or retry shortly.', 'error');
     }
   };
 
@@ -176,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
   signupModeButton.addEventListener('click', () => setAuthMode('signup'));
   signInButton.addEventListener('click', () => openAuth('login'));
   signUpButton.addEventListener('click', () => openAuth('signup'));
+  finishSetupButton.addEventListener('click', () => openAuth('consent'));
   document.getElementById('auth-close-btn').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) dialog.close();
@@ -185,30 +214,42 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     clearAuthStatus();
     submitButton.disabled = true;
-    submitButton.textContent = authMode === 'login' ? 'Signing in...' : 'Creating account...';
+    if (!promptStorageConsent.checked) {
+      showAuthStatus('Prompt storage consent is required to use PromptIQ.');
+      submitButton.disabled = false;
+      return;
+    }
+
+    submitButton.textContent = authMode === 'consent' ? 'Enabling...' : authMode === 'login' ? 'Signing in...' : 'Creating account...';
 
     try {
-      const result = authMode === 'login'
-        ? await loginUser(emailInput.value, passwordInput.value)
-        : await signupUser(emailInput.value, passwordInput.value);
-      renderAccount(result.user);
+      let user = currentUser;
+      if (authMode !== 'consent') {
+        const result = authMode === 'login'
+          ? await loginUser(emailInput.value, passwordInput.value)
+          : await signupUser(emailInput.value, passwordInput.value);
+        user = result.user;
+      }
+      await setCapturePreferences({saveDrafts:true,saveSearches:searchStorageConsent.checked});
+      renderAccount(user, true);
       await renderUsage();
-      await trackTelemetry(authMode === 'login' ? 'login_completed' : 'signup_completed');
-      showAuthStatus(authMode === 'login' ? 'Signed in.' : 'Account created.', 'success');
+      await trackTelemetry(authMode === 'consent' ? 'prompt_storage_enabled' : authMode === 'login' ? 'login_completed' : 'signup_completed');
+      showAuthStatus(authMode === 'consent' ? 'Account setup complete.' : authMode === 'login' ? 'Signed in.' : 'Account created.', 'success');
       passwordInput.value = '';
       window.setTimeout(() => dialog.close(), 500);
     } catch (error) {
+      if (authMode !== 'consent') await clearSessionToken();
       showAuthStatus(error.message || 'Authentication failed. Please try again.');
     } finally {
       submitButton.disabled = false;
-      submitButton.textContent = authMode === 'login' ? 'Sign in' : 'Create account';
+      submitButton.textContent = authMode === 'consent' ? 'Enable and continue' : authMode === 'login' ? 'Sign in and continue' : 'Create account';
     }
   });
 
   logoutButton.addEventListener('click', async () => {
     await clearSessionToken();
     await refreshAccount();
-    showNotice('Signed out. Local Free mode remains available.', 'success');
+    showNotice('Signed out. Sign in again to use PromptIQ.', 'success');
   });
 
   upgradeButton.addEventListener('click', async () => {
@@ -238,7 +279,13 @@ document.addEventListener('DOMContentLoaded', () => {
   dashboardButton.addEventListener('click', () => {
     openUrl(extensionUrl('src/popup/popup.html'));
   });
-  openChatButton.addEventListener('click', () => openUrl('https://chatgpt.com/'));
+  openChatButton.addEventListener('click', () => {
+    if (!promptStorageReady) {
+      openAuth(currentUser ? 'consent' : 'signup');
+      return;
+    }
+    openUrl('https://chatgpt.com/');
+  });
 
   trackTelemetry('popup_opened');
   refreshAccount();

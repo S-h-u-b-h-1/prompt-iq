@@ -1,5 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from './_utils/auth-helper.js';
+import { handleActivityRequest } from './_utils/activity-handler.js';
+import { validateOptimization } from './_utils/activity-validation.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -29,7 +31,14 @@ export default async function handler(req, res) {
       return;
     }
 
-    const userId = session.userId.toString();
+    const numericUserId = Number(session.userId);
+    if (!Number.isSafeInteger(numericUserId) || numericUserId < 1) {
+      return res.status(401).json({ error: 'Invalid account session' });
+    }
+    const userId = String(numericUserId);
+    if (req.query?.action === 'activity' || req.query?.action === 'preferences') {
+      return handleActivityRequest(req, res, sql, numericUserId);
+    }
 
     if (req.method === 'GET') {
       // 1. Get History (formerly history.js)
@@ -42,6 +51,9 @@ export default async function handler(req, res) {
           platform,
           intent,
           mode,
+          engine,
+          source,
+          client_event_id as "clientEventId",
           score_original as "scoreOriginal",
           score_optimized as "scoreOptimized",
           created_at as "timestamp"
@@ -63,7 +75,7 @@ export default async function handler(req, res) {
     
     if (req.method === 'POST') {
       // 2. Save Optimization (formerly save.js)
-      const { original, optimized, scoreDelta, platform, intent, mode, scoreOriginal, scoreOptimized } = req.body;
+      const { original, optimized, scoreDelta, platform, intent, mode, scoreOriginal, scoreOptimized, clientEventId, engine } = validateOptimization(req.body);
 
       if (!original || !optimized || scoreDelta === undefined || !platform) {
         res.status(400).json({ error: 'Missing required fields' });
@@ -71,7 +83,7 @@ export default async function handler(req, res) {
       }
 
       const result = await sql`
-        INSERT INTO prompt_history (original, optimized, score_delta, platform, user_id, intent, mode, score_original, score_optimized, created_at)
+        INSERT INTO prompt_history (original, optimized, score_delta, platform, user_id, intent, mode, score_original, score_optimized, client_event_id, engine, created_at)
         VALUES (
           ${original}, 
           ${optimized}, 
@@ -80,10 +92,14 @@ export default async function handler(req, res) {
           ${userId}, 
           ${intent || null}, 
           ${mode || null}, 
-          ${scoreOriginal !== undefined ? parseInt(scoreOriginal, 10) : null}, 
-          ${scoreOptimized !== undefined ? parseInt(scoreOptimized, 10) : null}, 
+          ${scoreOriginal != null ? scoreOriginal : null},
+          ${scoreOptimized != null ? scoreOptimized : null},
+          ${clientEventId || null}::uuid,
+          ${engine || null},
           NOW()
         )
+        ON CONFLICT(user_id, client_event_id) WHERE client_event_id IS NOT NULL
+        DO UPDATE SET client_event_id = EXCLUDED.client_event_id
         RETURNING id, created_at;
       `;
 
@@ -104,7 +120,8 @@ export default async function handler(req, res) {
 
     res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('History API error:', error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    if (error.status === 400) return res.status(400).json({error:error.message});
+    console.error('History API error:', {code:error.code || 'INTERNAL'});
+    res.status(500).json({ error: 'History is temporarily unavailable.' });
   }
 }

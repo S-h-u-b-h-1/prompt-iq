@@ -1,23 +1,29 @@
-# PromptIQ visual identity, release 1.0.11
+# PromptIQ visual identity, release 1.0.12
 
-The website uses an original blue, white, ink, and yellow identity. Brand assets are local. No external fonts, script CDNs, or website-only artwork are shipped as extension logic.
+The product uses two base colors: cobalt blue (#2454eb) and white (#ffffff). Borders and quiet surfaces use transparent blue over white; they are not additional brand colors. Text and status labels retain solid blue for contrast. The floating optimizer stays light on dark host pages to preserve this identity.
 
-## Final assets
+## Design
 
-- `public/brand-mark.svg`: hand-authored, scalable speech/command monogram, used by the website and popup. The native vector is also used in the floating panel. PNG toolbar icons are browser-rendered from this vector at 16, 48, and 128 pixels.
-- `public/favicon.svg`: same vector mark for policy pages.
-- `website-assets/clarity-studio-original.png`: original studio artwork from the built-in image generation tool.
-- `website-assets/clarity-studio-v11.jpg`: delivery-compressed hero artwork.
-- `website-assets/product-workspace-v11.png`: 2400 x 1600 browser capture of the actual floating optimizer with real Smart Template output, inside a labeled demonstration workspace. This is not a screenshot of ChatGPT or a generated UI.
+- Centered, compact introduction, generous whitespace, short copy, and a working local preview.
+- Shared palette across the website, account popup, dashboard, floating optimizer, and policy pages.
+- Subtle entrance, reveal, button, meter, and result transitions. Every animated surface honors reduced-motion preferences.
+- Scores, errors, and changes use text or symbols as well as color.
+- No external fonts, remote executable code, or new extension permissions.
 
-## Final image prompt
+## Current assets
 
-Built-in image generation was used, not the CLI/API fallback.
+- public/brand-mark.svg and public/favicon.svg: local speech/command monogram.
+- public/icon-16.png, public/icon-48.png, public/store_icon.png: existing browser-rendered toolbar icons.
+- website-assets/product-workspace-v12.png: 2400 x 1600 capture of the actual optimizer with local Smart Template output in a labeled demonstration workspace.
+- public/screenshot1.png and public/screenshot2.png: 1280 x 800 captures before and after optimization.
+- public/screenshot3.png: 1280 x 800 account popup capture.
 
-Use case: ads-marketing. Create an exceptionally refined high-resolution 3D editorial hero photograph for PromptIQ, an AI prompt writing tool. Wide landscape 3:2 composition. A bright white seamless studio surface and backdrop, with a beautifully arranged sculptural stack of three thin white paper sheets on the RIGHT HALF, rising diagonally, with precise cobalt blue embossed paragraph strokes and rectangular typographic rules (no readable text). One elegant cobalt blue folded paper corner, one small vivid lemon yellow page tab. Represents rough ideas becoming structured instructions. Realistic tactile paper fibers, subtle folds, crisp edges, physical soft daylight shadows, sophisticated premium design studio art direction. LEFT HALF and upper left must be clean almost white negative space for HTML headline overlay; objects occupy the rightmost 50 percent. Camera slightly elevated, strong graphic composition, ultra sharp throughout. No UI screenshots, no fake software text, no letters, no floating orbs, no glass spheres, no gradient backdrop, no dark background, no watermark. Image for a product website, not a poster. Save a high-quality original.
+The previous studio artwork is retained as source history but is no longer shipped on the website. Versioned asset URLs prevent old artwork or styles being reused from cache.
 
-Two generated logo explorations were rejected because the raster edges were not suitable for toolbar sizes. The final mark is a native vector, not one of those generated explorations.
+## Verification
 
-## Delivery
+Run npm test, npm run verify:brand, npm run build:website, and npm run package:extension.
 
-New website asset filenames and versioned CSS/JS references prevent reusing old cached visuals. The site build copies only delivery images, not full-size originals. Extension icons are locally packaged. Premium activation copy remains explicit that billing setup is pending.
+Browser checks cover the local preview's 15 platform/mode combinations, copy, empty input, safe text rendering, account UI with mocked responses, plan usage displays, five website viewport sizes, and three floating panel sizes with compare, edit, insert, undo, and favorite callbacks.
+
+This is a visual-only release. Billing configuration and the separately prepared Neon activity migration are not activated by it.

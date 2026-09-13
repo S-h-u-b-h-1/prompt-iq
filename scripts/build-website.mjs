@@ -19,8 +19,7 @@ await Promise.all([
   copyFile(path.resolve('support.html'), path.join(outputDirectory, 'support.html')),
   copyFile(path.resolve('public/favicon.svg'), path.join(outputDirectory, 'favicon.svg')),
   copyFile(path.resolve('public/brand-mark.svg'), path.join(outputDirectory, 'brand-mark.svg')),
-  copyFile(path.resolve('website-assets/clarity-studio-v11.jpg'), path.join(outputDirectory, 'website-assets/clarity-studio-v11.jpg')),
-  copyFile(path.resolve('website-assets/product-workspace-v11.png'), path.join(outputDirectory, 'website-assets/product-workspace-v11.png')),
+  copyFile(path.resolve('website-assets/product-workspace-v12.png'), path.join(outputDirectory, 'website-assets/product-workspace-v12.png')),
   copyFile(path.resolve('public/store_icon.png'), path.join(outputDirectory, 'store_icon.png')),
 ]);
 

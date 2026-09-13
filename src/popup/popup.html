@@ -7,19 +7,19 @@
   <link rel="icon" href="/brand-mark.svg">
   <style>
     :root {
-      --bg-color: #f8f8fa;
-      --card-bg: #ffffff;
-      --card-border: #e2e3e9;
-      --text-primary: #202127;
-      --text-secondary: #676b76;
-      --text-muted: #64748b;
-      --accent-blue: #3b82f6;
-      --accent-cyan: #2463df;
-      --accent-purple: #8b5cf6;
-      --accent-pink: #ec4899;
-      --accent-green: #227953;
-      --accent-red: #ef4444;
-      --pi-primary-gradient: #e8efff;
+      --bg-color: #fff;
+      --card-bg: #fff;
+      --card-border: rgba(36, 84, 235, .08);
+      --text-primary: #2454eb;
+      --text-secondary: #2454eb;
+      --text-muted: #2454eb;
+      --accent-blue: #2454eb;
+      --accent-cyan: #2454eb;
+      --accent-purple: #2454eb;
+      --accent-pink: #2454eb;
+      --accent-green: #2454eb;
+      --accent-red: #2454eb;
+      --pi-primary-gradient: rgba(36, 84, 235, .08);
       --pi-bg: var(--bg-color);
       --pi-card: var(--card-bg);
       --pi-border: var(--card-border);
@@ -27,7 +27,7 @@
       --pi-muted: var(--text-secondary);
       --pi-primary: var(--accent-blue);
       --pi-success: var(--accent-green);
-      --pi-warning: #fbbf24;
+      --pi-warning: #2454eb;
       --pi-danger: var(--accent-red);
     }
 
@@ -46,7 +46,7 @@
 
     .navbar {
       display: flex;
-      background: #ffffff;
+      background: #fff;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--card-border);
@@ -69,7 +69,7 @@
     }
     .nav-tab:hover {
       color: var(--text-primary);
-      background: #eff2f8;
+      background: rgba(36, 84, 235, .08);
     }
     .nav-tab:focus-visible,
     .btn:focus-visible,
@@ -80,7 +80,7 @@
       outline-offset: 2px;
     }
     .nav-tab.active {
-      color: #030712;
+      color: #2454eb;
       background: var(--pi-primary-gradient);
       box-shadow: none;
     }
@@ -109,11 +109,11 @@
       padding: 16px;
       border-radius: 8px;
       border: 1px solid var(--card-border);
-      box-shadow: 0 3px 12px rgba(25, 25, 28, 0.03);
+      box-shadow: 0 3px 12px rgba(36, 84, 235, 0.03);
       transition: border-color 0.2s ease, transform 0.2s ease;
     }
     .stat-card:hover {
-      border-color: #cdd2dd;
+      border-color: #2454eb;
       transform: translateY(-1px);
     }
     .stat-title {
@@ -139,8 +139,8 @@
       color: var(--accent-red);
     }
     .alert-card {
-      background: rgba(59, 130, 246, 0.04);
-      border: 1px solid rgba(59, 130, 246, 0.15);
+      background: rgba(36, 84, 235, 0.04);
+      border: 1px solid rgba(36, 84, 235, 0.15);
       border-radius: 8px;
       padding: 14px 16px;
       margin-bottom: 16px;
@@ -149,7 +149,7 @@
       align-items: center;
     }
     .alert-icon { font-size: 20px; }
-    .alert-text { font-size: 12.5px; color: #315491; line-height: 1.45; }
+    .alert-text { font-size: 12.5px; color: #2454eb; line-height: 1.45; }
     
     /* Settings / Auth Styles */
     .form-group {
@@ -168,18 +168,18 @@
       width: 100%;
       padding: 12px 14px;
       box-sizing: border-box;
-      border: 1px solid #e2e3e9;
+      border: 1px solid rgba(36, 84, 235, .08);
       border-radius: 8px;
       font-size: 13px;
       color: var(--text-primary);
-      background: #ffffff;
+      background: #fff;
       transition: all 0.25s ease;
     }
     input:focus, select:focus {
       outline: none;
       border-color: var(--accent-cyan);
-      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
-      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(36, 84, 235, 0.15);
+      background: #fff;
     }
     .btn {
       display: inline-flex;
@@ -188,7 +188,7 @@
       width: 100%;
       padding: 12px;
       background: var(--pi-primary-gradient);
-      color: #030712;
+      color: #2454eb;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -201,21 +201,21 @@
       overflow: hidden;
     }
     .btn:hover {
-      filter: brightness(1.1);
-      box-shadow: 0 4px 12px rgba(25,25,28,.08);
+      filter: none;
+      box-shadow: 0 4px 12px rgba(36, 84, 235, .08);
       transform: translateY(-1px);
     }
     .btn:active {
       transform: translateY(0);
     }
     .btn-danger {
-      background: rgba(239, 68, 68, 0.1);
+      background: rgba(36, 84, 235, 0.1);
       color: var(--accent-red);
-      border: 1px solid rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(36, 84, 235, 0.15);
       box-shadow: none;
     }
     .btn-danger:hover {
-      background: rgba(239, 68, 68, 0.18);
+      background: rgba(36, 84, 235, 0.18);
       filter: none;
       box-shadow: none;
     }
@@ -250,8 +250,8 @@
       transition: all 0.25s ease, transform 0.2s ease;
     }
     .history-item:hover {
-      border-color: #cdd2dd;
-      background: #f5f7fc;
+      border-color: #2454eb;
+      background: rgba(36, 84, 235, .08);
       transform: translateY(-1px);
     }
     .history-top {
@@ -264,7 +264,7 @@
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      background: #f0f2f7;
+      background: rgba(36, 84, 235, .08);
       padding: 3px 8px;
       border-radius: 6px;
       color: var(--text-secondary);
@@ -294,7 +294,7 @@
     }
     .history-detail-box {
       font-size: 11.5px;
-      background: #f3f4f7;
+      background: rgba(36, 84, 235, .08);
       border: 1px solid var(--card-border);
       padding: 10px;
       border-radius: 8px;
@@ -339,14 +339,14 @@
       transition: all 0.2s ease;
     }
     .category-tag:hover {
-      background: #e2e3e9;
+      background: rgba(36, 84, 235, .08);
       color: var(--text-primary);
     }
     .category-tag.active {
       background: var(--accent-blue);
       color: white;
       border-color: var(--accent-blue);
-      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+      box-shadow: 0 4px 10px rgba(36, 84, 235, 0.2);
     }
     .library-list {
       max-height: 320px;
@@ -376,7 +376,7 @@
     .library-prompt-text {
       font-size: 12px;
       color: var(--text-secondary);
-      background: #f3f4f7;
+      background: rgba(36, 84, 235, .08);
       border: 1px solid var(--card-border);
       padding: 10px;
       border-radius: 8px;
@@ -405,12 +405,12 @@
       font-size: 10px;
       font-weight: 800;
       color: var(--accent-cyan);
-      background: rgba(34, 211, 238, 0.08);
+      background: rgba(36, 84, 235, 0.08);
       padding: 4.5px 10px;
       border-radius: 8px;
       margin-bottom: 12px;
       letter-spacing: 0;
-      border: 1px solid rgba(34, 211, 238, 0.15);
+      border: 1px solid rgba(36, 84, 235, 0.15);
       text-transform: uppercase;
     }
     .welcome-title {
@@ -453,7 +453,7 @@
       color: var(--text-primary);
     }
     .benefits-list li::before {
-      content: '⚡';
+      content: '✓';
       font-size: 12px;
       flex-shrink: 0;
       margin-top: 1px;
@@ -512,7 +512,7 @@
         <a href="#" id="auth-toggle-link" style="color: var(--accent-cyan); text-decoration: none; font-weight: 700; margin-left: 4px;">Create Account</a>
       </div>
       <div style="text-align: center; margin-top: 20px; border-top: 1px dashed var(--card-border); padding-top: 14px;">
-        <a href="#" class="view-onboarding-link" style="color: var(--accent-cyan); font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.4); transition: all 0.2s;">View Onboarding Guide</a>
+        <a href="#" class="view-onboarding-link" style="color: var(--accent-cyan); font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px dashed rgba(36, 84, 235, 0.4); transition: all 0.2s;">View Onboarding Guide</a>
       </div>
       
       <div class="status-msg" id="auth-status" style="margin-top: 12px; text-align: center;"></div>
@@ -547,14 +547,14 @@
         <div style="margin-top: 18px; border-top: 1px solid var(--card-border); padding-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">Plan Status: <strong id="plan-status-text" style="color: var(--accent-cyan);">Free Plan</strong></span>
-            <button class="btn" id="upgrade-pro-btn" style="width: auto; padding: 6px 14px; font-size: 11px; background: var(--pi-primary-gradient); color: #030712; font-weight: 800;">Upgrade to Premium</button>
+            <button class="btn" id="upgrade-pro-btn" style="width: auto; padding: 6px 14px; font-size: 11px; background: var(--pi-primary-gradient); color: #2454eb; font-weight: 800;">Upgrade to Premium</button>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
             <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;" id="logged-in-user-text">Logged in as: -</span>
-            <button class="btn" id="logout-btn" style="width: auto; padding: 5px 10px; font-size: 11px; background: #f0f2f7; color: var(--text-secondary); border: 1px solid var(--card-border); box-shadow: none;">Log Out</button>
+            <button class="btn" id="logout-btn" style="width: auto; padding: 5px 10px; font-size: 11px; background: rgba(36, 84, 235, .08); color: var(--text-secondary); border: 1px solid var(--card-border); box-shadow: none;">Log Out</button>
           </div>
           <div style="margin-top: 14px; text-align: center; border-top: 1px dashed var(--card-border); padding-top: 12px;">
-            <a href="#" class="view-onboarding-link" style="color: var(--accent-cyan); font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.4); transition: all 0.2s;">View Onboarding Guide</a>
+            <a href="#" class="view-onboarding-link" style="color: var(--accent-cyan); font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px dashed rgba(36, 84, 235, 0.4); transition: all 0.2s;">View Onboarding Guide</a>
           </div>
         </div>
       </div>
@@ -574,7 +574,7 @@
       </div>
       
       <div class="alert-card">
-        <div class="alert-icon">💡</div>
+        <div class="alert-icon" aria-hidden="true">i</div>
         <div class="alert-text" id="weak-dimension-tip">
           Keep optimizing your prompts! The skill tracker will identify your weakest dimensions once you build a history.
         </div>

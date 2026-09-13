@@ -12,16 +12,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   let hasStoredEnginePreference = false;
   let storedEnginePreference = null;
   
-  // Theme detection
-  const isDark = document.documentElement.classList.contains('dark') || 
-                 document.body.classList.contains('dark') || 
-                 document.documentElement.getAttribute('data-theme') === 'dark' ||
-                 window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  if (isDark) {
-    container.classList.add('dark-mode');
-  }
-
   const shadow = container.attachShadow({ mode: 'open' });
   const openPromptIqPopup = async () => {
     try {
@@ -52,38 +42,24 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   const style = document.createElement('style');
   style.textContent = `
     :host {
-      --pi-bg: #ffffff;
-      --pi-card: #f8fafc;
-      --pi-elevated: rgba(255, 255, 255, 0.88);
-      --pi-border: #dbe3ee;
-      --pi-text: #0f172a;
-      --pi-muted: #64748b;
-      --pi-primary: #2563eb;
-      --pi-primary-strong: #1d4ed8;
-      --pi-success: #10b981;
-      --pi-warning: #f59e0b;
-      --pi-danger: #ef4444;
-      --pi-pro: #7c3aed;
-      --pi-glow: rgba(37, 99, 235, 0.08);
-      --pi-shadow: rgba(0, 0, 0, 0.06);
-      --pi-radius: 18px;
+      color-scheme: light;
+      --pi-bg: #fff;
+      --pi-card: #fff;
+      --pi-elevated: #fff;
+      --pi-border: rgba(36, 84, 235, .08);
+      --pi-text: #2454eb;
+      --pi-muted: #2454eb;
+      --pi-primary: #2454eb;
+      --pi-primary-strong: #2454eb;
+      --pi-success: #2454eb;
+      --pi-warning: #2454eb;
+      --pi-danger: #2454eb;
+      --pi-pro: #2454eb;
+      --pi-glow: rgba(36, 84, 235, 0.08);
+      --pi-shadow: rgba(36, 84, 235, 0.06);
+      --pi-radius: 8px;
     }
-    :host(.dark-mode) {
-      --pi-bg: rgba(9, 14, 26, 0.94);
-      --pi-card: rgba(18, 27, 44, 0.82);
-      --pi-elevated: rgba(15, 23, 42, 0.94);
-      --pi-border: rgba(148, 163, 184, 0.18);
-      --pi-text: #f8fafc;
-      --pi-muted: #94a3b8;
-      --pi-primary: #38bdf8;
-      --pi-primary-strong: #0ea5e9;
-      --pi-success: #34d399;
-      --pi-warning: #fbbf24;
-      --pi-danger: #f87171;
-      --pi-pro: #a78bfa;
-      --pi-glow: rgba(56, 189, 248, 0.18);
-      --pi-shadow: rgba(0, 0, 0, 0.35);
-    }
+
 
     .badge {
       display: inline-flex;
@@ -120,10 +96,10 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       background: var(--pi-muted);
       transition: background 0.3s, box-shadow 0.3s;
     }
-    .score-excellent { background: var(--pi-success); box-shadow: 0 0 10px var(--pi-success); }
-    .score-good { background: var(--pi-warning); box-shadow: 0 0 10px var(--pi-warning); }
-    .score-fair { background: #f97316; box-shadow: 0 0 10px #f97316; }
-    .score-weak { background: var(--pi-danger); box-shadow: 0 0 10px var(--pi-danger); }
+    .score-excellent { background: var(--pi-success); box-shadow: none; }
+    .score-good { background: var(--pi-warning); box-shadow: none; }
+    .score-fair { background: #2454eb; box-shadow: none; }
+    .score-weak { background: var(--pi-danger); box-shadow: none; }
     
     .panel-wrapper {
       display: flex;
@@ -185,22 +161,22 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       font-weight: 800;
       padding: 2.5px 8px;
       border-radius: 6px;
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
     }
     .status-free {
-      background: rgba(100, 116, 139, 0.1);
+      background: rgba(36, 84, 235, 0.1);
       color: var(--pi-muted);
     }
     .status-premium {
-      background: rgba(124, 58, 237, 0.14);
+      background: rgba(36, 84, 235, 0.14);
       color: var(--pi-pro);
-      border: 1px solid rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(36, 84, 235, 0.2);
     }
     .signin-card {
       display: none;
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      border-radius: 14px;
+      background: rgba(36, 84, 235, 0.08);
+      border: 1px solid rgba(36, 84, 235, 0.2);
+      border-radius: 8px;
       padding: 12px;
       margin-bottom: 14px;
       color: var(--pi-text);
@@ -230,7 +206,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       text-transform: uppercase;
       margin-bottom: 6px;
       color: var(--pi-muted);
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
     }
     .settings-grid {
       display: grid;
@@ -242,7 +218,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       width: 100%;
       min-height: 38px;
       padding: 0 10px;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px solid var(--pi-border);
       background: var(--pi-card);
       color: var(--pi-text);
@@ -256,7 +232,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       display: flex;
       align-items: center;
       padding: 0 10px;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px solid var(--pi-border);
       background: var(--pi-card);
       color: var(--pi-text);
@@ -268,9 +244,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       white-space: nowrap;
     }
     .engine-summary {
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--pi-border);
+      padding: 8px 0 0;
       background: var(--pi-card);
     }
     .engine-name {
@@ -287,10 +261,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
     /* Visual Score Progress Area */
     .score-area {
-      background: linear-gradient(180deg, var(--pi-card), transparent);
-      border: 1px solid var(--pi-border);
-      border-radius: 16px;
-      padding: 16px;
+      background: var(--pi-card);
+      border-block: 1px solid var(--pi-border);
+      padding: 16px 0;
       margin-bottom: 18px;
       display: flex;
       align-items: center;
@@ -338,7 +311,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       font-weight: 700;
       color: var(--pi-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
     }
     .score-grade {
       font-size: 16px;
@@ -365,20 +338,20 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       border: 1px solid transparent;
     }
     .chip-present {
-      background: rgba(16, 185, 129, 0.06);
+      background: rgba(36, 84, 235, 0.06);
       color: var(--pi-success);
-      border-color: rgba(16, 185, 129, 0.12);
+      border-color: rgba(36, 84, 235, 0.12);
     }
     .chip-missing {
-      background: rgba(100, 116, 139, 0.05);
+      background: rgba(36, 84, 235, 0.05);
       color: var(--pi-muted);
       border-color: var(--pi-border);
-      opacity: 0.65;
+      opacity: 1;
     }
 
     .btn {
       padding: 10px 18px;
-      border-radius: 12px;
+      border-radius: 8px;
       border: 1px solid transparent;
       font-size: 13.5px;
       font-weight: 700;
@@ -399,8 +372,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       outline-offset: 2px;
     }
     .btn-primary {
-      background: linear-gradient(135deg, var(--pi-primary), var(--pi-primary-strong));
-      color: #ffffff;
+      background: var(--pi-primary);
+      color: #fff;
       box-shadow: 0 4px 12px var(--pi-glow);
     }
     .btn-primary:hover {
@@ -441,16 +414,16 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       gap: 12px;
       padding: 12px;
       margin-bottom: 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(16, 185, 129, 0.18);
-      background: rgba(16, 185, 129, 0.07);
+      border-radius: 8px;
+      border: 1px solid rgba(36, 84, 235, 0.18);
+      background: rgba(36, 84, 235, 0.07);
     }
     .success-summary.pulse {
       animation: successPulse 650ms ease-out;
     }
     @keyframes successPulse {
-      0% { transform: scale(0.985); border-color: rgba(16, 185, 129, 0.1); }
-      100% { transform: scale(1); border-color: rgba(16, 185, 129, 0.18); }
+      0% { transform: scale(0.985); border-color: rgba(36, 84, 235, 0.1); }
+      100% { transform: scale(1); border-color: rgba(36, 84, 235, 0.18); }
     }
     .success-title {
       font-size: 13px;
@@ -472,14 +445,14 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     /* Mock Editor Window */
     .editor-card {
       border: 1px solid var(--pi-border);
-      border-radius: 16px;
+      border-radius: 8px;
       background: var(--pi-card);
       overflow: hidden;
       margin-bottom: 14px;
       box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
     }
     .editor-header {
-      background: rgba(15, 23, 42, 0.03);
+      background: rgba(36, 84, 235, 0.03);
       padding: 10px 16px;
       border-bottom: 1px solid var(--pi-border);
       display: flex;
@@ -491,7 +464,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       font-weight: 700;
       color: var(--pi-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
     }
 
     .optimized-textarea {
@@ -526,7 +499,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       box-sizing: border-box;
     }
     .diff-added {
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(36, 84, 235, 0.15);
       color: var(--pi-success);
       font-weight: 600;
       padding: 2px 4px;
@@ -543,7 +516,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
     .compare-box {
       border: 1px solid var(--pi-border);
-      border-radius: 12px;
+      border-radius: 8px;
       background: var(--pi-card);
       overflow: hidden;
       min-width: 0;
@@ -555,7 +528,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
     }
     .compare-text {
       margin: 0;
@@ -625,7 +598,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       display: none;
       background: var(--pi-card);
       border: 1px solid var(--pi-border);
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 20px;
       position: relative;
       overflow: hidden;
@@ -650,9 +623,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       transform: translateX(-100%);
       animation: shimmer 1.5s infinite;
     }
-    :host(.dark-mode) .shimmer-line::after {
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-    }
+
     .shimmer-t { width: 35%; height: 13px; }
     .shimmer-l1 { width: 85%; }
     .shimmer-l2 { width: 95%; }
@@ -664,7 +635,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       font-weight: 700;
       color: var(--pi-muted);
       margin-top: 8px;
-      letter-spacing: 0.02em;
+      letter-spacing: 0;
     }
     @keyframes shimmer {
       100% { transform: translateX(100%); }
@@ -677,7 +648,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(36, 84, 235, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -697,11 +668,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     .paywall-card {
       background: var(--pi-bg);
       border: 1px solid var(--pi-border);
-      border-radius: 20px;
+      border-radius: 8px;
       padding: 28px;
       text-align: center;
       max-width: 320px;
-      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(36, 84, 235, 0.4);
       box-sizing: border-box;
     }
     .paywall-icon {
@@ -725,8 +696,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     /* Feedback Section */
     .feedback-section {
       background: var(--pi-card);
-      border: 1px solid var(--pi-border);
-      border-radius: 12px;
+      border-top: 1px solid var(--pi-border);
       padding: 14px;
       text-align: center;
       margin-top: 14px;
@@ -773,9 +743,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     /* Error and Authentication states */
     .error-panel {
       display: none;
-      background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.03));
-      border: 1px solid rgba(239, 68, 68, 0.18);
-      border-radius: 16px;
+      background: rgba(36, 84, 235, 0.04);
+      border: 1px solid rgba(36, 84, 235, 0.18);
+      border-radius: 8px;
       padding: 18px;
       text-align: left;
       margin-top: 18px;
@@ -796,6 +766,13 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       line-height: 1.5;
       margin-bottom: 14px;
     }
+    *, *::before, *::after { letter-spacing: 0; }
+    .panel-wrapper > * { flex-shrink: 0; }
+    .panel-wrapper > .result-section { flex-shrink: 1; min-height: 0; }
+    .panel-wrapper { overflow-y: auto; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
     @media (max-width: 520px) {
       .panel-wrapper {
         top: auto;
@@ -810,7 +787,17 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       .action-row {
         grid-template-columns: 1fr;
       }
-      .settings-grid,
+      .settings-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .platform-pill {
+        grid-column: 1 / -1;
+        min-height: 20px;
+        padding: 0;
+        border: 0;
+        font-size: 10px;
+      }
       .comparison-grid {
         grid-template-columns: 1fr;
       }
@@ -838,7 +825,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
         <div class="status-badge status-free" id="header-pro-badge">FREE</div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="btn btn-secondary" id="logout-sidebar-btn" aria-label="Log out of PromptIQ" style="padding: 4px 8px; font-size: 10px; background: rgba(239, 68, 68, 0.08); color: var(--pi-danger); border-color: rgba(239, 68, 68, 0.12); display: none;">Log Out</button>
+        <button class="btn btn-secondary" id="logout-sidebar-btn" aria-label="Log out of PromptIQ" style="padding: 4px 8px; font-size: 10px; background: rgba(36, 84, 235, 0.08); color: var(--pi-danger); border-color: rgba(36, 84, 235, 0.12); display: none;">Log Out</button>
         <button class="btn btn-secondary" id="close-btn" aria-label="Close PromptIQ optimizer" style="padding: 6px 12px; font-size: 11px;">Close</button>
       </div>
     </div>
@@ -965,8 +952,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       <div class="feedback-section" id="feedback-section">
         <span class="feedback-title">Was this optimization useful?</span>
         <div class="feedback-buttons" id="feedback-buttons-wrapper">
-          <button class="feedback-btn" id="feedback-yes">👍 Yes</button>
-          <button class="feedback-btn" id="feedback-no">👎 No</button>
+          <button class="feedback-btn" id="feedback-yes">Yes</button>
+          <button class="feedback-btn" id="feedback-no">No</button>
         </div>
         <div class="feedback-thanks" id="feedback-thanks">Thank you! Your feedback helps us improve.</div>
       </div>
@@ -1434,7 +1421,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       // Render Changes with Icons & Labels
       changesList.innerHTML = explainedChanges.map(change => `
         <li class="change-item">
-          <span class="change-icon">${escapeHtml(change.icon)}</span>
+          <span class="change-icon" aria-hidden="true">+</span>
           <div class="change-content">
             <span class="change-label">${escapeHtml(change.label)}:</span>
             <span>${escapeHtml(change.description)}</span>

@@ -1,20 +1,21 @@
-# PromptIQ visual identity, release 1.0.12
+# PromptIQ visual identity, release 1.0.13
 
-The product uses two base colors: cobalt blue (#2454eb) and white (#ffffff). Borders and quiet surfaces use transparent blue over white; they are not additional brand colors. Text and status labels retain solid blue for contrast. The floating optimizer stays light on dark host pages to preserve this identity.
+The two dominant brand colors are graphite (#101414) and electric mint (#9fffc8). Soft neutral text (#f1f7f3), muted text (#a8b8af), and a raised graphite surface (#171e1b) preserve readability without competing with the accent. The website and extension use the same dark identity.
 
 ## Design
 
 - Centered, compact introduction, generous whitespace, short copy, and a working local preview.
 - Shared palette across the website, account popup, dashboard, floating optimizer, and policy pages.
-- Subtle entrance, reveal, button, meter, and result transitions. Every animated surface honors reduced-motion preferences.
+- Staggered entrance, terminal-cursor, reveal, button, meter, and result transitions. Every animated surface honors reduced-motion preferences.
 - Scores, errors, and changes use text or symbols as well as color.
 - No external fonts, remote executable code, or new extension permissions.
 
 ## Current assets
 
 - public/brand-mark.svg and public/favicon.svg: local speech/command monogram.
-- public/icon-16.png, public/icon-48.png, public/store_icon.png: existing browser-rendered toolbar icons.
-- website-assets/product-workspace-v12.png: 2400 x 1600 capture of the actual optimizer with local Smart Template output in a labeled demonstration workspace.
+- public/icon-16.png, public/icon-48.png, public/store_icon.png: browser-rendered mint/graphite toolbar icons.
+- website-assets/optical-rails-v13.png: original generated full-bleed hero artwork, with graphite optical rails and mint light. Generated using the built-in image tool; not executable extension content.
+- website-assets/product-workspace-v13.png: 2400 x 1600 capture of the actual optimizer with local Smart Template output in a labeled demonstration workspace.
 - public/screenshot1.png and public/screenshot2.png: 1280 x 800 captures before and after optimization.
 - public/screenshot3.png: 1280 x 800 account popup capture.
 

@@ -8,7 +8,7 @@ Extension ID: goheoijjaebpbcgifabpgmjkgiddkpek
 
 Package: dist.zip
 
-Version: 1.0.12
+Version: 1.0.13
 
 Homepage: https://promptiq-theta.vercel.app/
 
@@ -141,7 +141,7 @@ Data use certifications
 | 1280 x 800 screenshot 2 | public/screenshot2.png |
 | 1280 x 800 screenshot 3 | public/screenshot3.png |
 
-All three store screenshots are 1280 x 800 product captures with the 1.0.12 blue-and-white branding. Screenshots 1 and 2 show the real floating optimizer before and after local optimization in a demonstration workspace; screenshot 3 shows the account popup. The website uses a separate 2400 x 1600 capture of the same optimizer.
+All three store screenshots are 1280 x 800 product captures with the 1.0.13 graphite-and-mint branding. Screenshots 1 and 2 show the real floating optimizer before and after local optimization in a demonstration workspace; screenshot 3 shows the account popup. The website uses a separate 2400 x 1600 capture of the same optimizer.
 
 ## Cloud AI setup
 
@@ -180,7 +180,8 @@ Subscribe to these Razorpay events:
 
 | Version | Date | Status | Changes |
 |---|---|---|---|
-| 1.0.12 | 2026-09-13 | Ready for submission | Minimal blue-and-white website, popup, dashboard, and floating optimizer; refreshed captures; reduced-motion support and smaller-screen panel improvements. No new permissions or data collection. |
+| 1.0.13 | 2026-09-13 | Ready for submission | Futuristic graphite-and-mint identity, matching icons, optical-rail hero artwork, staggered motion, and refreshed product captures. No new permissions or data collection. |
+| 1.0.12 | 2026-09-13 | Superseded | Minimal blue-and-white website, popup, dashboard, and floating optimizer; refreshed captures; reduced-motion support and smaller-screen panel improvements. No new permissions or data collection. |
 | 1.0.11 | 2026-09-13 | Superseded | New brand mark and toolbar icons; original hero artwork; high-resolution actual product capture; responsive website redesign and working before/after demo. |
 | 1.0.10 | 2026-09-13 | Superseded | Light website, popup, and dashboard design; local website preview; subtle transitions with reduced-motion support; refreshed popup screenshot. |
 | 1.0.9 | 2026-09-13 | Superseded | Adds 5 daily cloud AI trials for signed-in Free users, 50 daily Premium AI optimizations, INR 50 monthly billing validation, OpenRouter support with Google fallback, and updated privacy disclosures. |

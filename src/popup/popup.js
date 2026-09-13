@@ -343,7 +343,7 @@ async function renderHistory() {
   summaryEl.textContent = `${history.length} saved run${history.length !== 1 ? 's' : ''}`;
 
   if (history.length === 0) {
-    container.innerHTML = `<div style="color: #2454eb; text-align: center; margin-top: 40px; font-size: 13px;">No history yet. Get started by optimizing your prompts inline!</div>`;
+    container.innerHTML = `<div style="color: var(--text-secondary); text-align: center; margin-top: 40px; font-size: 13px;">No history yet. Get started by optimizing your prompts inline!</div>`;
     return;
   }
 
@@ -361,14 +361,14 @@ async function renderHistory() {
           <span class="history-platform">${escapeHtml(run.platform)}</span>
           <span class="history-platform">${escapeHtml(modeLabel)}</span>
           <span class="history-platform">${escapeHtml(intentLabel)}</span>
-          <span style="font-size: 11px; color: #2454eb;">${dateStr}</span>
+          <span style="font-size: 11px; color: var(--text-secondary);">${dateStr}</span>
           <span class="${deltaClass}">${deltaText} pts</span>
         </div>
         <div class="history-prompt">${escapeHtml(run.original)}</div>
         <div class="history-expanded" id="hist-exp-${index}">
-          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #2454eb;">Original Prompt:</div>
+          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: var(--text-secondary);">Original Prompt:</div>
           <div class="history-detail-box">${escapeHtml(run.original)}</div>
-          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #2454eb;">Optimized:</div>
+          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: var(--text-secondary);">Optimized:</div>
           <div class="history-detail-box">${escapeHtml(run.optimized)}</div>
           <div class="history-actions">
             <button class="btn btn-secondary favorite-hist-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Favorite</button>
@@ -443,7 +443,7 @@ async function renderFavorites() {
   summaryEl.textContent = `${favorites.length} favorite prompt${favorites.length !== 1 ? 's' : ''}`;
 
   if (favorites.length === 0) {
-    container.innerHTML = `<div style="color: #2454eb; text-align: center; margin-top: 40px; font-size: 13px;">No favorites yet. Save strong optimized prompts from the in-page panel or history.</div>`;
+    container.innerHTML = `<div style="color: var(--text-secondary); text-align: center; margin-top: 40px; font-size: 13px;">No favorites yet. Save strong optimized prompts from the in-page panel or history.</div>`;
     return;
   }
 
@@ -459,14 +459,14 @@ async function renderFavorites() {
         <div class="history-top">
           <span class="history-platform">${escapeHtml(favorite.platform)}</span>
           <span class="history-platform">${escapeHtml(modeLabel)}</span>
-          <span style="font-size: 11px; color: #2454eb;">${dateStr}</span>
+          <span style="font-size: 11px; color: var(--text-secondary);">${dateStr}</span>
           <span class="history-delta">${scoreLabel}</span>
         </div>
         <div class="history-prompt">${escapeHtml(favorite.optimized)}</div>
         <div class="history-expanded" id="fav-exp-${index}">
-          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #2454eb;">Original Prompt:</div>
+          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: var(--text-secondary);">Original Prompt:</div>
           <div class="history-detail-box">${escapeHtml(favorite.original)}</div>
-          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: #2454eb;">Favorite Optimized Prompt:</div>
+          <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; color: var(--text-secondary);">Favorite Optimized Prompt:</div>
           <div class="history-detail-box">${escapeHtml(favorite.optimized)}</div>
           <div class="history-actions">
             <button class="btn btn-secondary remove-fav-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Remove</button>
@@ -563,7 +563,7 @@ function filterLibrary() {
 function renderLibrary(prompts) {
   const container = document.getElementById('library-container');
   if (prompts.length === 0) {
-    container.innerHTML = `<div style="color: #2454eb; text-align: center; margin-top: 40px; font-size: 13px;">No matching library prompts found.</div>`;
+    container.innerHTML = `<div style="color: var(--text-secondary); text-align: center; margin-top: 40px; font-size: 13px;">No matching library prompts found.</div>`;
     return;
   }
 

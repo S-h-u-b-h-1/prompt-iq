@@ -42,21 +42,21 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   const style = document.createElement('style');
   style.textContent = `
     :host {
-      color-scheme: light;
-      --pi-bg: #fff;
-      --pi-card: #fff;
-      --pi-elevated: #fff;
-      --pi-border: rgba(36, 84, 235, .08);
-      --pi-text: #2454eb;
-      --pi-muted: #2454eb;
-      --pi-primary: #2454eb;
-      --pi-primary-strong: #2454eb;
-      --pi-success: #2454eb;
-      --pi-warning: #2454eb;
-      --pi-danger: #2454eb;
-      --pi-pro: #2454eb;
-      --pi-glow: rgba(36, 84, 235, 0.08);
-      --pi-shadow: rgba(36, 84, 235, 0.06);
+      color-scheme: dark;
+      --pi-bg: #101414;
+      --pi-card: #101414;
+      --pi-elevated: #171e1b;
+      --pi-border: rgba(159, 255, 200, .08);
+      --pi-text: #f1f7f3;
+      --pi-muted: #a8b8af;
+      --pi-primary: #9fffc8;
+      --pi-primary-strong: #9fffc8;
+      --pi-success: #9fffc8;
+      --pi-warning: #9fffc8;
+      --pi-danger: #9fffc8;
+      --pi-pro: #9fffc8;
+      --pi-glow: rgba(159, 255, 200, 0.08);
+      --pi-shadow: rgba(159, 255, 200, 0.06);
       --pi-radius: 8px;
     }
 
@@ -98,7 +98,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
     .score-excellent { background: var(--pi-success); box-shadow: none; }
     .score-good { background: var(--pi-warning); box-shadow: none; }
-    .score-fair { background: #2454eb; box-shadow: none; }
+    .score-fair { background: #9fffc8; box-shadow: none; }
     .score-weak { background: var(--pi-danger); box-shadow: none; }
     
     .panel-wrapper {
@@ -164,18 +164,18 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       letter-spacing: 0;
     }
     .status-free {
-      background: rgba(36, 84, 235, 0.1);
+      background: rgba(159, 255, 200, 0.1);
       color: var(--pi-muted);
     }
     .status-premium {
-      background: rgba(36, 84, 235, 0.14);
+      background: rgba(159, 255, 200, 0.14);
       color: var(--pi-pro);
-      border: 1px solid rgba(36, 84, 235, 0.2);
+      border: 1px solid rgba(159, 255, 200, 0.2);
     }
     .signin-card {
       display: none;
-      background: rgba(36, 84, 235, 0.08);
-      border: 1px solid rgba(36, 84, 235, 0.2);
+      background: rgba(159, 255, 200, 0.08);
+      border: 1px solid rgba(159, 255, 200, 0.2);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 14px;
@@ -338,12 +338,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       border: 1px solid transparent;
     }
     .chip-present {
-      background: rgba(36, 84, 235, 0.06);
+      background: rgba(159, 255, 200, 0.06);
       color: var(--pi-success);
-      border-color: rgba(36, 84, 235, 0.12);
+      border-color: rgba(159, 255, 200, 0.12);
     }
     .chip-missing {
-      background: rgba(36, 84, 235, 0.05);
+      background: rgba(159, 255, 200, 0.05);
       color: var(--pi-muted);
       border-color: var(--pi-border);
       opacity: 1;
@@ -373,7 +373,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
     .btn-primary {
       background: var(--pi-primary);
-      color: #fff;
+      color: #101414;
       box-shadow: 0 4px 12px var(--pi-glow);
     }
     .btn-primary:hover {
@@ -415,15 +415,15 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       padding: 12px;
       margin-bottom: 12px;
       border-radius: 8px;
-      border: 1px solid rgba(36, 84, 235, 0.18);
-      background: rgba(36, 84, 235, 0.07);
+      border: 1px solid rgba(159, 255, 200, 0.18);
+      background: rgba(159, 255, 200, 0.07);
     }
     .success-summary.pulse {
       animation: successPulse 650ms ease-out;
     }
     @keyframes successPulse {
-      0% { transform: scale(0.985); border-color: rgba(36, 84, 235, 0.1); }
-      100% { transform: scale(1); border-color: rgba(36, 84, 235, 0.18); }
+      0% { transform: scale(0.985); border-color: rgba(159, 255, 200, 0.1); }
+      100% { transform: scale(1); border-color: rgba(159, 255, 200, 0.18); }
     }
     .success-title {
       font-size: 13px;
@@ -452,7 +452,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
     }
     .editor-header {
-      background: rgba(36, 84, 235, 0.03);
+      background: rgba(159, 255, 200, 0.03);
       padding: 10px 16px;
       border-bottom: 1px solid var(--pi-border);
       display: flex;
@@ -499,7 +499,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       box-sizing: border-box;
     }
     .diff-added {
-      background: rgba(36, 84, 235, 0.15);
+      background: rgba(159, 255, 200, 0.15);
       color: var(--pi-success);
       font-weight: 600;
       padding: 2px 4px;
@@ -648,7 +648,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(36, 84, 235, 0.7);
+      background: rgba(159, 255, 200, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -672,7 +672,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       padding: 28px;
       text-align: center;
       max-width: 320px;
-      box-shadow: 0 20px 40px -10px rgba(36, 84, 235, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(159, 255, 200, 0.4);
       box-sizing: border-box;
     }
     .paywall-icon {
@@ -743,8 +743,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     /* Error and Authentication states */
     .error-panel {
       display: none;
-      background: rgba(36, 84, 235, 0.04);
-      border: 1px solid rgba(36, 84, 235, 0.18);
+      background: rgba(159, 255, 200, 0.04);
+      border: 1px solid rgba(159, 255, 200, 0.18);
       border-radius: 8px;
       padding: 18px;
       text-align: left;
@@ -820,12 +820,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   panel.innerHTML = `
     <div class="header">
       <div class="header-logo-group">
-        <svg width="24" height="24" viewBox="0 0 128 128" aria-hidden="true" style="flex-shrink:0"><rect width="128" height="128" rx="26" fill="#2454eb"/><path fill="#fff" d="M31 31h42l24 25v18L73 98H53l-22 13V31zm17 17v34l17-10h5l12-12-12-12H48z" fill-rule="evenodd"/></svg>
+        <svg width="24" height="24" viewBox="0 0 128 128" aria-hidden="true" style="flex-shrink:0"><rect width="128" height="128" rx="26" fill="#9fffc8"/><path fill="#101414" d="M31 31h42l24 25v18L73 98H53l-22 13V31zm17 17v34l17-10h5l12-12-12-12H48z" fill-rule="evenodd"/></svg>
         <div class="title">PromptIQ</div>
         <div class="status-badge status-free" id="header-pro-badge">FREE</div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="btn btn-secondary" id="logout-sidebar-btn" aria-label="Log out of PromptIQ" style="padding: 4px 8px; font-size: 10px; background: rgba(36, 84, 235, 0.08); color: var(--pi-danger); border-color: rgba(36, 84, 235, 0.12); display: none;">Log Out</button>
+        <button class="btn btn-secondary" id="logout-sidebar-btn" aria-label="Log out of PromptIQ" style="padding: 4px 8px; font-size: 10px; background: rgba(159, 255, 200, 0.08); color: var(--pi-danger); border-color: rgba(159, 255, 200, 0.12); display: none;">Log Out</button>
         <button class="btn btn-secondary" id="close-btn" aria-label="Close PromptIQ optimizer" style="padding: 6px 12px; font-size: 11px;">Close</button>
       </div>
     </div>

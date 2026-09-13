@@ -1,0 +1,17 @@
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("/website-assets/fonts/space-grotesk-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("/website-assets/fonts/manrope-latin-wght-normal.woff2") format("woff2");
+}
+h1, h2, h3, .brand, .hero-subtitle, .price, .proof-value {
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}

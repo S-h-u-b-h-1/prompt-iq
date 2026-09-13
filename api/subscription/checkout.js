@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from '../_utils/auth-helper.js';
-import { isExpectedRazorpayPlan } from '../_utils/razorpay-plan.js';
+import { isExpectedRazorpayPlan, isReusableRazorpaySubscription } from '../_utils/razorpay-plan.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -99,7 +99,7 @@ export default async function handler(req, res) {
         res,
         503,
         'RAZORPAY_PLAN_MISMATCH',
-        'Premium billing is not ready. The configured plan must be ₹50 INR billed monthly.'
+        'Premium billing is not ready. The configured plan must be US$1 billed monthly, excluding taxes.'
       );
       return;
     }
@@ -123,9 +123,7 @@ export default async function handler(req, res) {
         config
       );
       if (
-        response.ok &&
-        data.short_url &&
-        ['created', 'authenticated', 'pending'].includes(data.status)
+        response.ok && isReusableRazorpaySubscription(data, config.planId)
       ) {
         res.status(200).json({ url: data.short_url, provider: 'razorpay', reused: true });
         return;

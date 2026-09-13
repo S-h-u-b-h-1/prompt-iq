@@ -8,7 +8,7 @@ Extension ID: goheoijjaebpbcgifabpgmjkgiddkpek
 
 Package: dist.zip
 
-Version: 1.0.13
+Version: 1.0.14
 
 Homepage: https://promptiq-theta.vercel.app/
 
@@ -141,7 +141,7 @@ Data use certifications
 | 1280 x 800 screenshot 2 | public/screenshot2.png |
 | 1280 x 800 screenshot 3 | public/screenshot3.png |
 
-All three store screenshots are 1280 x 800 product captures with the 1.0.13 graphite-and-mint branding. Screenshots 1 and 2 show the real floating optimizer before and after local optimization in a demonstration workspace; screenshot 3 shows the account popup. The website uses a separate 2400 x 1600 capture of the same optimizer.
+All three store screenshots are 1280 x 800 product captures with the graphite-and-mint branding. Screenshots 1 and 2 show the real floating optimizer before and after local optimization in a demonstration workspace; screenshot 3 shows the 1.0.14 account popup and USD price. The website uses a separate 2400 x 1600 capture of the same optimizer.
 
 ## Cloud AI setup
 
@@ -157,7 +157,9 @@ Required production environment variables:
 - RAZORPAY_WEBHOOK_SECRET
 - RAZORPAY_TOTAL_COUNT, optional; defaults to 120 monthly billing cycles
 
-The configured Razorpay plan must be INR 50 (5000 paise), billed monthly with an interval of 1. Checkout refuses a mismatched plan.
+The configured Razorpay plan must be USD 1 (100 cents), billed monthly with an interval of 1, excluding taxes. Checkout refuses a mismatched or tax-inclusive plan. Configure a new USD plan, not the old INR plan, and confirm USD recurring payments are enabled for the merchant account. Applicable tax configuration must be verified in the provider before activating payments. This release does not configure or calculate tax rates.
+
+Existing paid subscriptions are not repriced by this code update. Review any existing subscribers and webhook plan handling before changing the production RAZORPAY_PLAN_ID. New checkout links are reused only when the plan and quantity match.
 
 Webhook URL:
 
@@ -180,7 +182,8 @@ Subscribe to these Razorpay events:
 
 | Version | Date | Status | Changes |
 |---|---|---|---|
-| 1.0.13 | 2026-09-13 | Ready for submission | Futuristic graphite-and-mint identity, matching icons, optical-rail hero artwork, staggered motion, and refreshed product captures. No new permissions or data collection. |
+| 1.0.14 | 2026-09-13 | Ready for submission | US$1/month excluding taxes; USD plan validation and checkout-link reuse checks; self-hosted Space Grotesk and Manrope website fonts. |
+| 1.0.13 | 2026-09-13 | Superseded | Futuristic graphite-and-mint identity, matching icons, optical-rail hero artwork, staggered motion, and refreshed product captures. No new permissions or data collection. |
 | 1.0.12 | 2026-09-13 | Superseded | Minimal blue-and-white website, popup, dashboard, and floating optimizer; refreshed captures; reduced-motion support and smaller-screen panel improvements. No new permissions or data collection. |
 | 1.0.11 | 2026-09-13 | Superseded | New brand mark and toolbar icons; original hero artwork; high-resolution actual product capture; responsive website redesign and working before/after demo. |
 | 1.0.10 | 2026-09-13 | Superseded | Light website, popup, and dashboard design; local website preview; subtle transitions with reduced-motion support; refreshed popup screenshot. |

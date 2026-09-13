@@ -6,7 +6,7 @@ PromptIQ is a Manifest V3 Chrome extension that improves prompts directly inside
 
 - Free: 100 Smart Template optimizations per day, plus 5 cloud AI trials per day after sign-in.
 - Premium: 200 Smart Template optimizations plus 50 cloud AI optimizations per day.
-- Premium price: INR 50 per month through Razorpay.
+- Premium price: US$1 per month, excluding applicable taxes, through Razorpay.
 
 ## Local development
 
@@ -37,7 +37,7 @@ RAZORPAY_WEBHOOK_SECRET
 
 `OPENROUTER_MODEL` and `OPENROUTER_FALLBACK_MODEL` are optional. PromptIQ defaults to `mistralai/mistral-small-24b-instruct-2501`, falls back through OpenRouter to `mistralai/mistral-small-3.2-24b-instruct`, and can use `GEMINI_API_KEY` if OpenRouter is unavailable.
 
-Create the Razorpay plan for INR 50 per month and configure its webhook URL as:
+Create a USD 1 monthly Razorpay plan (100 cents; taxes excluded), confirm the account supports USD recurring payments, and verify applicable tax settings before activating checkout. Do not reuse the old INR plan. Review existing subscriptions before changing the production plan ID. Configure the webhook URL as:
 
 ```text
 https://promptiq-theta.vercel.app/api/subscription/webhook

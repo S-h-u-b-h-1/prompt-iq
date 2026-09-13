@@ -32,18 +32,28 @@
         "@type": "Offer",
         "name": "Free",
         "price": "0",
-        "priceCurrency": "INR"
+        "priceCurrency": "USD"
       },
       {
         "@type": "Offer",
         "name": "Premium",
-        "price": "50",
-        "priceCurrency": "INR"
+        "price": "1",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "1",
+          "priceCurrency": "USD",
+          "billingDuration": "P1M",
+          "valueAddedTaxIncluded": false
+        }
       }
     ]
   }
   </script>
-  <link rel="stylesheet" href="/website.css?v=1.0.13">
+  <link rel="stylesheet" href="/website.css?v=1.0.14">
+  <link rel="preload" href="/website-assets/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/website-assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/website-fonts.css?v=1.0.14">
 </head>
 <body>
   <header class="nav">
@@ -141,13 +151,13 @@
 
     <section class="band" id="plans">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Simple by design</p><h2>Start free. Stay inspired.</h2></div><p class="section-lede">A little more help, for ₹50 a month.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Simple by design</p><h2>Start free. Stay inspired.</h2></div><p class="section-lede">A little more help, for US$1 a month, excluding taxes.</p></div>
         <div class="plans">
-          <article class="plan"><div class="plan-name">Free</div><div class="price">₹0 <small>/ always</small></div><p class="plan-summary">A better starting point, every day.</p>
+          <article class="plan"><div class="plan-name">Free</div><div class="price">$0 <small>/ always</small></div><p class="plan-summary">A better starting point, every day.</p>
             <ul><li>100 local Smart Template optimizations / day</li><li>5 cloud AI trials / day after sign-in</li><li>All five optimization modes</li><li>Local history, favorites, compare, and undo</li><li>No account needed for local mode</li></ul>
             <a class="button button-dark store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add to Chrome - Free <span aria-hidden="true">↗</span></a>
           </article>
-          <article class="plan"><div class="plan-name">Premium</div><span class="plan-tag">Coming soon</span><div class="price">₹50 <small>/ month</small></div><p class="plan-summary">For the ideas that need more.</p>
+          <article class="plan"><div class="plan-name">Premium</div><span class="plan-tag">Coming soon</span><div class="price">$1 <small>USD / month</small></div><p class="plan-summary">Excluding taxes. For the ideas that need more.</p>
             <ul><li>50 Premium AI optimizations / day</li><li>200 local Smart Template optimizations / day</li><li>All five optimization modes</li><li>Secure server-side AI processing</li><li>Signed-in history synchronization</li></ul>
             <a class="button button-primary store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Get the extension <span aria-hidden="true">↗</span></a>
             <p class="plan-note">Premium activation is being prepared. Start with the free daily AI trials.</p>
@@ -169,6 +179,6 @@
     <section class="closing"><div class="wrap closing-inner"><div><h2>Your next good idea starts here.</h2><p>Write normally. Give your AI a clearer starting point.</p></div><a class="button button-dark store-link" href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek">Add PromptIQ to Chrome <span aria-hidden="true">↗</span></a></div></section>
   </main>
   <footer><div class="wrap footer-inner"><div class="footer-brand"><a class="brand" href="/" aria-label="PromptIQ home"><img class="brand-mark" src="/brand-mark.svg" width="36" height="36" alt=""><span>PromptIQ</span></a><span>© 2026 PromptIQ</span></div><nav class="footer-links" aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Support</a><a href="https://chromewebstore.google.com/detail/promptiq/goheoijjaebpbcgifabpgmjkgiddkpek/reviews">Reviews</a></nav></div></footer>
-  <script type="module" src="/website.js?v=1.0.13"></script>
+  <script type="module" src="/website.js?v=1.0.14"></script>
 </body>
 </html>

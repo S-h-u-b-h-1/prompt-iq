@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm } from 'node:fs/promises';
+import { copyFile, cp, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 const outputDirectory = path.resolve('site-dist');
@@ -11,6 +11,8 @@ await mkdir(path.join(outputDirectory, 'website-assets'), { recursive: true });
 await Promise.all([
   copyFile(path.resolve('index.html'), path.join(outputDirectory, 'index.html')),
   copyFile(path.resolve('website.css'), path.join(outputDirectory, 'website.css')),
+  copyFile(path.resolve('website-fonts.css'), path.join(outputDirectory, 'website-fonts.css')),
+  cp(path.resolve('website-assets/fonts'), path.join(outputDirectory, 'website-assets/fonts'), { recursive: true }),
   copyFile(path.resolve('website.js'), path.join(outputDirectory, 'website.js')),
   copyFile(path.resolve('src/lib/local-optimizer.js'), path.join(outputDirectory, 'src/lib/local-optimizer.js')),
   copyFile(path.resolve('src/lib/scorer.js'), path.join(outputDirectory, 'src/lib/scorer.js')),

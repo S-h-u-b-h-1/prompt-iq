@@ -138,6 +138,8 @@ Data use certifications
 | Asset | File |
 |---|---|
 | 128 x 128 icon | public/store_icon.png |
+| 128 x 128 upload copy | store-assets/store_icon-v15.png |
+| 1280 x 800 showcase | store-assets/screenshot1-v15.png |
 | 1280 x 800 screenshot 1 | public/screenshot1.png |
 | 1280 x 800 screenshot 2 | public/screenshot2.png |
 | 1280 x 800 screenshot 3 | public/screenshot3.png |

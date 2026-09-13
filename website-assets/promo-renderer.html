@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PromptIQ promo renderer</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #090d0d; color: #f7f8f8; }
+    main { width: min(100% - 32px, 1080px); display: grid; gap: 18px; }
+    canvas { width: 100%; aspect-ratio: 16 / 9; background: #090d0d; border: 1px solid rgba(111,255,177,.32); }
+    .controls { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+    button, a { border: 0; border-radius: 6px; padding: 12px 18px; background: #6fffb1; color: #090d0d; font: 700 14px/1 system-ui; text-decoration: none; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: wait; }
+    #download[hidden] { display: none; }
+    #status { color: rgba(247,248,248,.68); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <canvas id="film" width="1920" height="1080"></canvas>
+    <div class="controls">
+      <span id="status">Ready to render a 15-second WebM promo.</span>
+      <button id="render" type="button">Render promo</button>
+      <a id="download" download="promptiq-promo-v15.webm" hidden>Download video</a>
+    </div>
+  </main>
+  <script>
+    const canvas = document.querySelector('#film');
+    const ctx = canvas.getContext('2d');
+    const renderButton = document.querySelector('#render');
+    const downloadLink = document.querySelector('#download');
+    const status = document.querySelector('#status');
+    const showcase = new Image();
+    const icon = new Image();
+    showcase.src = './promptiq-extension-showcase-v15.png';
+    icon.src = '../store-assets/store_icon-v15.png';
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const ink = '#090d0d';
+    const mint = '#6fffb1';
+    const paper = '#f7f8f8';
+    const duration = 15;
+
+    const clamp = value => Math.max(0, Math.min(1, value));
+    const ease = value => {
+      const x = clamp(value);
+      return x * x * (3 - 2 * x);
+    };
+    const windowAlpha = (time, start, end, fade = .45) =>
+      Math.min(ease((time - start) / fade), ease((end - time) / fade));
+
+    function roundedRect(x, y, width, height, radius, fill, stroke, lineWidth = 2) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
+    }
+
+    function text(value, x, y, size, color, weight = 500, align = 'left', alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = clamp(alpha);
+      ctx.fillStyle = color;
+      ctx.font = `${weight} ${size}px Inter, ui-sans-serif, system-ui, sans-serif`;
+      ctx.textAlign = align;
+      ctx.textBaseline = 'top';
+      ctx.fillText(value, x, y);
+      ctx.restore();
+    }
+
+    function image(source, x, y, width, height, radius, alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = clamp(alpha);
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+      ctx.clip();
+      ctx.drawImage(source, x, y, width, height);
+      ctx.restore();
+    }
+
+    function backdrop() {
+      ctx.fillStyle = ink;
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(111,255,177,.055)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= W; x += 96) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y <= H; y += 96) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    }
+
+    function draw(time) {
+      backdrop();
+
+      const intro = windowAlpha(time, 0, 3.25);
+      if (intro > 0) {
+        const lift = (1 - ease(time)) * 32;
+        ctx.save(); ctx.globalAlpha = intro;
+        roundedRect(842, 190 + lift, 236, 236, 52, mint);
+        ctx.restore();
+        image(icon, 858, 206 + lift, 204, 204, 40, intro);
+        text('PromptIQ', 960, 476 + lift, 116, paper, 800, 'center', intro);
+        text('Write normally. Make it AI-ready.', 960, 630 + lift, 44, mint, 600, 'center', intro);
+      }
+
+      const product = windowAlpha(time, 2.75, 9.6);
+      if (product > 0) {
+        const progress = ease((time - 2.75) / 6.85);
+        const scale = .92 + .06 * progress;
+        const cardWidth = 1450 * scale;
+        const cardHeight = cardWidth * 992 / 1586;
+        const cardX = W / 2 - cardWidth / 2;
+        const cardY = H / 2 - cardHeight / 2 + 40;
+        ctx.save(); ctx.globalAlpha = product;
+        roundedRect(cardX - 12, cardY - 12, cardWidth + 24, cardHeight + 24, 28, ink, 'rgba(111,255,177,.42)');
+        ctx.restore();
+        image(showcase, cardX, cardY, cardWidth, cardHeight, 20, product);
+        [
+          [3.3, 5.25, '01  WRITE A ROUGH PROMPT'],
+          [5.25, 7.15, '02  SEE ITS QUALITY SCORE'],
+          [7.15, 9.35, '03  OPTIMIZE AND INSERT']
+        ].forEach(([start, end, label]) => {
+          const alpha = windowAlpha(time, start, end, .28) * product;
+          if (alpha <= 0) return;
+          ctx.save(); ctx.globalAlpha = alpha;
+          roundedRect(560, 938, 800, 72, 12, mint);
+          ctx.restore();
+          text(label, 960, 954, 32, ink, 800, 'center', alpha);
+        });
+      }
+
+      const features = windowAlpha(time, 9.2, 13.1);
+      if (features > 0) {
+        text('One optimizer. Every AI workspace.', 220, 180, 74, paper, 800, 'left', features);
+        text('ChatGPT   Claude   Gemini   Perplexity   Copilot   DeepSeek', 220, 290, 33, mint, 650, 'left', features);
+        [
+          ['5', 'optimization modes'],
+          ['LIVE', 'prompt quality score'],
+          ['1 CLICK', 'compare, insert, undo']
+        ].forEach(([number, label], index) => {
+          const x = 220 + index * 520;
+          const reveal = windowAlpha(time, 9.55 + index * .25, 13, .35) * features;
+          ctx.save(); ctx.globalAlpha = reveal;
+          roundedRect(x, 440, 430, 300, 18, 'rgba(111,255,177,.09)', 'rgba(111,255,177,.42)');
+          ctx.restore();
+          text(number, x + 34, 500, 62, mint, 800, 'left', reveal);
+          text(label, x + 34, 610, 30, paper, 600, 'left', reveal);
+        });
+      }
+
+      const outro = windowAlpha(time, 12.75, 15.05, .35);
+      if (outro > 0) {
+        image(icon, 864, 155, 192, 192, 42, outro);
+        text('Better prompts. Better answers.', 960, 430, 84, paper, 800, 'center', outro);
+        ctx.save(); ctx.globalAlpha = outro;
+        roundedRect(635, 610, 650, 98, 16, mint);
+        ctx.restore();
+        text('ADD PROMPTIQ TO CHROME', 960, 634, 34, ink, 800, 'center', outro);
+        text('promptiq-theta.vercel.app', 960, 770, 30, 'rgba(247,248,248,.68)', 600, 'center', outro);
+      }
+    }
+
+    Promise.all([showcase.decode(), icon.decode()]).then(() => draw(0));
+
+    renderButton.addEventListener('click', async () => {
+      renderButton.disabled = true;
+      downloadLink.hidden = true;
+      status.textContent = 'Rendering 0%';
+      const stream = canvas.captureStream(30);
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm;codecs=vp8';
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12000000 });
+      const chunks = [];
+      recorder.addEventListener('dataavailable', event => { if (event.data.size) chunks.push(event.data); });
+      recorder.addEventListener('stop', () => {
+        const blob = new Blob(chunks, { type: mimeType });
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.hidden = false;
+        renderButton.disabled = false;
+        status.textContent = `Complete - ${(blob.size / 1048576).toFixed(1)} MB`;
+      });
+      recorder.start(1000);
+      const started = performance.now();
+      const frame = now => {
+        const elapsed = (now - started) / 1000;
+        draw(Math.min(elapsed, duration));
+        status.textContent = `Rendering ${Math.min(100, Math.round(elapsed / duration * 100))}%`;
+        if (elapsed < duration) requestAnimationFrame(frame);
+        else recorder.stop();
+      };
+      requestAnimationFrame(frame);
+    });
+  </script>
+</body>
+</html>

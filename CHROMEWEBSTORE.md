@@ -196,7 +196,7 @@ Version 1.0.15 release notes:
 
 | Version | Date | Status | Changes |
 |---|---|---|---|
-| 1.0.15 | 2026-09-13 | Ready for submission | Account-required extension access; explicit prompt-storage consent; structured 30-day draft and optional library-search history; visible Premium upgrade path. Production Neon migration and deployment verified. |
+| 1.0.15 | 2026-09-13 | Pending Chrome Web Store review | Account-required extension access; explicit prompt-storage consent; structured 30-day draft and optional library-search history; visible Premium upgrade path. Production Neon migration and deployment verified. |
 | 1.0.14 | 2026-09-13 | Ready for submission | US$1/month excluding taxes; USD plan validation and checkout-link reuse checks; self-hosted Space Grotesk and Manrope website fonts. |
 | 1.0.13 | 2026-09-13 | Superseded | Futuristic graphite-and-mint identity, matching icons, optical-rail hero artwork, staggered motion, and refreshed product captures. No new permissions or data collection. |
 | 1.0.12 | 2026-09-13 | Superseded | Minimal blue-and-white website, popup, dashboard, and floating optimizer; refreshed captures; reduced-motion support and smaller-screen panel improvements. No new permissions or data collection. |

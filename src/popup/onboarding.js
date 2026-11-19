@@ -10,6 +10,7 @@ import {
 } from '../lib/storage.js';
 import { DISCLOSURE_VERSION, getCapturePreferences, setCapturePreferences } from '../lib/activity.js';
 import { getCloudRewriteDisclosure } from '../lib/optimizer.js';
+import { analyzeAndEnhancePrompt } from '../lib/local-optimizer.js';
 
 let authMode = 'login';
 let currentUser = null;
@@ -51,10 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const signUpButton = document.getElementById('signup-btn');
   const finishSetupButton = document.getElementById('finish-setup-btn');
   const logoutButton = document.getElementById('logout-btn');
-  const supportButton = document.getElementById('support-btn');
-  const copyUpiButton = document.getElementById('copy-upi-btn');
   const dashboardButton = document.getElementById('dashboard-btn');
   const openChatButton = document.getElementById('open-chat-btn');
+  const chatPlatform = document.getElementById('chat-platform');
+  const chatSection = document.getElementById('chat-section');
+  const usageSection = document.getElementById('usage-section');
+  const aiUsageRow = document.getElementById('ai-usage-row');
   const tierBadge = document.getElementById('tier-badge');
   const accountTitle = document.getElementById('account-title');
   const accountCopy = document.getElementById('account-copy');
@@ -73,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const promptStorageConsent = document.getElementById('prompt-storage-consent');
   const searchStorageConsent = document.getElementById('search-storage-consent');
 
+  setupLocalRewrite();
   if (versionLabel && globalThis.chrome?.runtime?.getManifest) {
     versionLabel.textContent = `Version ${chrome.runtime.getManifest().version}`;
   }
@@ -131,55 +135,37 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = user;
     setupComplete = Boolean(user && ready);
     tierBadge.textContent = 'FREE';
-    accountTitle.textContent = user?.email || 'Account required';
+    accountTitle.textContent = user?.email || 'Chat integration & history';
     accountCopy.textContent = user
       ? setupComplete ? 'Quick Rewrite and account history are ready.' : 'Finish privacy setup to use PromptIQ.'
-      : 'Create an account to use PromptIQ and keep your prompt history available.';
+      : 'A free account unlocks in-chat scoring, insertion, and synced history.';
     signInButton.hidden = Boolean(user);
     signUpButton.hidden = Boolean(user);
     finishSetupButton.hidden = !user || setupComplete;
     logoutButton.hidden = !user;
-    openChatButton.disabled = !setupComplete;
-    dashboardButton.disabled = !user;
+    chatSection.hidden = !setupComplete;
+    usageSection.hidden = !setupComplete;
   };
 
   const renderUsage = async () => {
+    aiUsageRow.hidden = true;
+    if (!setupComplete) return;
     const local = await getSmartTemplateQuotaStatus('free');
     smartUsage.textContent = setupComplete ? `${local.used} / ${local.limit}` : 'Locked';
     smartMeter.style.width = setupComplete ? `${Math.min(100, (local.used / local.limit) * 100)}%` : '0%';
     usageDate.textContent = local.date;
 
-    if (!currentUser) {
-      aiUsage.textContent = 'Account required';
-      aiMeter.style.width = '0%';
-      aiHelp.textContent = 'Create a free account to access PromptIQ.';
-      return;
-    }
-
-    if (!setupComplete) {
-      aiUsage.textContent = 'Setup required';
-      aiMeter.style.width = '0%';
-      aiHelp.textContent = 'Review privacy settings to finish account setup.';
-      return;
-    }
-
     try {
-      if (!await getCloudRewriteDisclosure()) {
-        aiUsage.textContent = 'Unavailable';
-        aiMeter.style.width = '0%';
-        aiHelp.textContent = 'Quick Rewrite is ready on your device.';
-        return;
-      }
+      if (!await getCloudRewriteDisclosure()) return;
       const usage = await getUsageStatus();
       const aiRewrite = usage?.aiRewrite;
-      if (!aiRewrite) throw new Error('Usage unavailable');
+      if (!aiRewrite || !setupComplete) return;
+      aiUsageRow.hidden = false;
       aiUsage.textContent = `${aiRewrite.used} / ${aiRewrite.limit}`;
       aiMeter.style.width = `${Math.min(100, (aiRewrite.used / aiRewrite.limit) * 100)}%`;
       aiHelp.textContent = `${aiRewrite.remaining} free AI rewrites remaining today.`;
-    } catch (error) {
-      aiUsage.textContent = 'Unavailable';
-      aiMeter.style.width = '0%';
-      aiHelp.textContent = 'Usage will refresh when the service is reachable.';
+    } catch {
+      // Quick Rewrite and the paste editor remain usable without cloud AI.
     }
   };
 
@@ -259,39 +245,64 @@ document.addEventListener('DOMContentLoaded', () => {
   logoutButton.addEventListener('click', async () => {
     await clearSessionToken();
     await refreshAccount();
-    showNotice('Signed out. Sign in again to use PromptIQ.', 'success');
-  });
-
-  copyUpiButton.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText('shubhaang2201@axl');
-      copyUpiButton.textContent = 'Copied';
-      void trackTelemetry('contribution_upi_copied');
-      window.setTimeout(() => { copyUpiButton.textContent = 'Copy UPI'; }, 1600);
-    } catch {
-      showNotice('UPI ID: shubhaang2201@axl', 'success');
-    }
-  });
-
-  supportButton.addEventListener('click', async () => {
-    void trackTelemetry('contribution_started');
-    try {
-      await openUrl('upi://pay?pa=shubhaang2201%40axl&pn=Shubhaang%20Kataruka&am=150&cu=INR&tn=Support%20PromptIQ');
-    } catch {
-      showNotice('Open a UPI app and pay shubhaang2201@axl.', 'success');
-    }
+    showNotice('Signed out.', 'success');
   });
 
   dashboardButton.addEventListener('click', () => {
-    openUrl(extensionUrl('src/popup/popup.html'));
+    openUrl(extensionUrl('src/popup/popup.html')).catch(() => showNotice('Could not open the dashboard.', 'error'));
+  });
+  chatPlatform.addEventListener('change', () => {
+    openChatButton.textContent = `Open ${chatPlatform.selectedOptions[0].textContent}`;
   });
   openChatButton.addEventListener('click', () => {
-    if (!setupComplete) {
-      openAuth(currentUser ? 'consent' : 'signup');
-      return;
-    }
-    openUrl('https://chatgpt.com/');
+    if (!setupComplete) return;
+    openUrl(chatPlatform.value).catch(() => showNotice('Could not open the selected chat.', 'error'));
   });
 
   refreshAccount();
 });
+
+function setupLocalRewrite() {
+  const form = document.getElementById('local-form');
+  const draft = document.getElementById('local-draft');
+  const platform = document.getElementById('local-platform');
+  const output = document.getElementById('local-output');
+  const result = document.getElementById('local-result');
+  const status = document.getElementById('local-status');
+
+  const clear = () => {
+    output.value = '';
+    result.hidden = true;
+    status.textContent = '';
+  };
+  draft.addEventListener('input', clear);
+  platform.addEventListener('change', clear);
+  document.getElementById('local-example').addEventListener('click', () => {
+    clear();
+    draft.value = 'Write a launch email for a fictional calendar app. Keep it under 100 words.';
+    draft.focus();
+  });
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    clear();
+    const text = draft.value.trim();
+    if (!text || text.length > 6000) {
+      status.textContent = 'Enter a draft of up to 6,000 characters.';
+      return;
+    }
+    output.value = analyzeAndEnhancePrompt(text, { platform: platform.value }).enhancedPrompt;
+    result.hidden = false;
+    status.textContent = 'Rewrite ready.';
+  });
+  document.getElementById('local-copy').addEventListener('click', async () => {
+    if (!output.value) return;
+    try {
+      await navigator.clipboard.writeText(output.value);
+      status.textContent = 'Copied.';
+    } catch {
+      output.focus();
+      output.select();
+      status.textContent = 'Copy the selected text.';
+    }
+  });
+}

@@ -17,11 +17,47 @@
     <main>
       <p class="notice" id="notice" role="status"></p>
 
+      <section class="section local-rewrite" aria-labelledby="local-title">
+        <div class="section-head">
+          <h1 class="section-title" id="local-title">Paste &amp; rewrite</h1>
+          <button class="btn btn-small btn-quiet" id="local-example" type="button">Try an example</button>
+        </div>
+        <form id="local-form">
+          <label class="sr-only" for="local-draft">Draft prompt</label>
+          <textarea id="local-draft" rows="3" maxlength="6000" autocomplete="off" placeholder="Paste a draft for any AI chat" required></textarea>
+          <div class="local-actions">
+            <label class="sr-only" for="local-platform">Rewrite format</label>
+            <select id="local-platform">
+              <option value="general">Any AI</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="claude">Claude</option>
+              <option value="gemini">Gemini</option>
+              <option value="perplexity">Perplexity</option>
+              <option value="copilot">Copilot</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="grok">Grok</option>
+              <option value="mistral">Le Chat</option>
+              <option value="meta">Meta AI</option>
+              <option value="poe">Poe</option>
+              <option value="you">You.com</option>
+            </select>
+            <button class="btn btn-primary" type="submit">Rewrite on device</button>
+          </div>
+        </form>
+        <div id="local-result" hidden>
+          <label for="local-output">Rewritten prompt</label>
+          <textarea id="local-output" rows="4" readonly></textarea>
+          <button class="btn btn-small" id="local-copy" type="button">Copy rewrite</button>
+        </div>
+        <p id="local-status" class="local-status" role="status"></p>
+        <p class="privacy-note">No account. Not sent or saved.</p>
+      </section>
+
       <section class="account">
         <div>
-          <p class="eyebrow">Account</p>
-          <p class="account-title" id="account-title">Account required</p>
-          <p class="account-copy" id="account-copy">Create an account to use PromptIQ and keep your prompt history available.</p>
+          <p class="eyebrow">In-chat tools</p>
+          <p class="account-title" id="account-title">Chat integration &amp; history</p>
+          <p class="account-copy" id="account-copy">A free account unlocks in-chat scoring, insertion, and synced history.</p>
         </div>
         <div class="account-actions">
           <button class="btn btn-small" id="signin-btn" type="button">Sign in</button>
@@ -31,7 +67,7 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" id="usage-section" hidden>
         <div class="section-head">
           <h2 class="section-title">Today's usage</h2>
           <span class="date-label" id="usage-date">Local day</span>
@@ -45,10 +81,10 @@
             <div class="meter"><span id="smart-meter"></span></div>
             <p class="usage-help">Runs on this device. Completed rewrites go to your account history.</p>
           </div>
-          <div class="usage-row">
+          <div class="usage-row" id="ai-usage-row" hidden>
             <div class="usage-top">
               <span class="usage-name">AI Rewrite</span>
-              <span class="usage-count" id="ai-usage">Checking availability</span>
+              <span class="usage-count" id="ai-usage"></span>
             </div>
             <div class="meter"><span id="ai-meter"></span></div>
             <p class="usage-help" id="ai-help">Cloud rewriting is optional when available.</p>
@@ -56,30 +92,34 @@
         </div>
       </section>
 
-      <section class="section">
-        <div class="section-head"><h2 class="section-title">Open PromptIQ</h2></div>
+      <section class="section" id="chat-section" hidden>
+        <div class="section-head">
+          <h2 class="section-title">Open an AI chat</h2>
+          <label class="sr-only" for="chat-platform">AI site</label>
+          <select id="chat-platform">
+            <option value="https://chatgpt.com/">ChatGPT</option>
+            <option value="https://claude.ai/new">Claude</option>
+            <option value="https://gemini.google.com/app">Gemini</option>
+            <option value="https://www.perplexity.ai/">Perplexity</option>
+            <option value="https://grok.com/">Grok</option>
+            <option value="https://chat.deepseek.com/">DeepSeek</option>
+            <option value="https://chat.mistral.ai/">Le Chat</option>
+            <option value="https://www.meta.ai/">Meta AI</option>
+            <option value="https://poe.com/">Poe</option>
+            <option value="https://you.com/">You.com</option>
+          </select>
+        </div>
         <div class="action-grid">
           <button class="btn btn-primary" id="open-chat-btn" type="button">Open ChatGPT</button>
           <button class="btn" id="dashboard-btn" type="button">Dashboard</button>
         </div>
       </section>
 
-      <section class="section support-card">
-        <div>
-          <div class="section-head"><h2 class="section-title">Keep PromptIQ independent</h2></div>
-          <p>PromptIQ is free and built by Shubhaang Kataruka. A voluntary ₹150 contribution helps cover AI and hosting costs.</p>
-          <code>shubhaang2201@axl</code>
-        </div>
-        <div class="support-actions">
-          <button class="btn" id="copy-upi-btn" type="button">Copy UPI</button>
-          <button class="btn btn-primary" id="support-btn" type="button">Contribute ₹150</button>
-        </div>
-      </section>
     </main>
 
     <footer>
-      <span id="version-label">Version 1.0.17</span>
-      <span><a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy</a> · <a href="https://promptiq-theta.vercel.app/support" target="_blank" rel="noreferrer">Support</a></span>
+      <span id="version-label">Version 1.0.18</span>
+      <span><a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy</a> · <a href="https://promptiq-theta.vercel.app/#support" target="_blank" rel="noreferrer">Support PromptIQ</a></span>
     </footer>
   </div>
 

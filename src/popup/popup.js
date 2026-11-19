@@ -347,7 +347,7 @@ async function renderHistory() {
           <div class="history-detail-box">${escapeHtml(run.optimized)}</div>
           <div class="history-actions">
             <button class="btn btn-secondary favorite-hist-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Favorite</button>
-            <button class="btn btn-secondary copy-hist-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Use Optimized</button>
+            <button class="btn btn-secondary copy-hist-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Copy rewrite</button>
           </div>
         </div>
       </div>
@@ -365,24 +365,8 @@ async function renderHistory() {
     });
   });
 
-  // Copy/Insert buttons
   container.querySelectorAll('.copy-hist-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const text = history[Number(btn.dataset.index)]?.optimized || '';
-      try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) {
-          await chrome.tabs.sendMessage(tab.id, { action: 'INSERT_PROMPT', text });
-          btn.textContent = 'Used in Chat!';
-        } else {
-          throw new Error('No active tab');
-        }
-      } catch (err) {
-        navigator.clipboard.writeText(text);
-        btn.textContent = 'Copied!';
-      }
-      setTimeout(() => { btn.textContent = 'Use Optimized'; }, 2000);
-    });
+    btn.addEventListener('click', () => copyPrompt(btn, history[Number(btn.dataset.index)]?.optimized, 'Copy rewrite'));
   });
 
   container.querySelectorAll('.favorite-hist-btn').forEach(btn => {
@@ -445,7 +429,7 @@ async function renderFavorites() {
           <div class="history-detail-box">${escapeHtml(favorite.optimized)}</div>
           <div class="history-actions">
             <button class="btn btn-secondary remove-fav-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Remove</button>
-            <button class="btn btn-secondary use-fav-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Use Prompt</button>
+            <button class="btn btn-secondary use-fav-btn" data-index="${index}" style="padding: 4px 8px; font-size: 11px; width: auto;">Copy prompt</button>
           </div>
         </div>
       </div>
@@ -462,22 +446,7 @@ async function renderFavorites() {
   });
 
   container.querySelectorAll('.use-fav-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const text = favorites[Number(btn.dataset.index)]?.optimized || '';
-      try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) {
-          await chrome.tabs.sendMessage(tab.id, { action: 'INSERT_PROMPT', text });
-          btn.textContent = 'Used in Chat!';
-        } else {
-          throw new Error('No active tab');
-        }
-      } catch (err) {
-        await navigator.clipboard.writeText(text);
-        btn.textContent = 'Copied!';
-      }
-      setTimeout(() => { btn.textContent = 'Use Prompt'; }, 2000);
-    });
+    btn.addEventListener('click', () => copyPrompt(btn, favorites[Number(btn.dataset.index)]?.optimized, 'Copy prompt'));
   });
 
   container.querySelectorAll('.remove-fav-btn').forEach(btn => {
@@ -563,31 +532,32 @@ function renderLibrary(prompts) {
       <div class="library-category">${escapeHtml(item.category)}</div>
       <div class="library-title">${escapeHtml(item.title)}</div>
       <div class="library-prompt-text">${escapeHtml(item.prompt)}</div>
-      <button class="btn btn-secondary copy-lib-btn" data-text="${escapeDoubleQuotes(item.prompt)}" style="padding: 4px 8px; font-size: 11px;">Use Prompt Template</button>
+      <button class="btn btn-secondary copy-lib-btn" data-text="${escapeDoubleQuotes(item.prompt)}" style="padding: 4px 8px; font-size: 11px;">Copy template</button>
     </div>
   `).join('');
 
   container.querySelectorAll('.copy-lib-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const text = btn.dataset.text;
-      try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) {
-          await chrome.tabs.sendMessage(tab.id, { action: 'INSERT_PROMPT', text });
-          btn.textContent = 'Used in Chat!';
-        } else {
-          throw new Error('No active tab');
-        }
-      } catch (err) {
-        navigator.clipboard.writeText(text);
-        btn.textContent = 'Copied to Clipboard!';
-      }
-      setTimeout(() => { btn.textContent = 'Use Prompt Template'; }, 2000);
-    });
+    btn.addEventListener('click', () => copyPrompt(btn, btn.dataset.text, 'Copy template'));
   });
 }
 
 // Helpers
+async function copyPrompt(button, text, label) {
+  if (!text) return;
+  button.disabled = true;
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = 'Copied';
+  } catch {
+    button.textContent = 'Copy unavailable';
+  } finally {
+    setTimeout(() => {
+      button.textContent = label;
+      button.disabled = false;
+    }, 1400);
+  }
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return str

@@ -1,10 +1,11 @@
 # PromptIQ by Shubhaang
 
-PromptIQ is a free Manifest V3 Chrome extension by Shubhaang Kataruka. It scores and rewrites prompts directly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, DeepSeek, Grok, Le Chat, Meta AI, Poe, and You.com.
+PromptIQ is a free Manifest V3 Chrome extension by Shubhaang Kataruka. It provides in-chat prompt tools for ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Grok, Le Chat, Meta AI, Poe, and You.com.
 
 ## Product access
 
-- 100 on-device Quick Rewrites per day.
+- Private Paste & rewrite for any chat, including the current Copilot site, without an account or additional site permissions.
+- 100 in-chat Quick Rewrites per day.
 - Standard, Concise, Detailed, Creative, and Technical modes.
 - History, favorites, comparison, insertion, and undo.
 - No subscription or paid feature tier.

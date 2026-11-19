@@ -18,83 +18,83 @@ const INTENT_KEYWORDS = {
 export const OPTIMIZATION_MODES = {
   standard: {
     label: 'Standard',
-    instruction: 'Balance clarity, completeness, and practical structure without making the prompt unnecessarily long.'
+    instruction: ''
   },
   concise: {
     label: 'Concise',
-    instruction: 'Make the prompt compact and direct while preserving the full task, constraints, and success criteria.'
+    instruction: 'Keep the response compact and direct.'
   },
   detailed: {
     label: 'Detailed',
-    instruction: 'Expand context, acceptance criteria, examples, and evaluation rules so the AI has enough detail to produce a high-quality answer.'
+    instruction: 'Explain the important details and include examples where they help.'
   },
   creative: {
     label: 'Creative',
-    instruction: 'Encourage distinctive angles, variations, tone options, and ideation while keeping the request usable and bounded.'
+    instruction: 'Favor distinctive ideas and concrete details over generic suggestions.'
   },
   technical: {
     label: 'Technical',
-    instruction: 'Emphasize precision, edge cases, implementation constraints, validation steps, and measurable acceptance criteria.'
+    instruction: 'State technical assumptions and include relevant edge cases and verification steps.'
   }
 };
 
 const PLATFORM_PROFILES = {
   chatgpt: {
     label: 'ChatGPT',
-    instruction: 'Use clear role, task, context, output format, and constraints sections. Prefer markdown headings and explicit success criteria.'
+    instruction: 'Use short Markdown headings when they improve readability.'
   },
   claude: {
     label: 'Claude',
-    instruction: 'Use natural language instructions with context first, then desired output, constraints, and examples when useful.'
+    instruction: 'Use natural language and put necessary context before recommendations.'
   },
   gemini: {
     label: 'Gemini',
-    instruction: 'Use explicit task steps, source/context boundaries, and a clear final-answer format.'
+    instruction: 'Make the answer easy to scan and label any assumptions.'
   },
   perplexity: {
     label: 'Perplexity',
-    instruction: 'Ask for source-aware analysis, concise synthesis, and separation between facts, assumptions, and recommendations.'
+    instruction: 'Cite sources for claims that depend on external facts.'
   },
   copilot: {
     label: 'Copilot',
-    instruction: 'Specify the environment, expected implementation, error cases, and verification steps.'
+    instruction: 'Name the environment and how to check your answer when relevant.'
   },
   deepseek: {
     label: 'DeepSeek',
-    instruction: 'Use precise technical context, constraints, and a validation checklist for the final answer.'
+    instruction: 'Be precise about assumptions and how to verify key claims.'
   },
   grok: {
     label: 'Grok',
-    instruction: 'Keep the request direct, current-context aware, and explicit about the desired evidence and output.'
+    instruction: 'Be direct and distinguish current facts from assumptions.'
   },
   mistral: {
     label: 'Le Chat',
-    instruction: 'Use compact instructions, clear context boundaries, and an explicit deliverable.'
+    instruction: 'Lead with the requested deliverable.'
   },
   meta: {
     label: 'Meta AI',
-    instruction: 'Use straightforward natural language, concrete constraints, and a clear final format.'
+    instruction: 'Use plain language and concrete details.'
   },
   poe: {
     label: 'Poe',
-    instruction: 'Keep the prompt model-neutral and state the task, context, constraints, and output clearly.'
+    instruction: ''
   },
   you: {
     label: 'You.com',
-    instruction: 'Ask for concise synthesis, source-aware claims when relevant, and a practical final answer.'
+    instruction: 'Cite sources when the answer relies on external facts.'
   },
   general: {
     label: 'AI assistant',
-    instruction: 'Use a broadly compatible prompt structure with clear task, context, output format, and constraints.'
+    instruction: ''
   }
 };
 
 export function normalizeOptimizationMode(mode) {
-  return OPTIMIZATION_MODES[mode] ? mode : 'standard';
+  return Object.hasOwn(OPTIMIZATION_MODES, mode) ? mode : 'standard';
 }
 
 export function normalizePlatform(platform) {
-  return PLATFORM_PROFILES[platform] ? platform : 'general';
+  return Object.hasOwn(PLATFORM_PROFILES, platform) ? platform : 'general';
 }
 
 export function getPlatformLabel(platform) {
@@ -150,7 +150,7 @@ function getIntentRequirements(intent, originalPrompt) {
     marketing: [
       'Keep claims specific and credible; use labeled placeholders for missing product facts instead of inventing them.',
       isEmail
-        ? 'Provide three subject line options, preview text, and a polished email body with one clear call to action.'
+        ? 'Use a specific subject line and a clear call to action when appropriate.'
         : 'Match the message to the intended audience, channel, and desired action.'
     ],
     research: [
@@ -197,7 +197,7 @@ function getIntentRequirements(intent, originalPrompt) {
 function getOutputGuidance(intent, originalPrompt) {
   if (intent === 'coding') return 'Return the implementation first, followed by concise setup, verification, and edge-case notes.';
   if (intent === 'marketing' && /\b(email|newsletter)\b/i.test(originalPrompt)) {
-    return 'Return subject lines, preview text, and the final email in clean copy-ready sections.';
+    return 'Return the email in a copy-ready format.';
   }
   if (intent === 'research') return 'Use clear headings, cite sources where possible, and end with limitations and open questions.';
   if (intent === 'analysis' || intent === 'business' || intent === 'finance') {
@@ -242,24 +242,30 @@ export function analyzeAndEnhancePrompt(originalPrompt, options = {}) {
   };
 
   const task = originalPrompt.trim();
-  const requirements = getIntentRequirements(intent, task);
+  const explicitOutput = structure.format || /\b(only|exactly|nothing else|no preamble|no explanation)\b/i.test(task);
+  const intentRequirements = getIntentRequirements(intent, task);
+  const requirements = [intentRequirements[0]];
+  if (!explicitOutput && mode !== 'concise') {
+    requirements.push(intentRequirements[1], platformProfile.instruction);
+  }
+  if (!explicitOutput) requirements.push(modeProfile.instruction);
+  if (!structure.audience && (mode === 'detailed' || mode === 'creative')) {
+    requirements.push('Ask for the intended audience if it materially changes the answer.');
+  }
+  requirements.push('Follow the task as written. Do not add facts or requirements that were not supplied.');
   const lines = [];
 
-  if (!structure.role && mode !== 'concise') {
+  if (!structure.role && !explicitOutput && intent !== 'general' && mode !== 'concise') {
     const role = roles[intent] || roles.general;
     const article = /^[aeiou]/i.test(role) ? 'an' : 'a';
     lines.push(`Work as ${article} ${role}.`);
   }
 
   lines.push('', 'Task', task, '', 'Requirements');
-  for (const requirement of requirements) lines.push(`- ${requirement}`);
-  lines.push(`- ${modeProfile.instruction}`);
-  lines.push(`- ${platformProfile.instruction}`);
-  if (!structure.audience) {
-    lines.push('- If the intended audience materially affects the answer, ask for it or use a clearly labeled assumption.');
+  for (const requirement of requirements.filter(Boolean)) lines.push(`- ${requirement}`);
+  if (!explicitOutput && mode !== 'concise') {
+    lines.push('', 'Output', getOutputGuidance(intent, task));
   }
-  lines.push('- Preserve the original intent and do not add facts, promises, or requirements that were not supplied.');
-  lines.push('', 'Output', getOutputGuidance(intent, task));
 
   const draft = lines.join('\n').replace(/^\n+/, '').trim();
 

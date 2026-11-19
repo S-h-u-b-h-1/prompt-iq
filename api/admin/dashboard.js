@@ -80,6 +80,22 @@ export default async function handler(req, res) {
       GROUP BY event_type
       ORDER BY count DESC, event_type
     `;
+    const [activation] = await sql`
+      SELECT COUNT(*)::int AS signups, COUNT(*) FILTER (WHERE EXISTS (
+        SELECT 1 FROM prompt_history AS p WHERE p.user_id = u.id::text
+      ))::int AS activated
+      FROM users AS u
+      WHERE u.created_at >= NOW() - INTERVAL '30 days'
+    `;
+    const eventCounts = new Map(events.map(({ event_type, count }) => [event_type, count]));
+    const funnel = [
+      ['Website views', 'website_viewed'],
+      ['Demo rewrites', 'website_demo_optimized'],
+      ['Demo copies', 'website_demo_copied'],
+      ['Chrome Web Store clicks', 'store_link_clicked'],
+      ['UPI app clicks', 'contribution_started'],
+      ['UPI ID copies', 'contribution_upi_copied']
+    ].map(([label, event]) => ({ label, count: eventCounts.get(event) || 0 }));
     const platforms = await sql`
       SELECT platform, COUNT(*)::int AS count
       FROM prompt_history
@@ -102,6 +118,7 @@ export default async function handler(req, res) {
 main{width:min(1040px,calc(100% - 36px));margin:auto;padding:48px 0 72px}h1{font-size:36px;margin:0}p{color:var(--muted)}
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:28px 0}.kpi{border:1px solid var(--line);padding:18px;border-radius:8px}.kpi b{display:block;color:var(--accent);font-size:26px}.kpi span{color:var(--muted);font-size:11px}
 .tables{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}section{border-top:1px solid var(--line);padding-top:16px}h2{font-size:15px;margin:0 0 12px}table{width:100%;border-collapse:collapse}td{padding:8px 0;border-bottom:1px solid var(--line)}td:last-child{text-align:right;color:var(--accent)}
+.funnel{margin-bottom:32px}.funnel p{margin:12px 0}
 @media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.tables{grid-template-columns:1fr}}
 </style></head><body><main>
 <h1>PromptIQ Analytics</h1><p>Aggregate product signals only. Prompt text is never displayed here.</p>
@@ -112,6 +129,10 @@ main{width:min(1040px,calc(100% - 36px));margin:auto;padding:48px 0 72px}h1{font
 <div class="kpi"><b>${optimizations.count}</b><span>Saved optimizations</span></div>
 <div class="kpi"><b>${drafts.count}</b><span>Drafts updated, 30 days</span></div>
 </div>
+<section class="funnel"><h2>First use and contributions, 30 days</h2>
+<p>${activation.activated} of ${activation.signups} new accounts have a saved rewrite.</p>
+<table>${renderRows(funnel, 'label', 'count')}</table>
+<p>Website events count actions, not unique visitors. Store and UPI clicks do not confirm installs or payments.</p></section>
 <div class="tables">
 <section><h2>Product events, 30 days</h2><table>${renderRows(events, 'event_type', 'count')}</table></section>
 <section><h2>Optimization platforms</h2><table>${renderRows(platforms, 'platform', 'count')}</table></section>

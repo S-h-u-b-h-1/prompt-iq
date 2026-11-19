@@ -63,6 +63,12 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       --pi-shadow: rgba(159, 255, 200, 0.06);
       --pi-radius: 8px;
     }
+    :host([hidden]) { display: none !important; }
+    .insert-status {
+      color: var(--pi-muted);
+      font-size: 12px;
+      margin: 0 0 8px;
+    }
 
 
     .badge {
@@ -854,7 +860,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       <div class="success-summary">
         <div>
           <div class="success-title">Prompt is ready</div>
-          <div class="success-copy">Review it, copy it, or send it back to the chat box.</div>
+          <div class="success-copy">Review it, copy it, or replace your draft.</div>
         </div>
         <div class="score-delta" id="score-delta">Improved</div>
       </div>
@@ -867,6 +873,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
         <textarea class="optimized-textarea" id="optimized-text" style="display: none;"></textarea>
       </div>
       <button class="btn btn-primary" id="use-btn" aria-label="Use optimized prompt" style="width: 100%; margin: 12px 0;">Use Prompt</button>
+      <p class="insert-status" id="insert-status" role="status" hidden></p>
 
       <div class="comparison-grid" id="comparison-grid" hidden>
         <div class="compare-box">
@@ -1100,9 +1107,26 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       .replace(/'/g, '&#039;');
   }
 
-  shadow.getElementById('use-btn').addEventListener('click', () => {
+  const insertStatus = shadow.getElementById('insert-status');
+  const useBtn = shadow.getElementById('use-btn');
+  useBtn.addEventListener('click', async (event) => {
+    if (!event.isTrusted) return;
     const finalPrompt = textarea.style.display === 'none' ? diffView.textContent : textarea.value;
-    onUse(finalPrompt);
+    useBtn.disabled = true;
+    let inserted = false;
+    try {
+      inserted = await onUse(finalPrompt);
+    } catch {
+      // The result stays available to copy if the site editor cannot be updated.
+    } finally {
+      useBtn.disabled = false;
+    }
+    if (!inserted) {
+      insertStatus.textContent = 'Could not insert safely. Copy the rewrite or optimize the current draft.';
+      insertStatus.hidden = false;
+      return;
+    }
+    insertStatus.hidden = true;
     panel.classList.remove('visible');
     container.classList.remove('panel-open');
   });
@@ -1138,8 +1162,17 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     compareBtn.textContent = comparisonGrid.hidden ? 'Compare' : 'Hide Compare';
   });
 
-  undoBtn.addEventListener('click', () => {
-    const restored = typeof onUndo === 'function' ? onUndo() : false;
+  undoBtn.addEventListener('click', async (event) => {
+    if (!event.isTrusted) return;
+    undoBtn.disabled = true;
+    let restored = false;
+    try {
+      restored = await onUndo();
+    } catch {
+      // A changed composer no longer has an undoable rewrite.
+    } finally {
+      undoBtn.disabled = false;
+    }
     undoBtn.textContent = restored ? 'Undone' : 'Nothing to undo';
     setTimeout(() => {
       undoBtn.textContent = 'Undo';
@@ -1190,6 +1223,13 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
   const api = {
     container,
+    setComposerAvailable: (available) => {
+      container.hidden = !available;
+      if (!available) {
+        panel.classList.remove('visible');
+        container.classList.remove('panel-open');
+      }
+    },
     open: () => {
       panel.classList.add('visible');
       container.classList.add('panel-open');
@@ -1203,6 +1243,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     clearResult: () => {
       currentRunId = null;
       lastResultRecord = null;
+      insertStatus.hidden = true;
       textarea.value = '';
       for (const element of [diffView, compareOriginal, compareOptimized, changesList]) {
         element.replaceChildren();
@@ -1304,6 +1345,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       });
     },
     showResult: (optimizedText, diffedTokens, explainedChanges, runId, scoreSummary = null, meta = {}) => {
+      insertStatus.hidden = true;
       currentRunId = runId;
       panel.classList.add('has-result');
       errorPanel.style.display = 'none';

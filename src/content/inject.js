@@ -19,9 +19,12 @@ import { analyzeAndEnhancePrompt, checkStructure } from '../lib/local-optimizer.
 let currentInputEl = null;
 let panelApi = null;
 let adapter = null;
-let lastOptimizedPrompt = '';
-let previousPromptBeforeUse = '';
+let currentRoute = '';
+let resultTarget = null;
+let undoTarget = null;
 let observer = null;
+let composerFrame = 0;
+let writingComposer = false;
 let accountReady = false;
 let draftToken = null;
 let accountSync = 0;
@@ -74,9 +77,10 @@ function cleanup() {
     if (currentInputEl) {
       currentInputEl.removeEventListener('input', handleInput);
     }
-    if (observer) {
-      observer.disconnect();
-    }
+    observer?.disconnect();
+    cancelAnimationFrame(composerFrame);
+    document.removeEventListener('focusin', scheduleComposerRefresh);
+    window.navigation?.removeEventListener('currententrychange', scheduleComposerRefresh);
     window.removeEventListener('keydown', handleKeydown);
     
     const container = document.getElementById('promptiq-container');
@@ -95,8 +99,8 @@ function setupStorageListener() {
         if (areaName !== 'local' || !panelApi) return;
 
         if (changes.sessionToken) {
-          lastOptimizedPrompt = '';
-          previousPromptBeforeUse = '';
+          resultTarget = null;
+          undoTarget = null;
           panelApi.clearResult();
           draftRecorder.reset();
           const newToken = changes.sessionToken.newValue;
@@ -115,24 +119,14 @@ function setupStorageListener() {
   }
 }
 
-async function init() {
+function init() {
   adapter = getAdapter();
-  if (!adapter) return;
+  if (!adapter || document.getElementById('promptiq-container')) return;
 
   ensurePanelInjected();
-  if (panelApi) {
-    panelApi.setPlatform(adapter.platform);
-  }
-
-  // Sync initial account state.
-  const token = await getSessionToken();
-  await syncAccountAccess(token);
-
-  const el = adapter.getInputElement();
-  if (el) {
-    updateActiveInput(el);
-  }
-
+  panelApi.setPlatform(adapter.platform);
+  refreshComposer();
+  void syncAccountAccess();
   setupObserver();
   setupKeyboardShortcut();
   setupMessageListeners();
@@ -141,7 +135,7 @@ async function init() {
 
 function handleInput(event) {
   if (!isContextValid()) return;
-  if (!currentInputEl || !panelApi) return;
+  if (!currentInputEl?.isConnected || !panelApi || writingComposer) return;
   if (!accountReady) return;
   const text = adapter.getText(currentInputEl);
   if (draftToken && event?.isTrusted && typeof text === 'string') {
@@ -156,35 +150,49 @@ function handleInput(event) {
   panelApi.updateScore(scoreData);
 }
 
-function updateActiveInput(el) {
-  if (!el || !panelApi) return;
-  
-  if (currentInputEl && currentInputEl !== el) {
-    draftRecorder.reset();
-    currentInputEl.removeEventListener('input', handleInput);
-  }
-  
+function refreshComposer() {
+  const route = location.pathname + location.search;
+  const el = adapter.getInputElement(route === currentRoute ? currentInputEl : null);
+  if (el === currentInputEl && route === currentRoute) return;
+  const routeChanged = route !== currentRoute;
+  draftRecorder.reset();
+  currentInputEl?.removeEventListener('input', handleInput);
   currentInputEl = el;
-  currentInputEl.addEventListener('input', handleInput);
-  
-  if (accountReady) handleInput();
+  currentRoute = route;
+  panelApi.setComposerAvailable(Boolean(el));
+  if (routeChanged) {
+    resultTarget = null;
+    undoTarget = null;
+    panelApi.clearResult();
+  }
+  currentInputEl?.addEventListener('input', handleInput);
+  if (el && accountReady) handleInput();
+}
+
+function scheduleComposerRefresh() {
+  if (composerFrame) return;
+  composerFrame = requestAnimationFrame(() => {
+    composerFrame = 0;
+    if (isContextValid()) refreshComposer();
+  });
 }
 
 function setupObserver() {
-  observer = new MutationObserver(() => {
-    if (!isContextValid()) return;
-    const el = adapter.getInputElement();
-    if (el && el !== currentInputEl) {
-      updateActiveInput(el);
-    }
+  observer = new MutationObserver(scheduleComposerRefresh);
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['contenteditable', 'hidden', 'inert', 'aria-hidden', 'disabled', 'readonly', 'aria-disabled', 'aria-readonly']
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('focusin', scheduleComposerRefresh);
+  window.navigation?.addEventListener('currententrychange', scheduleComposerRefresh);
 }
 
 async function handleLogout() {
   await clearSessionToken();
-  lastOptimizedPrompt = '';
-  previousPromptBeforeUse = '';
+  resultTarget = null;
+  undoTarget = null;
   ++accountSync;
   accountReady = false;
   draftToken = null;
@@ -209,10 +217,10 @@ function handleKeydown(e) {
   if (!isContextValid()) return;
   // Ctrl + Shift + P
   if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'p') {
+    refreshComposer();
+    if (!currentInputEl) return;
     e.preventDefault();
-    if (panelApi) {
-      panelApi.toggleVisibility();
-    }
+    panelApi.toggleVisibility();
   }
 }
 
@@ -222,20 +230,13 @@ function setupKeyboardShortcut() {
 
 function setupMessageListeners() {
   try {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((message, sender) => {
       if (!isContextValid()) return;
-      if (message.action === 'OPTIMIZE_SELECTION') {
-        panelApi?.open();
+      if (sender.id === chrome.runtime.id && message.action === 'OPTIMIZE_SELECTION') {
+        refreshComposer();
         if (currentInputEl && typeof message.text === 'string') {
+          panelApi.open();
           void handleOptimize(message.text);
-        }
-      } else if (message.action === 'INSERT_PROMPT') {
-        if (currentInputEl) {
-          adapter.setText(currentInputEl, message.text);
-          const scoreData = scorePrompt(message.text);
-          const structure = checkStructure(message.text);
-          scoreData.missing = structure.missing;
-          panelApi.updateScore(scoreData);
         }
       }
     });
@@ -251,7 +252,13 @@ async function handleOptimize(selection = null) {
     panelApi.showAccountRequired(token ? 'consent' : 'signin');
     return;
   }
-  const text = (selection ?? adapter.getText(currentInputEl) ?? '').trim();
+  refreshComposer();
+  if (!currentInputEl) {
+    panelApi.showError(new Error('No chat composer is open. Paste your draft into the PromptIQ toolbar to rewrite it.'));
+    return;
+  }
+  const target = { el: currentInputEl, route: currentRoute, text: adapter.getText(currentInputEl) };
+  const text = (selection ?? target.text).trim();
   if (!text) {
     panelApi.showError(new Error('Prompt is empty.'));
     return;
@@ -317,7 +324,6 @@ async function handleOptimize(selection = null) {
     }
 
     if (token !== await getSessionToken()) return;
-    lastOptimizedPrompt = result.optimized;
     const originalScore = scorePrompt(text).score;
     const newScore = scorePrompt(result.optimized).score;
     const runId = await saveOptimization(
@@ -333,6 +339,9 @@ async function handleOptimize(selection = null) {
       token
     );
     if (token !== await getSessionToken()) return;
+    refreshComposer();
+    if (target.route !== currentRoute || target.el !== currentInputEl) return;
+    resultTarget = target;
 
     const diffedTokens = diffPrompt(text, result.optimized);
     const explainedChanges = explainChanges(result.changes);
@@ -377,48 +386,62 @@ async function handleOptimize(selection = null) {
 }
 
 function createLocalOptimization(localResult) {
-  const descriptions = {
-    role: 'Added an expert role to guide tone and decision quality.',
-    task: 'Clarified the objective and preserved the original request.',
-    context: 'Added context guidance so the response is complete and useful.',
-    format: 'Specified a structured output format for easier use.',
-    constraints: 'Added practical boundaries to reduce vague or generic output.',
-    specificity: 'Expanded the request with audience and delivery details.'
-  };
-  const changeTypes = ['role', 'task', 'context', 'format', 'constraints', 'specificity'];
-
   return {
     optimized: localResult.enhancedPrompt,
-    changes: changeTypes.map((type) => ({
-      type,
-      description: descriptions[type]
-    }))
+    changes: [
+      { type: 'task', description: 'Preserved your request in a separate Task section.' },
+      { type: 'specificity', description: 'Added brief guidance for the detected task and your selected mode where applicable.' }
+    ]
   };
 }
 
-function handleUse(finalPrompt) {
-  if (!isContextValid() || !accountReady || !currentInputEl?.isConnected) return;
-  const textToUse = finalPrompt || lastOptimizedPrompt;
-  if (textToUse) {
-    previousPromptBeforeUse = adapter.getText(currentInputEl) || '';
-    adapter.setText(currentInputEl, textToUse);
-    const scoreData = scorePrompt(textToUse);
-    const structure = checkStructure(textToUse);
-    scoreData.missing = structure.missing;
-    panelApi.updateScore(scoreData);
+async function handleUse(finalPrompt) {
+  if (!isContextValid() || !accountReady || !finalPrompt?.trim()) return false;
+  refreshComposer();
+  if (!matchesTarget(resultTarget)) return false;
+
+  const target = resultTarget;
+  const original = target.text;
+  if (!await writeComposer(finalPrompt, target) || resultTarget !== target) return false;
+  const inserted = adapter.getText(currentInputEl);
+  resultTarget = { el: currentInputEl, route: currentRoute, text: inserted };
+  if (inserted !== original) {
+    undoTarget = { ...resultTarget, original };
     void trackTelemetry('prompt_inserted');
   }
+  return true;
 }
 
-function handleUndo() {
-  if (!isContextValid() || !accountReady || !previousPromptBeforeUse || !currentInputEl?.isConnected) return false;
-  adapter.setText(currentInputEl, previousPromptBeforeUse);
-  const scoreData = scorePrompt(previousPromptBeforeUse);
-  const structure = checkStructure(previousPromptBeforeUse);
-  scoreData.missing = structure.missing;
-  panelApi.updateScore(scoreData);
-  previousPromptBeforeUse = '';
+async function handleUndo() {
+  if (!isContextValid() || !accountReady) return false;
+  refreshComposer();
+  const target = undoTarget;
+  if (!matchesTarget(target) || !await writeComposer(target.original, target) || undoTarget !== target) return false;
+  resultTarget = { el: currentInputEl, route: currentRoute, text: adapter.getText(currentInputEl) };
+  undoTarget = null;
   return true;
+}
+
+function matchesTarget(target) {
+  return Boolean(target && currentInputEl &&
+    target.el === currentInputEl && target.route === currentRoute &&
+    target.text === adapter.getText(currentInputEl));
+}
+
+async function writeComposer(text, target) {
+  if (writingComposer) return false;
+  writingComposer = true;
+  draftRecorder.reset();
+  try {
+    const inserted = await adapter.setText(target.el, text, () => (
+      accountReady && location.pathname + location.search === target.route && matchesTarget(target)
+    ));
+    refreshComposer();
+    return inserted && currentInputEl === target.el && currentRoute === target.route;
+  } finally {
+    writingComposer = false;
+    handleInput();
+  }
 }
 
 async function handleFavorite(record) {

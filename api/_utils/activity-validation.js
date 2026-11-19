@@ -1,4 +1,5 @@
-export const DISCLOSURE_VERSION = '2026-11-19-v3';
+export const DISCLOSURE_VERSION = '2026-11-19-v4';
+export const CAPTURE_DISCLOSURES = [DISCLOSURE_VERSION, '2026-11-19-v3', '2026-09-13-v2'];
 const PLATFORMS = new Set(['chatgpt','claude','gemini','perplexity','copilot','deepseek','grok','mistral','meta','poe','you','general']);
 const MODES = new Set(['standard','concise','detailed','creative','technical']);
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -9,8 +10,8 @@ function text(value, max, name) {
   return value.trim();
 }
 export function validatePreferences(body) {
-  if (!body || typeof body.saveDrafts !== 'boolean' || typeof body.saveSearches !== 'boolean' || body.disclosureVersion !== DISCLOSURE_VERSION) fail('Accept the current disclosure and provide both preferences.');
-  return { saveDrafts: body.saveDrafts, saveSearches: body.saveSearches, disclosureVersion: DISCLOSURE_VERSION };
+  if (!body || typeof body.saveDrafts !== 'boolean' || typeof body.saveSearches !== 'boolean' || !CAPTURE_DISCLOSURES.includes(body.disclosureVersion)) fail('Review the disclosure and provide both preferences.');
+  return { saveDrafts: body.saveDrafts, saveSearches: body.saveSearches, disclosureVersion: body.disclosureVersion };
 }
 export function validateActivity(body) {
   if (!body || !UUID.test(body.clientId || '')) fail('Invalid activity ID');

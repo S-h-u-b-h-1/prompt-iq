@@ -33,7 +33,7 @@ export function parseOptimizerResponse(content) {
     : [];
 
   return {
-    optimized: parsed.optimized.trim().slice(0, 30000),
+    optimized: parsed.optimized.trim().slice(0, 20000),
     changes
   };
 }

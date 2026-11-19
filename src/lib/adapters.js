@@ -12,7 +12,7 @@ const PLATFORMS = [
   {
     id: 'claude',
     matches: ['claude.ai'],
-    selector: 'div.ProseMirror[contenteditable="true"], div.ProseMirror',
+    selector: 'div.ProseMirror[contenteditable="true"]',
     isContentEditable: true
   },
   {
@@ -81,6 +81,8 @@ function getVisibleComposer(selector) {
     .flatMap((part) => [...document.querySelectorAll(part.trim())])
     .filter((element, index, all) => all.indexOf(element) === index)
     .filter((element) => {
+      if (element.disabled || element.readOnly || element.closest('dialog, [role="dialog"], [hidden], [aria-hidden="true"]')) return false;
+      if (!element.isContentEditable && !element.matches('textarea, input[type="text"], input[type="search"], input:not([type])')) return false;
       const rect = element.getBoundingClientRect();
       const style = window.getComputedStyle(element);
       return rect.width >= 120 && rect.height >= 24 && style.display !== 'none' && style.visibility !== 'hidden';

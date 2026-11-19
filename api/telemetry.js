@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     const session = authenticate(req);
     const userId = session ? session.userId.toString() : null;
 
-    const { event_type } = req.body;
+    const { event_type } = req.body || {};
 
     if (!ALLOWED_EVENTS.has(event_type)) {
       res.status(400).json({ error: 'Invalid event type' });
@@ -67,7 +67,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error logging telemetry event:', error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    console.error('Telemetry write failed', { code: error.code || 'INTERNAL' });
+    res.status(500).json({ error: 'Telemetry is unavailable.' });
   }
 }

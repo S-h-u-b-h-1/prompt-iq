@@ -2,8 +2,18 @@
  * LLM Prompt Optimization client communication helper
  */
 
-export async function optimizePrompt(originalPrompt, platform, locallyEnhancedPrompt = null, detectedIntent = null, token = null, mode = 'standard') {
-  return optimizeWithCloudAi(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode);
+const URL = 'https://promptiq-theta.vercel.app/api/optimize';
+
+export async function getCloudRewriteDisclosure() {
+  try {
+    const response = await fetch(URL, { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) return null;
+    const { cloudRewrite } = await response.json();
+    if (typeof cloudRewrite?.id === 'string' && typeof cloudRewrite?.provider === 'string') return cloudRewrite;
+  } catch {
+    // Quick Rewrite remains available.
+  }
+  return null;
 }
 
 function createOptimizerError(status, payload = {}, statusText = '') {
@@ -35,9 +45,7 @@ function createOptimizerError(status, payload = {}, statusText = '') {
   return err;
 }
 
-async function optimizeWithCloudAi(originalPrompt, platform, locallyEnhancedPrompt, detectedIntent, token, mode) {
-  const url = `https://promptiq-theta.vercel.app/api/optimize`;
-
+export async function optimizePrompt(originalPrompt, platform, disclosureId, detectedIntent, token, mode = 'standard') {
   const headers = {
     'Content-Type': 'application/json'
   };
@@ -46,16 +54,17 @@ async function optimizeWithCloudAi(originalPrompt, platform, locallyEnhancedProm
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(URL, {
     method: 'POST',
     headers,
     body: JSON.stringify({
       originalPrompt,
       platform,
-      locallyEnhancedPrompt,
+      disclosureId,
       detectedIntent,
       mode
-    })
+    }),
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!response.ok) {

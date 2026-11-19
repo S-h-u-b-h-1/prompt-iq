@@ -43,15 +43,15 @@
               <span class="usage-count" id="smart-usage">0 / 100</span>
             </div>
             <div class="meter"><span id="smart-meter"></span></div>
-            <p class="usage-help">Runs on this device; your account keeps the latest draft revision.</p>
+            <p class="usage-help">Runs on this device. Completed rewrites go to your account history.</p>
           </div>
           <div class="usage-row">
             <div class="usage-top">
               <span class="usage-name">AI Rewrite</span>
-              <span class="usage-count" id="ai-usage">Sign in for 20/day</span>
+              <span class="usage-count" id="ai-usage">Checking availability</span>
             </div>
             <div class="meter"><span id="ai-meter"></span></div>
-            <p class="usage-help" id="ai-help">Free AI rewriting with protected server-side credentials.</p>
+            <p class="usage-help" id="ai-help">Cloud rewriting is optional when available.</p>
           </div>
         </div>
       </section>
@@ -78,7 +78,7 @@
     </main>
 
     <footer>
-      <span id="version-label">Version 1.0.16</span>
+      <span id="version-label">Version 1.0.17</span>
       <span><a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy</a> · <a href="https://promptiq-theta.vercel.app/support" target="_blank" rel="noreferrer">Support</a></span>
     </footer>
   </div>
@@ -105,18 +105,24 @@
           <label for="auth-password">Password</label>
           <input id="auth-password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required placeholder="At least 8 characters">
         </div>
-        <label class="consent-row" for="prompt-storage-consent">
-          <input id="prompt-storage-consent" type="checkbox" required>
-          <span>I understand PromptIQ saves the latest prompt draft I type on supported AI sites to my account, including unsent text, for up to 30 days. This is required to use the extension.</span>
-        </label>
-        <label class="consent-row optional" for="search-storage-consent">
-          <input id="search-storage-consent" type="checkbox">
-          <span>Also save searches I make inside the PromptIQ prompt library.</span>
-        </label>
+        <div id="privacy-choices">
+          <label class="consent-row" for="history-consent">
+            <input id="history-consent" type="checkbox" required>
+            <span>I agree that PromptIQ reads the chat composer on supported AI sites to score my prompt. It saves the original prompt, rewrite, and score to my account when I run a rewrite.</span>
+          </label>
+          <label class="consent-row optional" for="prompt-storage-consent">
+            <input id="prompt-storage-consent" type="checkbox">
+            <span>Also save my latest drafts, including unsent text, to my account for up to 30 days.</span>
+          </label>
+          <label class="consent-row optional" for="search-storage-consent">
+            <input id="search-storage-consent" type="checkbox">
+            <span>Also save my searches in the PromptIQ template library for up to 30 days.</span>
+          </label>
+        </div>
         <button class="btn btn-primary" id="auth-submit-btn" type="submit" style="width:100%">Sign in and continue</button>
         <p class="notice" id="auth-status" role="alert" style="margin-top:12px"></p>
       </form>
-      <p class="dialog-copy">Only supported chat composers are observed. PromptIQ does not collect AI responses, unrelated page fields, conversation URLs, or browser search history. Passwords are stored as salted hashes. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
+      <p class="dialog-copy">AI Rewrite shows who receives your prompt before you send it. Manage draft and search sync under Dashboard &gt; History. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy policy</a></p>
     </div>
   </dialog>
 

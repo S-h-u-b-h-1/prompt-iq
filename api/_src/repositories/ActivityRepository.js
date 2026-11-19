@@ -1,3 +1,5 @@
+import { CAPTURE_DISCLOSURES } from '../../_utils/activity-validation.js';
+
 export class ActivityRepository {
   constructor(sql) { this.sql = sql; }
 
@@ -15,7 +17,7 @@ export class ActivityRepository {
              disclosure_version AS "disclosureVersion"
       FROM prompt_iq.capture_preferences WHERE user_id = ${userId}
     `]);
-    return rows[0] || {saveDrafts:false,saveSearches:false,disclosureVersion:'2026-11-19-v3'};
+    return rows[0] || {saveDrafts:false,saveSearches:false,disclosureVersion:null};
   }
 
   async setPreferences(userId, value) {
@@ -39,7 +41,7 @@ export class ActivityRepository {
       WITH consent AS MATERIALIZED (
         SELECT user_id FROM prompt_iq.capture_preferences
         WHERE user_id=${userId} AND save_drafts=true
-          AND disclosure_version='2026-11-19-v3' FOR UPDATE
+          AND disclosure_version=ANY(${CAPTURE_DISCLOSURES}::text[]) FOR UPDATE
       )
       INSERT INTO prompt_iq.drafts(user_id,client_id,prompt_text,platform,mode,client_revision)
       SELECT user_id,${entry.clientId}::uuid,${entry.text},${entry.platform},${entry.mode},${entry.revision} FROM consent
@@ -52,7 +54,7 @@ export class ActivityRepository {
       WITH consent AS MATERIALIZED (
         SELECT user_id FROM prompt_iq.capture_preferences
         WHERE user_id=${userId} AND save_searches=true
-          AND disclosure_version='2026-11-19-v3' FOR UPDATE
+          AND disclosure_version=ANY(${CAPTURE_DISCLOSURES}::text[]) FOR UPDATE
       )
       INSERT INTO prompt_iq.searches(user_id,client_id,query_text,category,result_count)
       SELECT user_id,${entry.clientId}::uuid,${entry.text},${entry.category},${entry.resultCount} FROM consent
@@ -86,9 +88,8 @@ export class ActivityRepository {
   async clear(userId) {
     // Serialize against in-flight saves, turn off capture, then remove the user's records.
     await this.run(userId, [
-      this.sql`INSERT INTO prompt_iq.capture_preferences(user_id,save_drafts,save_searches)
-        VALUES (${userId},false,false) ON CONFLICT(user_id) DO UPDATE
-        SET save_drafts=false,save_searches=false,updated_at=now()`,
+      this.sql`UPDATE prompt_iq.capture_preferences
+        SET save_drafts=false,save_searches=false,updated_at=now() WHERE user_id=${userId}`,
       this.sql`DELETE FROM prompt_iq.drafts WHERE user_id=${userId}`,
       this.sql`DELETE FROM prompt_iq.searches WHERE user_id=${userId}`
     ]);

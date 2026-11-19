@@ -1,7 +1,8 @@
 import { getAdapter } from '../lib/adapters.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { createPanel } from '../components/panel.js';
-import { getCapturePreferences, saveActivity } from '../lib/activity.js';
+import { DISCLOSURE_VERSION, getCapturePreferences, saveActivity } from '../lib/activity.js';
+import { getCloudRewriteDisclosure } from '../lib/optimizer.js';
 import { createDraftRecorder } from '../lib/draft-recorder.js';
 import {
   saveOptimization,
@@ -22,28 +23,40 @@ let lastOptimizedPrompt = '';
 let previousPromptBeforeUse = '';
 let observer = null;
 let accountReady = false;
-const draftRecorder = createDraftRecorder(saveActivity);
+let draftToken = null;
+let accountSync = 0;
+const draftRecorder = createDraftRecorder((entry) => draftToken && saveActivity(entry, draftToken));
 
 async function syncAccountAccess(tokenOverride) {
+  const request = ++accountSync;
+  accountReady = false;
+  draftToken = null;
+  draftRecorder.reset();
   const token = tokenOverride === undefined ? await getSessionToken() : tokenOverride;
-  let storageReady = false;
+  let preferences;
 
   if (token) {
     try {
-      const preferences = await getCapturePreferences(true);
-      storageReady = preferences.saveDrafts === true;
+      preferences = await getCapturePreferences(true);
     } catch {
-      storageReady = false;
+      // Account access stays disabled until the disclosure can be checked.
     }
   }
 
-  accountReady = Boolean(token && storageReady);
-  draftRecorder.reset();
+  const activeToken = await getSessionToken();
+  if (request !== accountSync || token !== activeToken) return;
+  accountReady = Boolean(token && preferences?.disclosureVersion === DISCLOSURE_VERSION);
+  draftToken = accountReady && preferences.saveDrafts ? token : null;
   panelApi?.setLoggedState(Boolean(token));
-  panelApi?.setStorageReady(storageReady);
+  panelApi?.setStorageReady(accountReady);
+  panelApi?.setCloudRewrite(null);
 
   if (accountReady && currentInputEl) {
     handleInput();
+  }
+  if (accountReady) {
+    const cloudRewrite = await getCloudRewriteDisclosure();
+    if (request === accountSync) panelApi?.setCloudRewrite(cloudRewrite);
   }
 }
 
@@ -82,6 +95,9 @@ function setupStorageListener() {
         if (areaName !== 'local' || !panelApi) return;
 
         if (changes.sessionToken) {
+          lastOptimizedPrompt = '';
+          previousPromptBeforeUse = '';
+          panelApi.clearResult();
           draftRecorder.reset();
           const newToken = changes.sessionToken.newValue;
           void syncAccountAccess(newToken);
@@ -123,12 +139,12 @@ async function init() {
   setupStorageListener();
 }
 
-function handleInput() {
+function handleInput(event) {
   if (!isContextValid()) return;
   if (!currentInputEl || !panelApi) return;
   if (!accountReady) return;
   const text = adapter.getText(currentInputEl);
-  if (typeof text === 'string') {
+  if (draftToken && event?.isTrusted && typeof text === 'string') {
     draftRecorder.schedule(text, adapter.platform, panelApi.getSettings().mode);
   }
   const scoreData = scorePrompt(text);
@@ -167,9 +183,14 @@ function setupObserver() {
 
 async function handleLogout() {
   await clearSessionToken();
+  lastOptimizedPrompt = '';
+  previousPromptBeforeUse = '';
+  ++accountSync;
   accountReady = false;
+  draftToken = null;
   draftRecorder.reset();
   if (panelApi) {
+    panelApi.clearResult();
     panelApi.setLoggedState(false);
     panelApi.setStorageReady(false);
     panelApi.setTier('free');
@@ -204,12 +225,9 @@ function setupMessageListeners() {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (!isContextValid()) return;
       if (message.action === 'OPTIMIZE_SELECTION') {
-        if (panelApi) {
-          panelApi.toggleVisibility();
-          if (currentInputEl) {
-            adapter.setText(currentInputEl, message.text);
-            handleOptimize();
-          }
+        panelApi?.open();
+        if (currentInputEl && typeof message.text === 'string') {
+          void handleOptimize(message.text);
         }
       } else if (message.action === 'INSERT_PROMPT') {
         if (currentInputEl) {
@@ -226,22 +244,26 @@ function setupMessageListeners() {
   }
 }
 
-async function handleOptimize() {
+async function handleOptimize(selection = null) {
   if (!isContextValid()) return;
   const token = await getSessionToken();
   if (!token || !accountReady) {
     panelApi.showAccountRequired(token ? 'consent' : 'signin');
     return;
   }
-  const text = (adapter.getText(currentInputEl) || '').trim();
+  const text = (selection ?? adapter.getText(currentInputEl) ?? '').trim();
   if (!text) {
     panelApi.showError(new Error('Prompt is empty.'));
+    return;
+  }
+  if (text.length > 6000) {
+    panelApi.showError(new Error('Rewrite supports up to 6,000 characters.'));
     return;
   }
 
   const settings = panelApi.getSettings ? panelApi.getSettings() : { mode: 'standard', platform: adapter.platform };
   const mode = settings.mode || 'standard';
-  const engine = settings.engine || 'ai_rewrite';
+  const engine = selection === null ? settings.engine : 'quick_rewrite';
   if (panelApi) {
     panelApi.setLoggedState(true);
     panelApi.setStorageReady(true);
@@ -263,7 +285,7 @@ async function handleOptimize() {
           action: 'CALL_OPTIMIZER',
           originalPrompt: text,
           platform: adapter.platform,
-          locallyEnhancedPrompt: localResult.enhancedPrompt,
+          disclosureId: settings.disclosureId,
           detectedIntent: localResult.intent,
           mode,
           token
@@ -294,6 +316,7 @@ async function handleOptimize() {
       result = createLocalOptimization(localResult);
     }
 
+    if (token !== await getSessionToken()) return;
     lastOptimizedPrompt = result.optimized;
     const originalScore = scorePrompt(text).score;
     const newScore = scorePrompt(result.optimized).score;
@@ -306,8 +329,10 @@ async function handleOptimize() {
       mode,
       originalScore,
       newScore,
-      usedAiRewrite ? 'ai_rewrite' : 'quick_rewrite'
+      usedAiRewrite ? 'ai_rewrite' : 'quick_rewrite',
+      token
     );
+    if (token !== await getSessionToken()) return;
 
     const diffedTokens = diffPrompt(text, result.optimized);
     const explainedChanges = explainChanges(result.changes);
@@ -372,7 +397,7 @@ function createLocalOptimization(localResult) {
 }
 
 function handleUse(finalPrompt) {
-  if (!isContextValid()) return;
+  if (!isContextValid() || !accountReady || !currentInputEl?.isConnected) return;
   const textToUse = finalPrompt || lastOptimizedPrompt;
   if (textToUse) {
     previousPromptBeforeUse = adapter.getText(currentInputEl) || '';
@@ -386,7 +411,7 @@ function handleUse(finalPrompt) {
 }
 
 function handleUndo() {
-  if (!isContextValid() || !previousPromptBeforeUse || !currentInputEl) return false;
+  if (!isContextValid() || !accountReady || !previousPromptBeforeUse || !currentInputEl?.isConnected) return false;
   adapter.setText(currentInputEl, previousPromptBeforeUse);
   const scoreData = scorePrompt(previousPromptBeforeUse);
   const structure = checkStructure(previousPromptBeforeUse);
@@ -418,7 +443,7 @@ async function handleFeedback(runId, feedbackVal) {
       body: JSON.stringify({ id: runId, feedback: feedbackVal })
     });
   } catch (err) {
-    console.error('Failed to submit feedback:', err);
+    console.warn('PromptIQ feedback could not be saved');
   }
 }
 

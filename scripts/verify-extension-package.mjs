@@ -34,6 +34,10 @@ const prohibitedPatterns = [
     pattern: /\bAIza[0-9A-Za-z_-]{30,}\b/,
   },
   {
+    label: 'embedded FreeLLMAPI key',
+    pattern: /\bfreellmapi-[0-9a-f]{24,}\b/i,
+  },
+  {
     label: 'embedded Stripe secret key',
     pattern: /\bsk_(?:live|test)_[0-9A-Za-z]{16,}\b/,
   },
@@ -68,6 +72,14 @@ if (manifest.action?.default_popup !== 'src/popup/onboarding.html') {
 
 if (manifest.host_permissions?.some((permission) => permission.includes('*.vercel.app'))) {
   violations.push('manifest.json: backend permission must use the exact PromptIQ production host');
+}
+
+const networkPatterns = [
+  ...(manifest.host_permissions || []),
+  ...(manifest.content_scripts || []).flatMap((entry) => entry.matches)
+];
+if (networkPatterns.some((pattern) => !/^https:\/\/[a-z0-9.-]+\/\*$/i.test(pattern))) {
+  violations.push('manifest.json: host access must be limited to exact HTTPS domains');
 }
 
 for (const file of files) {

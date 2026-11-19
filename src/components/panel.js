@@ -9,10 +9,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   let isStorageReady = false;
   let detectedPlatform = 'general';
   let lastResultRecord = null;
-  let hasStoredEnginePreference = false;
-  let storedEnginePreference = null;
+  let cloudRewrite = null;
   
-  const shadow = container.attachShadow({ mode: 'open' });
+  const shadow = container.attachShadow({ mode: 'closed' });
   const openPromptIqPopup = async () => {
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
@@ -210,7 +209,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
     .settings-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, .9fr);
       gap: 8px;
       margin-bottom: 10px;
     }
@@ -789,20 +788,20 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
           <option value="technical">Technical</option>
         </select>
         <select class="select-control" id="engine-select" aria-label="Optimization engine">
-          <option value="ai_rewrite">AI Rewrite</option>
           <option value="quick_rewrite">Quick Rewrite</option>
+          <option value="ai_rewrite" disabled hidden>AI Rewrite</option>
         </select>
         <div class="platform-pill" id="platform-pill">AI assistant</div>
       </div>
       <div class="engine-summary">
-        <div class="engine-name" id="engine-name">AI Rewrite</div>
+        <div class="engine-name" id="engine-name">Quick Rewrite</div>
         <div class="engine-copy" id="engine-copy">Create an account to score, save, and optimize prompts.</div>
       </div>
     </div>
 
     <div class="signin-card" id="signin-card">
       <div class="signin-title" id="signin-title">Account required</div>
-      <div class="signin-copy" id="signin-copy">Create an account or sign in before PromptIQ reads and stores prompt drafts.</div>
+      <div class="signin-copy" id="signin-copy">Sign in or create an account to use PromptIQ.</div>
       <button class="btn btn-secondary" id="signin-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%; padding: 8px 10px; font-size: 12px;">Continue to Account</button>
     </div>
 
@@ -867,6 +866,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
         <div class="diff-view" id="diff-view"></div>
         <textarea class="optimized-textarea" id="optimized-text" style="display: none;"></textarea>
       </div>
+      <button class="btn btn-primary" id="use-btn" aria-label="Use optimized prompt" style="width: 100%; margin: 12px 0;">Use Prompt</button>
 
       <div class="comparison-grid" id="comparison-grid" hidden>
         <div class="compare-box">
@@ -907,7 +907,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
         <button class="btn btn-ghost" id="retry-btn" aria-label="Retry optimization">Retry</button>
         <button class="btn btn-ghost" id="copy-original-btn" aria-label="Copy original prompt">Copy Original</button>
       </div>
-      <button class="btn btn-primary" id="use-btn" aria-label="Use optimized prompt" style="width: 100%;">Use Prompt</button>
     </div>
   `;
   shadow.appendChild(panel);
@@ -938,21 +937,10 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
   try {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(['optimizationMode', 'optimizationEngine'], (data) => {
-        if (data.optimizationMode && modeSelect.querySelector(`option[value="${data.optimizationMode}"]`)) {
+      chrome.storage.local.get('optimizationMode', (data) => {
+        if ([...modeSelect.options].some((option) => option.value === data.optimizationMode)) {
           modeSelect.value = data.optimizationMode;
         }
-        const migratedEngine = data.optimizationEngine === 'premium_ai'
-          ? 'ai_rewrite'
-          : data.optimizationEngine === 'smart_template'
-            ? 'quick_rewrite'
-            : data.optimizationEngine;
-        if (migratedEngine && engineSelect.querySelector(`option[value="${migratedEngine}"]`)) {
-          hasStoredEnginePreference = true;
-          storedEnginePreference = migratedEngine;
-          engineSelect.value = migratedEngine;
-        }
-        updateEngineSummary();
       });
     }
   } catch (err) {
@@ -962,30 +950,25 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   function updateEngineSummary() {
     const engineName = shadow.getElementById('engine-name');
     const engineCopy = shadow.getElementById('engine-copy');
-    const requestedEngine = engineSelect.value;
+    const sendToCloud = Boolean(cloudRewrite && engineSelect.value === 'ai_rewrite');
+    if (!isCooldownActive) {
+      optimizeBtn.textContent = sendToCloud ? 'Send for AI Rewrite' : 'Optimize Prompt';
+      optimizeBtn.setAttribute('aria-label', optimizeBtn.textContent);
+    }
     if (!isLoggedIn || !isStorageReady) {
-      engineSelect.value = 'ai_rewrite';
       engineName.textContent = 'Account required';
       engineCopy.textContent = isLoggedIn
-        ? 'Review prompt storage and finish account setup to continue.'
+        ? 'Review the privacy settings to continue.'
         : 'Create an account to score, save, and optimize prompts.';
       return;
     }
 
-    const effectiveEngine = requestedEngine === 'quick_rewrite'
-      ? 'quick_rewrite'
-      : 'ai_rewrite';
-
-    if (effectiveEngine !== requestedEngine) {
-      engineSelect.value = effectiveEngine;
-    }
-
-    if (effectiveEngine === 'ai_rewrite') {
+    if (sendToCloud) {
       engineName.textContent = 'AI Rewrite';
-      engineCopy.textContent = 'Uses a free server-side AI model. Includes 20 rewrites per day.';
+      engineCopy.textContent = `Sends this prompt to FreeLLMAPI and ${cloudRewrite.provider} to rewrite it. The result is saved to your account.`;
     } else {
       engineName.textContent = 'Quick Rewrite';
-      engineCopy.textContent = 'Runs on this device. Includes 100 rewrites per day and remains available when AI is busy.';
+      engineCopy.textContent = 'Runs on your device. Completed rewrites are saved to your account history.';
     }
   }
 
@@ -1001,26 +984,17 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     const badgeText = shadow.getElementById('score-text');
     if (!isLoggedIn) {
       signInTitle.textContent = 'Account required';
-      signInCopy.textContent = 'Create an account or sign in before PromptIQ reads and stores prompt drafts.';
+      signInCopy.textContent = 'Sign in or create an account to use PromptIQ.';
       badgeText.textContent = 'PromptIQ: Sign in';
     } else if (!isStorageReady) {
       signInTitle.textContent = 'Finish privacy setup';
-      signInCopy.textContent = 'Prompt storage must be enabled before PromptIQ can access the chat composer.';
+      signInCopy.textContent = 'Review how PromptIQ scores drafts and saves rewrites.';
       badgeText.textContent = 'PromptIQ: Finish setup';
     } else if (badgeText.textContent.includes('Sign in') || badgeText.textContent.includes('Finish setup')) {
       badgeText.textContent = 'PromptIQ: 0';
     }
 
-    if (!hasAccess) {
-      engineSelect.value = 'ai_rewrite';
-    } else if (!hasStoredEnginePreference) {
-      engineSelect.value = 'ai_rewrite';
-    } else if (
-      storedEnginePreference &&
-      engineSelect.querySelector(`option[value="${storedEnginePreference}"]`)
-    ) {
-      engineSelect.value = storedEnginePreference;
-    }
+    if (!hasAccess || !cloudRewrite) engineSelect.value = 'quick_rewrite';
 
     updateEngineSummary();
   }
@@ -1042,6 +1016,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   shadow.getElementById('close-btn').addEventListener('click', () => {
     panel.classList.remove('visible');
     container.classList.remove('panel-open');
+    engineSelect.value = 'quick_rewrite';
+    updateEngineSummary();
   });
 
   const logoutSidebarBtn = shadow.getElementById('logout-sidebar-btn');
@@ -1064,20 +1040,10 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
   });
 
-  engineSelect.addEventListener('change', () => {
-    hasStoredEnginePreference = true;
-    storedEnginePreference = engineSelect.value;
-    try {
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ optimizationEngine: engineSelect.value });
-      }
-    } catch (err) {
-      // Non-fatal preference persistence failure.
-    }
-    updateEngineSummary();
-  });
+  engineSelect.addEventListener('change', updateEngineSummary);
 
-  optimizeBtn.addEventListener('click', async () => {
+  const runOptimization = async (event) => {
+    if (!event.isTrusted || optimizeBtn.disabled) return;
     if (!isLoggedIn || !isStorageReady) {
       openPromptIqPopup();
       return;
@@ -1098,7 +1064,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
         optimizeBtn.disabled = false;
       }
     }
-  });
+  };
+  optimizeBtn.addEventListener('click', runOptimization);
 
   // Toggle Edit/Diff view
   toggleEditBtn.addEventListener('click', () => {
@@ -1202,9 +1169,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
   });
 
-  retryBtn.addEventListener('click', () => {
-    optimizeBtn.click();
-  });
+  retryBtn.addEventListener('click', runOptimization);
 
   // Feedback Event Listeners
   shadow.getElementById('feedback-yes').addEventListener('click', async () => {
@@ -1225,6 +1190,26 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
 
   const api = {
     container,
+    open: () => {
+      panel.classList.add('visible');
+      container.classList.add('panel-open');
+    },
+    setCloudRewrite: (disclosure) => {
+      cloudRewrite = disclosure;
+      const option = engineSelect.querySelector('option[value="ai_rewrite"]');
+      option.hidden = option.disabled = !cloudRewrite;
+      refreshEngineAvailability();
+    },
+    clearResult: () => {
+      currentRunId = null;
+      lastResultRecord = null;
+      textarea.value = '';
+      for (const element of [diffView, compareOriginal, compareOptimized, changesList]) {
+        element.replaceChildren();
+      }
+      panel.classList.remove('has-result');
+      shadow.getElementById('result-section').style.display = 'none';
+    },
     setLoggedState: (loggedIn) => {
       isLoggedIn = Boolean(loggedIn);
       logoutSidebarBtn.style.display = isLoggedIn ? 'block' : 'none';
@@ -1241,7 +1226,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     },
     getSettings: () => ({
       mode: modeSelect.value || 'standard',
-      engine: engineSelect.value || 'ai_rewrite',
+      engine: cloudRewrite && engineSelect.value === 'ai_rewrite' ? 'ai_rewrite' : 'quick_rewrite',
+      disclosureId: cloudRewrite?.id,
       platform: detectedPlatform || 'general'
     }),
     setPlatform: (platform) => {
@@ -1322,7 +1308,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       panel.classList.add('has-result');
       errorPanel.style.display = 'none';
       shadow.getElementById('result-section').style.display = 'block';
-      optimizeBtn.textContent = 'Optimize Prompt';
+      updateEngineSummary();
       comparisonGrid.hidden = true;
       compareBtn.textContent = 'Compare';
       
@@ -1426,8 +1412,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
           if (seconds <= 0) {
             clearInterval(interval);
             isCooldownActive = false;
-            optimizeBtn.disabled = false;
-            optimizeBtn.textContent = 'Optimize Prompt';
+            refreshEngineAvailability();
           } else {
             optimizeBtn.textContent = `Retry in ${seconds}s`;
           }

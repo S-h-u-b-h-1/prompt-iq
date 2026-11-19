@@ -60,15 +60,17 @@ export default async function handler(req, res) {
       LIMIT 1
     `;
     const aiRewriteUsed = Number(usageRows[0]?.count || 0);
+    const aiRewrite = {
+      used: aiRewriteUsed,
+      limit: cloudAiLimit,
+      remaining: Math.max(0, cloudAiLimit - aiRewriteUsed)
+    };
 
     res.status(200).json({
       date,
       plan: 'free',
-      aiRewrite: {
-        used: aiRewriteUsed,
-        limit: cloudAiLimit,
-        remaining: Math.max(0, cloudAiLimit - aiRewriteUsed)
-      },
+      aiRewrite,
+      premiumAi: aiRewrite,
       smartTemplate: {
         limit: getSmartTemplateDailyLimit()
       }

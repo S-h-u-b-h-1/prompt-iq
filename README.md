@@ -4,14 +4,13 @@ PromptIQ is a free Manifest V3 Chrome extension by Shubhaang Kataruka. It scores
 
 ## Product access
 
-- 20 free AI Rewrites per account per day.
 - 100 on-device Quick Rewrites per day.
 - Standard, Concise, Detailed, Creative, and Technical modes.
 - History, favorites, comparison, insertion, and undo.
 - No subscription or paid feature tier.
 - Optional ₹150 UPI contribution to `shubhaang2201@axl`; contributions do not unlock features.
 
-The extension requires an account and explicit prompt-storage consent before it reads a supported chat composer. It stores the latest revision of each prompt draft for 30 days, not every keystroke. Users can inspect and delete saved activity from Dashboard > History.
+The extension requires an account and a privacy acknowledgment before it reads a supported chat composer. Completed rewrites are saved to account history. Draft and template-library search sync are optional and can be managed or deleted under Dashboard > History.
 
 ## Local development
 
@@ -30,19 +29,19 @@ The Vercel deployment requires:
 ```text
 DATABASE_URL
 JWT_SECRET
-GEMINI_API_KEY
 ADMIN_DASHBOARD_KEY
 ```
 
-OpenRouter is optional:
+Cloud AI is optional. To enable it, configure the owner's FreeLLMAPI gateway as a server-side integration:
 
 ```text
-OPENROUTER_API_KEY
-OPENROUTER_MODEL
-OPENROUTER_FALLBACK_MODEL
+FREELLM_BASE_URL
+FREELLM_API_KEY
+FREELLM_MODEL
+FREELLM_PROVIDER
 ```
 
-When OpenRouter is configured, PromptIQ defaults to the `openrouter/free` router. Gemini 2.5 Flash Lite and Gemini 2.5 Flash are the direct provider fallback. Provider keys remain on the server and are never packaged with the extension.
+Local backend development accepts a gateway at `http://127.0.0.1:3001/v1`. Production requires a reachable HTTPS gateway and a pinned model. Use a gateway configuration and named model provider that limit prompt processing to the requested rewrite. Verify the route and its data handling before configuring production. The extension discloses the processor before sending and uses Quick Rewrite when cloud service is unavailable. Keep the unified key in server-side secrets.
 
 The public website can send privacy-safe event names to Google Analytics when this build variable is configured:
 

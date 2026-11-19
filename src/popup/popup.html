@@ -502,43 +502,10 @@
     <div class="welcome-card" style="text-align: center; margin-bottom: 20px;">
       <img src="/brand-mark.svg" alt="" width="40" height="40">
       <h2 class="welcome-title">PromptIQ by Shubhaang</h2>
-      <p class="welcome-desc" style="margin-bottom: 0;">An account and prompt-storage consent are required before PromptIQ accesses a chat composer.</p>
+      <p class="welcome-desc" style="margin-bottom: 0;">Sign in to see your account history.</p>
     </div>
     
-    <form id="auth-form-wrapper">
-      <h3 style="margin-top: 0; margin-bottom: 14px; font-weight: 800; letter-spacing: 0;" id="auth-title">Log In</h3>
-      
-      <div class="form-group">
-        <label for="auth-email">Email Address</label>
-        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      
-      <div class="form-group">
-        <label for="auth-password">Password</label>
-        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
-      </div>
-
-      <label style="display:flex; align-items:flex-start; gap:9px; margin:12px 0; color:var(--text-secondary); font-size:11px; line-height:1.5;">
-        <input type="checkbox" id="auth-storage-consent" style="width:16px; height:16px; margin-top:1px; accent-color:#9fffc8;" />
-        <span>I understand PromptIQ saves the latest prompt drafts I type on supported AI sites to my account for up to 30 days. This is required to use PromptIQ.</span>
-      </label>
-      <label style="display:flex; align-items:flex-start; gap:9px; margin:10px 0 14px; color:var(--text-muted); font-size:11px; line-height:1.5;">
-        <input type="checkbox" id="auth-search-consent" style="width:16px; height:16px; margin-top:1px; accent-color:#9fffc8;" />
-        <span>Also save my PromptIQ library searches.</span>
-      </label>
-      
-      <button class="btn" id="auth-submit-btn" type="button" style="margin-top: 6px;">Log In</button>
-      
-      <div style="text-align: center; margin-top: 16px; font-size: 12.5px;">
-        <span id="auth-toggle-msg">New to PromptIQ?</span>
-        <a href="#" id="auth-toggle-link" style="color: var(--accent-cyan); text-decoration: none; font-weight: 700; margin-left: 4px;">Create Account</a>
-      </div>
-      <div style="text-align: center; margin-top: 20px; border-top: 1px dashed var(--card-border); padding-top: 14px;">
-        <a href="#" class="view-onboarding-link" style="color: var(--accent-cyan); font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px dashed rgba(159, 255, 200, 0.4); transition: all 0.2s;">View Onboarding Guide</a>
-      </div>
-      
-      <div class="status-msg" id="auth-status" style="margin-top: 12px; text-align: center;"></div>
-    </form>
+    <a href="./onboarding.html" class="view-onboarding-link">Sign in or create an account</a>
   </div>
 
   <!-- Authenticated Container Wrapper -->
@@ -559,7 +526,7 @@
         <p class="welcome-desc" style="color: var(--text-secondary); margin-top: 8px;">Optimize your prompts in one click directly inside your favorite chat interfaces.</p>
         <div class="alert-card" id="account-setup-notice" hidden>
           <div class="alert-icon" aria-hidden="true">i</div>
-          <div class="alert-text">Prompt storage is off, so the in-page optimizer is locked. <a href="#" class="view-onboarding-link">Finish account setup</a>.</div>
+          <div class="alert-text"><a href="./onboarding.html" class="view-onboarding-link">Finish privacy setup</a> to use the in-page optimizer.</div>
         </div>
         
         <div class="benefits-title">Core Features:</div>
@@ -624,10 +591,10 @@
     <div class="tab-content" id="tab-history">
       <section class="saved-activity" aria-labelledby="saved-activity-title">
         <h3 id="saved-activity-title">Drafts &amp; searches</h3>
-        <p>Prompt drafts are saved to your PromptIQ account after a typing pause so they can be recovered in history. Only the latest revision of each composer session is kept. Searches remain optional. Neither is used for advertising or model training.</p>
-        <label><input type="checkbox" id="save-drafts" disabled> Enable required prompt draft storage</label>
+        <p>Draft sync keeps the latest text you type in each supported chat composer, including unsent prompts.</p>
+        <label><input type="checkbox" id="save-drafts" disabled> Save my latest prompt drafts</label>
         <label><input type="checkbox" id="save-searches" disabled> Save my PromptIQ library searches</label>
-        <p>Draft storage must stay on to use the in-page optimizer. Drafts and searches are available for 30 days. Turning a setting off stops new saves; delete saved entries below to remove them. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy details</a></p>
+        <p>Both settings are optional. Saved drafts and searches are available for 30 days. You can delete them below. <a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy details</a></p>
         <div class="activity-actions">
           <button type="button" class="btn btn-secondary" id="refresh-activity">Refresh</button>
           <button type="button" class="btn btn-danger" id="delete-activity">Delete drafts &amp; searches</button>

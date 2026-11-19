@@ -22,7 +22,7 @@ await Promise.all([
   copyFile(path.resolve('public/favicon.svg'), path.join(outputDirectory, 'favicon.svg')),
   copyFile(path.resolve('public/brand-mark.svg'), path.join(outputDirectory, 'brand-mark.svg')),
   copyFile(path.resolve('website-assets/optical-rails-v13.png'), path.join(outputDirectory, 'website-assets/optical-rails-v13.png')),
-  copyFile(path.resolve('website-assets/product-workspace-v16.png'), path.join(outputDirectory, 'website-assets/product-workspace-v16.png')),
+  copyFile(path.resolve('website-assets/product-workspace-v17.jpg'), path.join(outputDirectory, 'website-assets/product-workspace-v17.jpg')),
   copyFile(path.resolve('public/store_icon.png'), path.join(outputDirectory, 'store_icon.png')),
 ]);
 

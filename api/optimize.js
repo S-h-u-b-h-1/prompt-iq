@@ -1,7 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from './_utils/auth-helper.js';
 import { getCloudAiDailyLimit } from './_utils/usage-limits.js';
-import { parseOptimizerResponse } from './_utils/optimizer-response.js';
+import { getFreeLlmConfig, rewriteWithFreeLlm } from './_utils/freellm.js';
+import { DISCLOSURE_VERSION } from './_utils/activity-validation.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -9,9 +10,8 @@ if (!DATABASE_URL) {
 }
 const sql = neon(DATABASE_URL);
 const OPTIMIZER_UNAVAILABLE_MESSAGE = 'PromptIQ optimization is temporarily unavailable. Please try again shortly.';
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_OPENROUTER_MODEL = 'openrouter/free';
 const MAX_PROMPT_CHARS = 6000;
+const SUPPORTED_INTENTS = new Set(['coding', 'marketing', 'research', 'business', 'creative', 'writing', 'general']);
 const SUPPORTED_PLATFORMS = new Set([
   'chatgpt', 'claude', 'gemini', 'perplexity', 'copilot', 'deepseek',
   'grok', 'mistral', 'meta', 'poe', 'you', 'general'
@@ -29,7 +29,7 @@ function sendJsonError(res, status, code, message) {
 }
 
 function normalizeMode(mode) {
-  return OPTIMIZATION_MODES[mode] ? mode : 'standard';
+  return Object.hasOwn(OPTIMIZATION_MODES, mode) ? mode : 'standard';
 }
 
 function getUtcDateKey(date = new Date()) {
@@ -117,169 +117,9 @@ Your response MUST be strict JSON matching this schema:
 Ensure the output is valid JSON. Do not wrap the JSON in markdown code blocks like \`\`\`json.`;
 }
 
-function getOpenRouterResponseFormat() {
-  return {
-    type: 'json_schema',
-    json_schema: {
-      name: 'promptiq_optimization',
-      strict: true,
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          optimized: { type: 'string' },
-          changes: {
-            type: 'array',
-            items: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                type: {
-                  type: 'string',
-                  enum: ['role', 'task', 'context', 'format', 'constraints', 'specificity']
-                },
-                description: { type: 'string' }
-              },
-              required: ['type', 'description']
-            }
-          }
-        },
-        required: ['optimized', 'changes']
-      }
-    }
-  };
-}
-
-async function callOpenRouter(apiKey, systemPrompt, userPrompt) {
-  const configuredModels = [
-    process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL,
-    process.env.OPENROUTER_FALLBACK_MODEL
-  ];
-  const models = [...new Set(configuredModels.filter(Boolean))];
-  let lastFailure = null;
-
-  for (const model of models) {
-    try {
-      const response = await fetch(OPENROUTER_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://promptiq-theta.vercel.app/',
-          'X-OpenRouter-Title': 'PromptIQ'
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          response_format: getOpenRouterResponseFormat(),
-          provider: {
-            zdr: true,
-            data_collection: 'deny'
-          },
-          temperature: 0.2,
-          max_tokens: 700
-        })
-      });
-      const data = await response.json().catch(() => ({}));
-      const rawContent = data.choices?.[0]?.message?.content;
-      const content = Array.isArray(rawContent)
-        ? rawContent.map((part) => part?.text || '').join('')
-        : rawContent;
-
-      if (response.ok && content) {
-        return {
-          result: parseOptimizerResponse(content),
-          provider: 'openrouter',
-          model
-        };
-      }
-
-      lastFailure = {
-        model,
-        status: response.status,
-        code: data.error?.code,
-        message: data.error?.message || data.error?.metadata?.raw || response.statusText
-      };
-    } catch (error) {
-      lastFailure = { model, status: 0, message: error.message };
-    }
-  }
-
-  const error = new Error('OpenRouter optimization failed');
-  error.details = lastFailure;
-  throw error;
-}
-
-async function callGemini(apiKey, systemPrompt, userPrompt) {
-  const payload = {
-    contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.2,
-      maxOutputTokens: 700,
-      responseSchema: {
-        type: 'OBJECT',
-        properties: {
-          optimized: { type: 'STRING' },
-          changes: {
-            type: 'ARRAY',
-            items: {
-              type: 'OBJECT',
-              properties: {
-                type: { type: 'STRING' },
-                description: { type: 'STRING' }
-              },
-              required: ['type', 'description']
-            }
-          }
-        },
-        required: ['optimized', 'changes']
-      }
-    }
-  };
-  const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
-  let lastFailure = null;
-
-  for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await response.json().catch(() => ({}));
-      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (response.ok && content) {
-        return {
-          result: parseOptimizerResponse(content),
-          provider: 'google',
-          model
-        };
-      }
-
-      lastFailure = {
-        model,
-        status: response.status,
-        message: data.error?.message || response.statusText
-      };
-    } catch (error) {
-      lastFailure = { model, status: 0, message: error.message };
-    }
-  }
-
-  const error = new Error('Google Gemini optimization failed');
-  error.details = lastFailure;
-  throw error;
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
@@ -288,6 +128,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
+    return;
+  }
+
+  const freeLlm = getFreeLlmConfig();
+  if (req.method === 'GET') {
+    res.status(200).json({ cloudRewrite: freeLlm?.disclosure ?? null });
     return;
   }
 
@@ -310,9 +156,7 @@ export default async function handler(req, res) {
     const originalPrompt = typeof body.originalPrompt === 'string' ? body.originalPrompt.trim() : '';
     const requestedPlatform = typeof body.platform === 'string' ? body.platform.trim().toLowerCase() : '';
     const platform = SUPPORTED_PLATFORMS.has(requestedPlatform) ? requestedPlatform : 'general';
-    const detectedIntent = typeof body.detectedIntent === 'string'
-      ? body.detectedIntent.trim().slice(0, 50)
-      : null;
+    const intent = SUPPORTED_INTENTS.has(body.detectedIntent) ? body.detectedIntent : 'general';
     const mode = typeof body.mode === 'string' ? body.mode : 'standard';
 
     if (!originalPrompt) {
@@ -330,24 +174,34 @@ export default async function handler(req, res) {
       return;
     }
 
-    const openRouterApiKey = process.env.OPENROUTER_API_KEY;
-    const geminiApiKey = process.env.GEMINI_API_KEY;
-    if (!openRouterApiKey && !geminiApiKey) {
-      console.error('Cloud optimizer configuration is missing');
-      sendJsonError(res, 503, 'OPTIMIZER_CONFIG_MISSING', OPTIMIZER_UNAVAILABLE_MESSAGE);
+    if (!freeLlm) {
+      sendJsonError(res, 503, 'OPTIMIZER_UNAVAILABLE', 'AI Rewrite is unavailable. Choose Quick Rewrite to rewrite on your device.');
+      return;
+    }
+    if (body.disclosureId !== freeLlm.disclosure.id) {
+      sendJsonError(res, 409, 'OPTIMIZER_DISCLOSURE_REQUIRED', 'Reopen PromptIQ to review who processes AI Rewrite, or choose Quick Rewrite.');
       return;
     }
 
-    const userId = session.userId;
+    const userId = Number(session.userId);
+    if (!Number.isSafeInteger(userId) || userId < 1) {
+      sendJsonError(res, 401, 'AUTH_INVALID', 'Your session expired. Please log in again.');
+      return;
+    }
 
     const users = await sql`
-      SELECT id
-      FROM users
-      WHERE id = ${parseInt(userId, 10)}
+      SELECT u.id, p.disclosure_version
+      FROM users u
+      LEFT JOIN prompt_iq.capture_preferences p ON p.user_id = u.id
+      WHERE u.id = ${userId}
     `;
 
     if (users.length === 0) {
       sendJsonError(res, 404, 'USER_NOT_FOUND', 'User not found');
+      return;
+    }
+    if (users[0].disclosure_version !== DISCLOSURE_VERSION) {
+      sendJsonError(res, 409, 'OPTIMIZER_DISCLOSURE_REQUIRED', 'Finish privacy setup in PromptIQ to use AI Rewrite.');
       return;
     }
 
@@ -386,39 +240,26 @@ export default async function handler(req, res) {
       }
     };
 
-    const intent = detectedIntent || 'general';
     const systemPrompt = getSystemPrompt(platform, intent, mode);
 
     const userPrompt = `Rewrite this prompt for the user. Return only the requested JSON object.\n\nORIGINAL PROMPT:\n${originalPrompt}`;
 
-    let providerResult;
-
+    let rewritten;
     try {
-      if (openRouterApiKey) {
-        try {
-          providerResult = await callOpenRouter(openRouterApiKey, systemPrompt, userPrompt);
-        } catch (openRouterError) {
-          if (!geminiApiKey) throw openRouterError;
-          console.warn('OpenRouter unavailable; using the configured Google fallback');
-          providerResult = await callGemini(geminiApiKey, systemPrompt, userPrompt);
-        }
-      } else {
-        providerResult = await callGemini(geminiApiKey, systemPrompt, userPrompt);
-      }
-    } catch (providerError) {
-      console.error('Cloud optimizer request failed', providerError.details || providerError.message);
+      rewritten = await rewriteWithFreeLlm(freeLlm, systemPrompt, userPrompt);
+    } catch {
+      console.warn('FreeLLMAPI rewrite did not return a valid response');
       await releaseReservedUsage();
       sendJsonError(res, 503, 'OPTIMIZER_UPSTREAM_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
       return;
     }
-
     releaseReservedUsage = null;
-    res.status(200).json(providerResult.result);
+    res.status(200).json(rewritten);
   } catch (error) {
     if (releaseReservedUsage) {
       await releaseReservedUsage();
     }
-    console.error('Error optimizing prompt:', error);
+    console.error('Optimizer request failed', { code: error.code || 'INTERNAL' });
     sendJsonError(res, 500, 'OPTIMIZE_INTERNAL_ERROR', OPTIMIZER_UNAVAILABLE_MESSAGE);
   }
 }

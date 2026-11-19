@@ -1,15 +1,13 @@
 # Chrome Web Store release - PromptIQ by Shubhaang
 
-Last updated: 2026-11-19
-
-## Release
+Last updated: November 19, 2026
 
 - Extension ID: `goheoijjaebpbcgifabpgmjkgiddkpek`
 - Package: `dist.zip`
-- Version: `1.0.16`
-- Homepage: `https://promptiq-theta.vercel.app/`
-- Privacy policy: `https://promptiq-theta.vercel.app/privacy`
-- Support: `https://promptiq-theta.vercel.app/support`
+- Version: `1.0.17`
+- Homepage: https://promptiq-theta.vercel.app/
+- Privacy policy: https://promptiq-theta.vercel.app/privacy
+- Support: https://promptiq-theta.vercel.app/support
 
 ## Store listing
 
@@ -19,138 +17,66 @@ PromptIQ by Shubhaang
 
 Short description
 
-Free prompt scoring and AI rewriting by Shubhaang Kataruka for ChatGPT, Claude, Gemini, and more.
+Free prompt scoring and rewriting by Shubhaang Kataruka for ChatGPT, Claude, Gemini, and more.
 
 Detailed description
 
-PromptIQ by Shubhaang helps you get better AI responses by turning rough ideas into clear, useful instructions directly inside the AI tools you already use.
+PromptIQ by Shubhaang helps you turn rough drafts into clear instructions while you write in an AI chat. It is a free Chrome extension built by Shubhaang Kataruka.
 
-Write normally. PromptIQ makes it AI-ready.
+Score your draft
+See which details are missing from your prompt, including the task, context, constraints, and expected output.
 
-Key features
-
-One-click AI Rewrite
-
-Rewrite vague or incomplete drafts with a free AI model while preserving your original intent, facts, and constraints.
-
-Private Quick Rewrite
-
-Use an on-device rewrite when you prefer local processing or when the AI service is busy. PromptIQ automatically falls back to Quick Rewrite when possible.
-
-Live prompt quality score
-
-See a real-time score as you type and identify missing task, context, role, format, specificity, and constraint details.
-
-Platform-aware optimization
-
-PromptIQ supports ChatGPT, Claude, Gemini, Perplexity, Copilot, DeepSeek, Grok, Le Chat, Meta AI, Poe, and You.com.
-
-Five optimization modes
-
-Choose Standard, Concise, Detailed, Creative, or Technical mode.
+Rewrite on your device
+Quick Rewrite improves the structure of your prompt using on-device templates. Choose Standard, Concise, Detailed, Creative, or Technical mode. Your free account includes 100 Quick Rewrites per day.
 
 Compare, insert, and undo
+Review the original and rewritten prompt side by side. Click Use Prompt to replace your draft without sending it to the chat. Undo restores the original text.
 
-Review the original and rewritten versions, insert the result into the chat composer, and undo the replacement when needed.
+Find past rewrites
+Open the PromptIQ dashboard to revisit your saved rewrites, favorite prompts, and templates.
 
-History, favorites, and templates
+Supported sites
+ChatGPT, Claude, Gemini, Perplexity, Copilot, DeepSeek, Grok, Le Chat, Meta AI, Poe, and You.com.
 
-Review previous optimizations, save useful prompts as favorites, and reuse templates from the PromptIQ dashboard.
+Privacy controls
+A free account is required. PromptIQ reads supported chat composers to score prompts and saves completed rewrites to your account history. Saving unsent drafts or searches from the PromptIQ template library is optional. Both are off until you enable them, and you can turn them off or delete saved entries from the dashboard.
 
-Free access
-
-- 20 AI Rewrites per day
-- 100 on-device Quick Rewrites per day
-- All five optimization modes
-- Account history, favorites, compare, insert, and undo
-- No subscription and no paid feature tier
-- Optional ₹150 UPI contribution; contributing does not unlock features
-
-How it works
-
-1. Open a supported AI platform and write your prompt.
-2. Click the floating PromptIQ score beside the chat composer.
-3. Choose a mode and either AI Rewrite or Quick Rewrite.
-4. Review the rewritten prompt and the explanation.
-5. Insert the improved prompt with one click.
-
-Privacy and security
-
-An account and express prompt-storage consent are required before PromptIQ reads a supported chat composer. The latest revision of each prompt draft is stored under that account for 30 days. Quick Rewrite runs on the device and does not send prompt text to an AI provider. AI Rewrite sends only the selected prompt and optimization instructions through the PromptIQ backend to Google Gemini or OpenRouter and an eligible model provider. PromptIQ does not sell user data and does not include provider API keys in the extension package.
-
-- Category: Productivity
-- Single purpose: Evaluates, scores, and refines user prompts inline on supported AI text platforms.
+- Category: Tools
 - Language: English
+- Single purpose: Score and rewrite user-authored prompts directly inside supported AI chat composers.
 
 ## Permissions
 
 | Permission | Justification |
 |---|---|
-| `storage` | Saves settings, local history, favorites, usage counters, and signed-in session state. |
-| `contextMenus` | Adds an Optimize with PromptIQ action for selected text. |
-| Supported AI site hosts | Reads and writes only a visible active prompt composer for scoring, draft recovery, and user-requested insertion. |
-| `promptiq-theta.vercel.app` | Handles authentication, consent preferences, prompt-draft and optimization-history synchronization, usage status, telemetry event names, and user-requested AI Rewrite. |
+| `storage` | Stores the user session, interface settings, favorites, and local rewrite counters in Chrome extension storage. |
+| `contextMenus` | Offers a Quick Rewrite action for selected text on supported AI sites. It opens the rewrite in PromptIQ without replacing the chat draft. |
+| Supported HTTPS AI sites | Lets PromptIQ identify the active chat composer, score its draft after account setup, and insert a rewrite when the user clicks Use Prompt. Optional draft sync uses these same composers. |
+| `promptiq-theta.vercel.app` | Connects to PromptIQ's HTTPS backend for authentication, preferences, account history, usage, feature health events, and explicitly requested cloud rewrites when available. |
 
-PromptIQ uses explicit site host permissions and does not request `<all_urls>`.
+## Privacy fields
 
-## Privacy disclosure
+- Personally identifiable information: account email and account ID.
+- Authentication information: password and session token. The database stores salted password hashes.
+- Personal communications and website content: prompt text, completed rewrites, and optional unsent drafts in supported chat composers.
+- User activity: platform, rewrite mode, prompt scores, product event names, optional template-library searches, and feedback.
+- Limited Use: PromptIQ uses data to score, rewrite, and save users' prompts and to operate these features. It does not sell user data or use it for advertising, lending, unrelated purposes, or model training.
 
-Does the extension collect user data? Yes.
+## Store assets
 
-| Chrome Web Store data type | Collected | Purpose |
-|---|---|---|
-| Personally identifiable information | Yes | Account email. |
-| Authentication information | Yes | Email and password are transmitted over HTTPS; passwords are stored as salted hashes. |
-| Personal communications | Yes | Latest prompt-draft revisions, optimization history, and prompts explicitly submitted for AI Rewrite. |
-| User activity | Yes | Limited product event names, prompt scores, platform, mode, history, and feedback. |
-| Website content | Yes | After account access and express consent, the active prompt composer is read for scoring and its latest draft revision is stored; it is written only for user-requested insertion. |
-| Financial information | No | The extension has no paid tier. An optional external UPI contribution link is not required for product access. |
-| Web history | No | PromptIQ does not collect browsing history or conversation URLs. |
-| Location | No | PromptIQ does not collect location. |
-| Health information | No | PromptIQ does not intentionally collect health information. |
+- Icon: `public/store_icon.png` (128 x 128).
+- Screenshot: `website-assets/product-workspace-v17.jpg` (1280 x 800, labeled sample workspace with the actual extension).
+- Promo video: leave empty. The earlier video shows a prior release.
 
-Data use certifications
+## Reviewer instructions
 
-- Data is not sold to third parties.
-- Data is not used for purposes unrelated to PromptIQ's single purpose.
-- Data is not used for creditworthiness or lending.
-- Chrome API data is handled under the Chrome Web Store User Data Policy and Limited Use requirements.
-- Product analytics events never include prompt text, email addresses, AI responses, or page URLs.
+1. Open the PromptIQ toolbar icon. Sign in or create a free account. Signup accepts a test email and a password of at least 8 characters. No verification email is required.
+2. Read the privacy disclosure and confirm that completed rewrites are saved. Leave both optional sync boxes unchecked.
+3. Open ChatGPT from the popup. In its composer, type "Write a launch email for a fictional calendar app. Keep it under 100 words."
+4. Click the floating PromptIQ badge and choose Optimize Prompt. Review the result and click Use Prompt. Reopen the panel and click Undo to restore the original.
+5. In PromptIQ's dashboard, open History. The completed rewrite is present and draft sync is off. The History tab can enable optional sync and delete synced data.
+6. AI Rewrite is unavailable in the release environment. Quick Rewrite requires no third-party AI account.
 
-## Cloud AI setup
+## Release checks
 
-Configure `GEMINI_API_KEY` for the direct free-tier provider. `OPENROUTER_API_KEY` is optional; the default OpenRouter model is `openrouter/free`, and `OPENROUTER_MODEL` or `OPENROUTER_FALLBACK_MODEL` may override it. Keep all provider keys in Vercel environment variables.
-
-## Assets
-
-| Asset | File |
-|---|---|
-| 128 x 128 icon | `public/store_icon.png` |
-| 1280 x 800 screenshot 1 | `store-assets/screenshot1-v16.png` |
-| 1280 x 800 screenshot 2 | `public/screenshot2.png` |
-| 1280 x 800 screenshot 3 | `public/screenshot3.png` |
-
-Before submission, replace any screenshot that displays Premium, pricing, an older supported-platform list, or a version below 1.0.16.
-
-## Version 1.0.16 release notes
-
-- Renamed the listing to PromptIQ by Shubhaang.
-- Removed Premium, billing, Razorpay endpoints, checkout UI, and subscription-based quotas.
-- Added 20 free AI Rewrites and 100 on-device Quick Rewrites per day.
-- Added automatic local fallback when AI Rewrite is unavailable.
-- Improved prompt preservation and reduced generic boilerplate.
-- Added Grok, Le Chat, Meta AI, Poe, and You.com support with explicit host permissions.
-- Added privacy-safe product events and a protected aggregate analytics dashboard.
-- Added an optional ₹150 UPI contribution link that does not unlock features.
-- Updated website, popup, support, terms, privacy policy, and store copy to match product behavior.
-
-## Submission checklist
-
-- Run `npm test`.
-- Run `npm run package:extension`.
-- Run `npm run build:website`.
-- Confirm `dist.zip` contains no remote JavaScript or provider keys.
-- Confirm sign up, sign in, consent, AI Rewrite, Quick Rewrite, insert, undo, history, and logout.
-- Confirm homepage, privacy, terms, and support URLs are reachable.
-- Confirm every screenshot and listing field matches version 1.0.16 behavior.
-- Upload only after the current Chrome Web Store review is complete or withdrawn intentionally.
+Run `npm test`, `npm run package:extension`, and `npm run build:website`. Confirm the extension ZIP includes only bundled code, the homepage and policy URLs respond over HTTPS, and the screenshot and privacy answers match the uploaded build.

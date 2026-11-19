@@ -3,15 +3,13 @@ import {
   clearHistory, 
   getSessionToken, 
   clearSessionToken, 
-  signupUser, 
-  loginUser, 
   fetchUserProfile, 
   getFavoritePrompts,
   toggleFavoritePrompt,
   trackTelemetry
 } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
-import { getCapturePreferences, setCapturePreferences, saveActivity, getSavedActivity, clearSavedActivity } from '../lib/activity.js';
+import { DISCLOSURE_VERSION, getCapturePreferences, setCapturePreferences, saveActivity, getSavedActivity, clearSavedActivity } from '../lib/activity.js';
 
 // Import library data
 import libraryPrompts from '../../data/library.json' with { type: 'json' };
@@ -22,17 +20,10 @@ function initSavedActivity() {
   const search = document.getElementById('save-searches');
   const status = document.getElementById('activity-status');
   const update = async () => {
-    if (!draft.checked && !confirm('Turn off prompt storage? The in-page optimizer will be locked until you enable it again. Existing entries are kept until you delete them or they expire.')) {
-      draft.checked = true;
-      return;
-    }
     draft.disabled = search.disabled = true;
     try {
-      const saved = await setCapturePreferences({saveDrafts:draft.checked,saveSearches:search.checked});
-      document.getElementById('account-setup-notice').hidden = saved.saveDrafts;
-      status.textContent = saved.saveDrafts
-        ? 'Preferences saved. Changes apply to new activity.'
-        : 'Prompt storage is off. The in-page optimizer is now locked.';
+      await setCapturePreferences({saveDrafts:draft.checked,saveSearches:search.checked});
+      status.textContent = 'Preferences saved for future drafts and searches.';
     } catch (error) {
       status.textContent = error.message;
       await loadSavedActivity();
@@ -67,7 +58,9 @@ async function loadSavedActivity(append=false) {
   try {
     const preferences=await getCapturePreferences(true);
     draft.checked=preferences.saveDrafts;search.checked=preferences.saveSearches;
-    document.getElementById('account-setup-notice').hidden=preferences.saveDrafts;
+    const setupComplete = preferences.disclosureVersion === DISCLOSURE_VERSION;
+    draft.disabled = search.disabled = !setupComplete;
+    document.getElementById('account-setup-notice').hidden=setupComplete;
     const data=await getSavedActivity(append?activityOffset:0);
     if(token !== await getSessionToken()) { list.replaceChildren(); return; }
     for(const entry of data.entries) {
@@ -85,9 +78,7 @@ async function loadSavedActivity(append=false) {
   finally {more.disabled=false;}
 }
 
-let currentMode = 'login'; // login or signup
 let appInitialized = false;
-let authListenersInitialized = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthStatus();
@@ -105,11 +96,6 @@ async function checkAuthStatus() {
     } catch (err) {
       console.warn('Account status unavailable:', err);
     }
-  }
-
-  if (!authListenersInitialized) {
-    initAuthListeners();
-    authListenersInitialized = true;
   }
 
   if (!user) {
@@ -130,93 +116,9 @@ async function checkAuthStatus() {
     initContribution();
     appInitialized = true;
   }
-  const preferences = await getCapturePreferences(true).catch(() => ({saveDrafts:false}));
-  document.getElementById('account-setup-notice').hidden = preferences.saveDrafts === true;
+  const preferences = await getCapturePreferences(true).catch(() => null);
+  document.getElementById('account-setup-notice').hidden = preferences?.disclosureVersion === DISCLOSURE_VERSION;
   await initDashboard(user);
-}
-
-// Authentication Forms Handlers
-function initAuthListeners() {
-  const title = document.getElementById('auth-title');
-  const submitBtn = document.getElementById('auth-submit-btn');
-  const toggleLink = document.getElementById('auth-toggle-link');
-  const toggleMsg = document.getElementById('auth-toggle-msg');
-  const statusEl = document.getElementById('auth-status');
-  const emailInput = document.getElementById('auth-email');
-  const passwordInput = document.getElementById('auth-password');
-  const storageConsent = document.getElementById('auth-storage-consent');
-  const searchConsent = document.getElementById('auth-search-consent');
-  
-  statusEl.className = 'status-msg';
-  statusEl.style.display = 'none';
-
-  [emailInput, passwordInput].forEach((input) => {
-    input.onkeydown = (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        submitBtn.click();
-      }
-    };
-  });
-
-  // Toggle Login/Signup
-  toggleLink.onclick = (e) => {
-    e.preventDefault();
-    if (currentMode === 'login') {
-      currentMode = 'signup';
-      title.textContent = 'Create Account';
-      submitBtn.textContent = 'Sign Up';
-      toggleMsg.textContent = 'Already have an account?';
-      toggleLink.textContent = 'Log In';
-    } else {
-      currentMode = 'login';
-      title.textContent = 'Log In';
-      submitBtn.textContent = 'Log In';
-      toggleMsg.textContent = 'New to PromptIQ?';
-      toggleLink.textContent = 'Create Account';
-    }
-    statusEl.style.display = 'none';
-  };
-
-  submitBtn.onclick = async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!email || !password) {
-      statusEl.textContent = 'Email and password are required.';
-      statusEl.className = 'status-msg status-error';
-      statusEl.style.display = 'block';
-      return;
-    }
-    if (!storageConsent.checked) {
-      statusEl.textContent = 'Prompt storage consent is required to use PromptIQ.';
-      statusEl.className = 'status-msg status-error';
-      statusEl.style.display = 'block';
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = currentMode === 'login' ? 'Logging in...' : 'Registering...';
-    
-    try {
-      if (currentMode === 'login') {
-        await loginUser(email, password);
-      } else {
-        await signupUser(email, password);
-      }
-      await setCapturePreferences({saveDrafts:true,saveSearches:searchConsent.checked});
-      // Successful authentication! Reload status checks
-      await checkAuthStatus();
-    } catch (err) {
-      await clearSessionToken();
-      statusEl.textContent = err.message;
-      statusEl.className = 'status-msg status-error';
-      statusEl.style.display = 'block';
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = currentMode === 'login' ? 'Log In' : 'Sign Up';
-    }
-  };
 }
 
 function initContribution() {
@@ -395,11 +297,13 @@ function initHistory() {
   const clearBtn = document.getElementById('clear-history-btn');
   clearBtn.onclick = async () => {
     if (confirm('Are you sure you want to clear your optimization history? Your settings will not be affected.')) {
-      await clearHistory();
-      renderHistory();
-      // Reload profile to refresh stats
-      const user = await fetchUserProfile();
-      renderDashboard(user);
+      try {
+        await clearHistory();
+        await renderHistory();
+        await renderDashboard(await fetchUserProfile());
+      } catch {
+        alert('History could not be cleared. Please try again.');
+      }
     }
   };
 

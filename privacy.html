@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Privacy Policy — PromptIQ</title>
-  <meta name="description" content="Privacy Policy for PromptIQ. Learn about data security, prompt optimizations, and our commitment to not sharing or selling user communications.">
+  <meta name="description" content="Learn how PromptIQ handles account information, prompt rewrites, optional draft sync, and usage data.">
   <link rel="canonical" href="https://promptiq-theta.vercel.app/privacy">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/store_icon.png" type="image/png">
@@ -56,7 +56,7 @@
       margin-bottom: 32px;
     }
   </style>
-  <link rel="stylesheet" href="/website-fonts.css?v=1.0.16">
+  <link rel="stylesheet" href="/website-fonts.css?v=1.0.17">
 </head>
 <body>
   <div class="container">
@@ -68,17 +68,18 @@
     <h2>1. What Data We Collect</h2>
     <p>To provide prompt optimization and scoring, PromptIQ collects the following data types:</p>
     <ul>
-      <li><strong>Prompt Text (Personal Communications):</strong> A PromptIQ account and express prompt-storage consent are required before the extension accesses a supported chat composer. Quick Rewrite runs locally and does not send prompt text to an AI provider. The latest revision of each prompt draft is saved to your account after a typing pause, including unsent drafts. When you deliberately choose AI Rewrite, we also send that prompt through our serverless backend to Google Gemini or OpenRouter and an eligible model provider.</li>
-      <li><strong>Website Content:</strong> After you sign in and enable required prompt storage, we read the active chat composer on supported AI platforms to calculate prompt quality and save its latest draft revision. We do not collect unrelated form fields, chat responses, page titles, or conversation URLs.</li>
+      <li><strong>Prompt Text (Personal Communications):</strong> PromptIQ reads supported AI chat composers after you sign in and accept the in-extension disclosure. Quick Rewrite runs on your device. When you run a rewrite, the original prompt, result, and scores are saved to your account. When available, AI Rewrite sends the selected prompt to the recipients shown beside its send button.</li>
+      <li><strong>Optional Draft Sync:</strong> If enabled, PromptIQ saves the latest revision of each draft after a typing pause, including unsent text. You can score and rewrite prompts with draft sync off in version 1.0.17. Earlier versions that offered draft sync required separate draft consent to activate the optimizer.</li>
+      <li><strong>Website Content:</strong> PromptIQ reads prompt text from supported chat composers to calculate your score. It does not collect unrelated form fields, chat responses, page titles, or conversation URLs.</li>
       <li><strong>Optional Saved Searches:</strong> If enabled in Dashboard &gt; History, completed searches in PromptIQ's prompt library are saved with their category, result count, and time. This does not collect browser search history or searches made on other websites.</li>
       <li><strong>User Activity Metadata:</strong> We collect metadata about optimization events (such as the AI platform name, the original score, the optimized score, and the time of the event) to populate your history logs and dashboard statistics.</li>
       <li><strong>Account Information:</strong> An account is required to use the extension. We collect your email address and password authentication data. Passwords are stored only as salted hashes.</li>
-      <li><strong>Product Analytics:</strong> We record limited events such as extension installation, popup opening, completed account actions, optimization success or failure, use of the local fallback, prompt insertion, voluntary contribution clicks, and website-to-store clicks. These events do not include prompt text, email addresses, page URLs, or AI responses. The website may also send these event names to Google Analytics when analytics is configured.</li>
+      <li><strong>Product Analytics:</strong> We record event names for account actions, rewrite success or failure, prompt insertion, favorites, and other product actions to measure reliability and usage. Signed-in events may be associated with your account ID. The events do not include prompt text, email addresses, AI responses, or the URLs of AI sites you visit.</li>
     </ul>
 
     <h2>2. How Data Is Stored</h2>
     <ul>
-      <li><strong>Local Storage:</strong> Your configuration settings and a local cache of your history are stored on your device using IndexedDB and Chrome Storage Local APIs.</li>
+      <li><strong>Local Storage:</strong> PromptIQ keeps your settings, sign-in session, on-device allowance, and favorites in Chrome extension storage. Favorites are stored on this Chrome profile.</li>
       <li><strong>Database Storage:</strong> Original and optimized prompts, scores, the latest revisions of active prompt drafts, and consent settings are synchronized to our Neon Postgres database through our HTTPS backend under your account. PromptIQ library searches are stored only when you separately enable that optional setting. The website's local demo remains on your device.</li>
     </ul>
 
@@ -95,15 +96,15 @@
     <h2>4. Data Sharing & Third Parties</h2>
     <ul>
       <li><strong>No Sale of Data:</strong> We do not sell, rent, or trade your data to third parties.</li>
-      <li><strong>Third-Party APIs:</strong> AI Rewrite is processed by Google Gemini or through OpenRouter and an eligible model provider. The prompt text, selected AI platform, detected request category, and related optimization instructions are shared only to complete the requested optimization. We do not include your account email or password. OpenRouter requests ask for zero-data-retention processing and deny provider data collection where supported. Each provider may process operational metadata under its own terms.</li>
+      <li><strong>Service providers:</strong> Vercel hosts the PromptIQ server and Neon stores account data. Quick Rewrite does not contact an AI provider. When AI Rewrite is available, the extension names the model provider before you choose to send the prompt through our FreeLLMAPI gateway. The request contains the prompt, selected platform, and optimization instructions. It excludes your password, account email, and conversation URL. PromptIQ uses provider configurations that permit processing only to deliver the requested rewrite.</li>
       <li><strong>Voluntary Contributions:</strong> If you choose the optional UPI contribution link, your UPI app and payment providers process the payment under their own terms. PromptIQ does not receive your bank login credentials or full bank account details.</li>
       <li><strong>Website Analytics:</strong> When configured, Google Analytics receives page and product event names from the public website. Prompt text is not sent to Google Analytics, and advertising personalization signals are disabled in PromptIQ's configuration.</li>
       <li><strong>Chrome Web Store Analytics:</strong> Google may provide aggregate Store listing traffic and installation analytics to PromptIQ through the Chrome Web Store developer tools.</li>
     </ul>
 
     <h2>5. Data Retention & Deletion</h2>
-    <p>Prompt drafts and optional PromptIQ library searches are available for 30 days from their last saved timestamp. Expired entries are excluded from retrieval and physically removed on the next saved-activity read or write for your account. The latest revision of each draft is kept, not a permanent keystroke log. Use "Delete drafts &amp; searches" in Dashboard &gt; History to remove these account records and turn capture off. Turning prompt storage off locks the in-page optimizer until you enable it again. Infrastructure backups may persist within the provider's backup retention window.</p>
-    <p>Optimization history associated with your account is synchronized to our database. You can delete it by clicking the <strong>"Clear All"</strong> button in the History tab of the PromptIQ dashboard. This removes history locally and from the account's central records. Account, survey, and operational logs may be retained as needed to operate the service, prevent abuse, and meet legal obligations. You can request account deletion using the contact address below.</p>
+    <p>Optional drafts and library searches are available for 30 days from their last saved timestamp. Expired entries are excluded from retrieval and removed on the next saved-activity read or write for your account. Use "Delete drafts &amp; searches" in Dashboard &gt; History to remove these account records and turn both settings off. Infrastructure backups may persist within the provider's backup retention window.</p>
+    <p>Use "Clear All" in the History tab of the PromptIQ dashboard to delete optimization history from your account. Remove local favorites in the Favorites tab. Account and operational logs may be retained as needed to operate the service, prevent abuse, and meet legal obligations. You can request account deletion using the contact address below.</p>
 
     <h2>6. Policy Certifications</h2>
     <ul>

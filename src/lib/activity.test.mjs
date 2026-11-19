@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getCapturePreferences,setCapturePreferences,saveActivity,clearSavedActivity } from './activity.js';
+import { DISCLOSURE_VERSION,getCapturePreferences,setCapturePreferences,saveActivity,clearSavedActivity } from './activity.js';
 import { setSessionToken,clearSessionToken } from './storage.js';
 import { createDraftRecorder } from './draft-recorder.js';
 global.localStorage={store:{},getItem(k){return this.store[k]||null;},setItem(k,v){this.store[k]=String(v);},removeItem(k){delete this.store[k];}};
@@ -7,7 +7,7 @@ let requests=[];
 let enabled=false;
 global.fetch=async(url,options)=>{
   requests.push({url,options});
-  let data={saveDrafts:enabled,saveSearches:enabled,disclosureVersion:'2026-11-19-v3'};
+  let data={saveDrafts:enabled,saveSearches:enabled,disclosureVersion:DISCLOSURE_VERSION};
   if(url.includes('preferences')&&options.method==='POST') {enabled=JSON.parse(options.body).saveDrafts;data=JSON.parse(options.body);}
   if(url.includes('activity'))data={saved:true,success:true};
   return {ok:true,json:async()=>data};
@@ -23,6 +23,7 @@ assert.equal((await saveActivity(entry)).saved,true);
 assert(requests.some(r=>r.options.headers.Authorization==='Bearer account-a'&&r.options.body?.includes('Private draft')));
 enabled=false;
 await setSessionToken('account-b');
+assert.equal((await saveActivity(entry, 'account-a')).saved,false);
 assert.equal((await getCapturePreferences()).saveDrafts,false,'Consent cannot cross accounts');
 assert.equal((await saveActivity(entry)).saved,false);
 await clearSavedActivity();

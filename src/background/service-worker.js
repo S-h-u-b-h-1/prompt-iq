@@ -1,5 +1,4 @@
 import { optimizePrompt } from '../lib/optimizer.js';
-import { trackTelemetry } from '../lib/storage.js';
 
 chrome.runtime.onInstalled.addListener((details) => {
   chrome.contextMenus.removeAll(() => {
@@ -7,11 +6,10 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.contextMenus.create({
       id: 'promptiq-optimize',
       title: 'Optimize as Prompt with PromptIQ',
-      contexts: ['selection']
+      contexts: ['selection'],
+      documentUrlPatterns: chrome.runtime.getManifest().content_scripts.flatMap((script) => script.matches)
     });
   });
-
-  trackTelemetry(details.reason === 'install' ? 'extension_installed' : 'extension_updated');
 
   // Open onboarding on install
   if (details.reason === 'install') {
@@ -43,7 +41,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     optimizePrompt(
       message.originalPrompt, 
       message.platform, 
-      message.locallyEnhancedPrompt, 
+      message.disclosureId,
       message.detectedIntent, 
       message.token, // Relay the JWT session token
       message.mode

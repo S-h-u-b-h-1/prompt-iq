@@ -8,11 +8,12 @@ import {
   signupUser,
   trackTelemetry
 } from '../lib/storage.js';
-import { getCapturePreferences, setCapturePreferences } from '../lib/activity.js';
+import { DISCLOSURE_VERSION, getCapturePreferences, setCapturePreferences } from '../lib/activity.js';
+import { getCloudRewriteDisclosure } from '../lib/optimizer.js';
 
 let authMode = 'login';
 let currentUser = null;
-let promptStorageReady = false;
+let setupComplete = false;
 
 function canUseChromeTabs() {
   return typeof chrome !== 'undefined' &&
@@ -67,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const authModes = document.querySelector('.auth-modes');
   const emailField = document.getElementById('auth-email-field');
   const passwordField = document.getElementById('auth-password-field');
+  const privacyChoices = document.getElementById('privacy-choices');
+  const historyConsent = document.getElementById('history-consent');
   const promptStorageConsent = document.getElementById('prompt-storage-consent');
   const searchStorageConsent = document.getElementById('search-storage-consent');
 
@@ -99,13 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const isConsent = mode === 'consent';
     const isLogin = mode === 'login';
     authTitle.textContent = isConsent ? 'Finish account setup' : isLogin ? 'Sign in' : 'Create account';
-    submitButton.textContent = isConsent ? 'Enable and continue' : isLogin ? 'Sign in and continue' : 'Create account';
+    submitButton.textContent = isConsent ? 'Save and continue' : isLogin ? 'Sign in' : 'Create account';
     passwordInput.autocomplete = isLogin ? 'current-password' : 'new-password';
     authModes.hidden = isConsent;
     emailField.hidden = isConsent;
     passwordField.hidden = isConsent;
     emailInput.required = !isConsent;
     passwordInput.required = !isConsent;
+    privacyChoices.hidden = isLogin;
+    historyConsent.required = !isLogin;
     loginModeButton.classList.toggle('active', isLogin);
     signupModeButton.classList.toggle('active', !isLogin);
     loginModeButton.setAttribute('aria-selected', String(isLogin));
@@ -115,32 +120,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openAuth = (mode) => {
     setAuthMode(mode);
+    historyConsent.checked = false;
     promptStorageConsent.checked = false;
     searchStorageConsent.checked = false;
     if (!dialog.open) dialog.showModal();
-    window.setTimeout(() => (mode === 'consent' ? promptStorageConsent : emailInput).focus(), 0);
+    window.setTimeout(() => (mode === 'consent' ? historyConsent : emailInput).focus(), 0);
   };
 
-  const renderAccount = (user, storageReady = false) => {
+  const renderAccount = (user, ready = false) => {
     currentUser = user;
-    promptStorageReady = Boolean(user && storageReady);
+    setupComplete = Boolean(user && ready);
     tierBadge.textContent = 'FREE';
     accountTitle.textContent = user?.email || 'Account required';
     accountCopy.textContent = user
-      ? promptStorageReady ? 'AI Rewrite, Quick Rewrite, and saved prompt history are active.' : 'Finish privacy setup to use PromptIQ.'
+      ? setupComplete ? 'Quick Rewrite and account history are ready.' : 'Finish privacy setup to use PromptIQ.'
       : 'Create an account to use PromptIQ and keep your prompt history available.';
     signInButton.hidden = Boolean(user);
     signUpButton.hidden = Boolean(user);
-    finishSetupButton.hidden = !user || promptStorageReady;
+    finishSetupButton.hidden = !user || setupComplete;
     logoutButton.hidden = !user;
-    openChatButton.disabled = !promptStorageReady;
-    dashboardButton.disabled = !promptStorageReady;
+    openChatButton.disabled = !setupComplete;
+    dashboardButton.disabled = !user;
   };
 
   const renderUsage = async () => {
     const local = await getSmartTemplateQuotaStatus('free');
-    smartUsage.textContent = promptStorageReady ? `${local.used} / ${local.limit}` : 'Locked';
-    smartMeter.style.width = promptStorageReady ? `${Math.min(100, (local.used / local.limit) * 100)}%` : '0%';
+    smartUsage.textContent = setupComplete ? `${local.used} / ${local.limit}` : 'Locked';
+    smartMeter.style.width = setupComplete ? `${Math.min(100, (local.used / local.limit) * 100)}%` : '0%';
     usageDate.textContent = local.date;
 
     if (!currentUser) {
@@ -150,14 +156,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!promptStorageReady) {
+    if (!setupComplete) {
       aiUsage.textContent = 'Setup required';
       aiMeter.style.width = '0%';
-      aiHelp.textContent = 'Review prompt storage and finish account setup.';
+      aiHelp.textContent = 'Review privacy settings to finish account setup.';
       return;
     }
 
     try {
+      if (!await getCloudRewriteDisclosure()) {
+        aiUsage.textContent = 'Unavailable';
+        aiMeter.style.width = '0%';
+        aiHelp.textContent = 'Quick Rewrite is ready on your device.';
+        return;
+      }
       const usage = await getUsageStatus();
       const aiRewrite = usage?.aiRewrite;
       if (!aiRewrite) throw new Error('Usage unavailable');
@@ -183,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const user = await fetchUserProfile();
       const preferences = await getCapturePreferences(true);
-      renderAccount(user, preferences.saveDrafts === true);
+      renderAccount(user, preferences.disclosureVersion === DISCLOSURE_VERSION);
       await renderUsage();
     } catch (error) {
       renderAccount(null, false);
@@ -206,13 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     clearAuthStatus();
     submitButton.disabled = true;
-    if (!promptStorageConsent.checked) {
-      showAuthStatus('Prompt storage consent is required to use PromptIQ.');
-      submitButton.disabled = false;
-      return;
-    }
-
-    submitButton.textContent = authMode === 'consent' ? 'Enabling...' : authMode === 'login' ? 'Signing in...' : 'Creating account...';
+    submitButton.textContent = authMode === 'consent' ? 'Saving...' : authMode === 'login' ? 'Signing in...' : 'Creating account...';
 
     try {
       let user = currentUser;
@@ -222,10 +228,22 @@ document.addEventListener('DOMContentLoaded', () => {
           : await signupUser(emailInput.value, passwordInput.value);
         user = result.user;
       }
-      await setCapturePreferences({saveDrafts:true,saveSearches:searchStorageConsent.checked});
+      if (authMode === 'login') {
+        const preferences = await getCapturePreferences(true);
+        if (preferences.disclosureVersion !== DISCLOSURE_VERSION) {
+          passwordInput.value = '';
+          renderAccount(user);
+          openAuth('consent');
+          await renderUsage();
+          return;
+        }
+      } else {
+        await setCapturePreferences({saveDrafts:promptStorageConsent.checked,saveSearches:searchStorageConsent.checked});
+      }
       renderAccount(user, true);
       await renderUsage();
-      await trackTelemetry(authMode === 'consent' ? 'prompt_storage_enabled' : authMode === 'login' ? 'login_completed' : 'signup_completed');
+      if (authMode !== 'consent') void trackTelemetry(authMode === 'login' ? 'login_completed' : 'signup_completed');
+      else if (promptStorageConsent.checked) void trackTelemetry('prompt_storage_enabled');
       showAuthStatus(authMode === 'consent' ? 'Account setup complete.' : authMode === 'login' ? 'Signed in.' : 'Account created.', 'success');
       passwordInput.value = '';
       window.setTimeout(() => dialog.close(), 500);
@@ -234,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showAuthStatus(error.message || 'Authentication failed. Please try again.');
     } finally {
       submitButton.disabled = false;
-      submitButton.textContent = authMode === 'consent' ? 'Enable and continue' : authMode === 'login' ? 'Sign in and continue' : 'Create account';
+      submitButton.textContent = authMode === 'consent' ? 'Save and continue' : authMode === 'login' ? 'Sign in' : 'Create account';
     }
   });
 
@@ -268,13 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
     openUrl(extensionUrl('src/popup/popup.html'));
   });
   openChatButton.addEventListener('click', () => {
-    if (!promptStorageReady) {
+    if (!setupComplete) {
       openAuth(currentUser ? 'consent' : 'signup');
       return;
     }
     openUrl('https://chatgpt.com/');
   });
 
-  trackTelemetry('popup_opened');
   refreshAccount();
 });

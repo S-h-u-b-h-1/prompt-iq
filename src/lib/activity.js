@@ -1,7 +1,7 @@
 import { getSessionToken } from './storage.js';
 const BASE = 'https://promptiq-theta.vercel.app/api/history';
-export const DISCLOSURE_VERSION = '2026-11-19-v3';
-const OFF = {saveDrafts:false,saveSearches:false,disclosureVersion:DISCLOSURE_VERSION};
+export const DISCLOSURE_VERSION = '2026-11-19-v4';
+const OFF = {saveDrafts:false,saveSearches:false,disclosureVersion:null};
 let cached = null;
 
 async function request(action, method='GET', body, expectedToken=null) {
@@ -40,10 +40,10 @@ export async function setCapturePreferences(value) {
   }
   return saved;
 }
-export async function saveActivity(entry) {
+export async function saveActivity(entry, expectedToken) {
   try {
     const token=await getSessionToken();
-    if(!token) return {saved:false};
+    if(!token || (expectedToken && token !== expectedToken)) return {saved:false};
     const preferences=await getCapturePreferences();
     if(!(entry.kind==='draft'?preferences.saveDrafts:preferences.saveSearches)) return {saved:false};
     return await request('activity','POST',entry,token);
@@ -53,5 +53,8 @@ export async function getSavedActivity(offset=0) { return request('activity&offs
 export async function clearSavedActivity() {
   const result=await request('activity','DELETE');
   cached=null;
+  if (globalThis.chrome?.runtime?.id && chrome.storage?.local) {
+    await chrome.storage.local.set({promptIqCapturePreferencesVersion:Date.now()});
+  }
   return result;
 }

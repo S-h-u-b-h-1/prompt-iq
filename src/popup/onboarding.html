@@ -10,7 +10,7 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand"><img class="mark" src="/brand-mark.svg" width="30" height="30" alt=""><span>PromptIQ</span></div>
+      <div class="brand"><img class="mark" src="/brand-mark.svg" width="30" height="30" alt=""><span>PromptIQ <small>by Shubhaang</small></span></div>
       <span class="plan-badge" id="tier-badge">FREE</span>
     </header>
 
@@ -39,19 +39,19 @@
         <div class="usage-list">
           <div class="usage-row">
             <div class="usage-top">
-              <span class="usage-name">Smart Template</span>
+              <span class="usage-name">Quick Rewrite</span>
               <span class="usage-count" id="smart-usage">0 / 100</span>
             </div>
             <div class="meter"><span id="smart-meter"></span></div>
-            <p class="usage-help">Optimization runs on this device; your account keeps the latest draft revision.</p>
+            <p class="usage-help">Runs on this device; your account keeps the latest draft revision.</p>
           </div>
           <div class="usage-row">
             <div class="usage-top">
-              <span class="usage-name">Premium AI</span>
-              <span class="usage-count" id="premium-usage">Sign in for 5/day</span>
+              <span class="usage-name">AI Rewrite</span>
+              <span class="usage-count" id="ai-usage">Sign in for 20/day</span>
             </div>
-            <div class="meter premium"><span id="premium-meter"></span></div>
-            <p class="usage-help" id="premium-help">Secure cloud AI with protected API keys.</p>
+            <div class="meter"><span id="ai-meter"></span></div>
+            <p class="usage-help" id="ai-help">Free AI rewriting with protected server-side credentials.</p>
           </div>
         </div>
       </section>
@@ -64,26 +64,21 @@
         </div>
       </section>
 
-      <section class="section">
-        <div class="section-head"><h2 class="section-title">Plans</h2></div>
-        <div class="plan-grid">
-          <div class="plan">
-            <div class="plan-name">Free</div>
-            <div class="plan-price">$0</div>
-            <p>Account required. 100 Smart Template prompts and 5 AI trials daily.</p>
-          </div>
-          <div class="plan">
-            <div class="plan-name">Premium</div>
-            <div class="plan-price">$1 <span>USD / month</span></div>
-            <p>Excl. taxes. 50 Premium AI and 200 local optimizations per day.</p>
-            <button class="btn btn-primary btn-small" id="upgrade-btn" type="button">Get Premium</button>
-          </div>
+      <section class="section support-card">
+        <div>
+          <div class="section-head"><h2 class="section-title">Keep PromptIQ independent</h2></div>
+          <p>PromptIQ is free and built by Shubhaang Kataruka. A voluntary ₹150 contribution helps cover AI and hosting costs.</p>
+          <code>shubhaang2201@axl</code>
+        </div>
+        <div class="support-actions">
+          <button class="btn" id="copy-upi-btn" type="button">Copy UPI</button>
+          <button class="btn btn-primary" id="support-btn" type="button">Contribute ₹150</button>
         </div>
       </section>
     </main>
 
     <footer>
-      <span id="version-label">Version 1.0.15</span>
+      <span id="version-label">Version 1.0.16</span>
       <span><a href="https://promptiq-theta.vercel.app/privacy" target="_blank" rel="noreferrer">Privacy</a> · <a href="https://promptiq-theta.vercel.app/support" target="_blank" rel="noreferrer">Support</a></span>
     </footer>
   </div>

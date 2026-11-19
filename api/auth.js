@@ -1,7 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 import { signToken, authenticate } from './_utils/auth-helper.js';
-import { normalizePlan } from './_utils/plans.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -84,10 +83,9 @@ export default async function handler(req, res) {
       }
 
       const users = await sql`
-        SELECT u.id, u.email, u.plan as base_plan, s.plan as sub_plan, s.status as sub_status
-        FROM users u
-        LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
-        WHERE u.id = ${parseInt(session.userId, 10)}
+        SELECT id, email
+        FROM users
+        WHERE id = ${parseInt(session.userId, 10)}
       `;
 
       if (users.length === 0) {
@@ -96,16 +94,12 @@ export default async function handler(req, res) {
       }
 
       const user = users[0];
-      const resolvedPlan = normalizePlan(
-        user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
-      );
-
       res.status(200).json({
         authenticated: true,
         user: {
           id: user.id,
           email: user.email,
-          plan: resolvedPlan
+          plan: 'free'
         }
       });
       return;
@@ -122,10 +116,9 @@ export default async function handler(req, res) {
 
       const normalizedEmail = email.toLowerCase().trim();
       const users = await sql`
-        SELECT u.id, u.email, u.password_hash, u.plan as base_plan, s.plan as sub_plan, s.status as sub_status
-        FROM users u
-        LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
-        WHERE u.email = ${normalizedEmail}
+        SELECT id, email, password_hash
+        FROM users
+        WHERE email = ${normalizedEmail}
       `;
 
       if (users.length === 0) {
@@ -150,14 +143,10 @@ export default async function handler(req, res) {
         `;
       }
 
-      const resolvedPlan = normalizePlan(
-        user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
-      );
-
       const token = signToken({
         userId: user.id,
         email: user.email,
-        plan: resolvedPlan
+        plan: 'free'
       });
 
       res.status(200).json({
@@ -166,7 +155,7 @@ export default async function handler(req, res) {
         user: {
           id: user.id,
           email: user.email,
-          plan: resolvedPlan
+          plan: 'free'
         }
       });
       return;

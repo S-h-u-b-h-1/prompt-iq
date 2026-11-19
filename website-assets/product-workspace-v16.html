@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PromptIQ product workspace v16</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0c1110;--panel:#101715;--raised:#17211d;--mint:#9fffc8;--text:#f1f7f3;--muted:#a8b8af;--line:rgba(159,255,200,.16)}
+    *{box-sizing:border-box;letter-spacing:0}html,body{width:100vw;height:100vh;margin:0;overflow:hidden}body{background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .frame{position:relative;width:100%;height:100%;overflow:hidden;background:linear-gradient(90deg,transparent 0 69.4%,rgba(159,255,200,.025) 69.5% 100%)}
+    .frame::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:80px 80px;opacity:.08;pointer-events:none}
+    header{height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid var(--line);position:relative}.brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:760}.mark{display:grid;place-items:center;width:34px;height:34px;border-radius:7px;background:var(--mint);color:var(--bg);font-weight:900}.brand small{display:block;color:var(--muted);font-size:9px;font-weight:550}.workspace{color:var(--muted);font-size:11px}
+    .main{position:relative;display:grid;grid-template-columns:1fr 390px;height:730px}.story{padding:54px 48px 40px}.eyebrow{color:var(--mint);font:600 10px/1 ui-monospace,monospace}.story h1{max-width:590px;margin:22px 0 16px;font-size:52px;line-height:1.06;font-weight:700}.lede{max-width:520px;color:var(--muted);font-size:17px}.brief{margin-top:42px;padding-top:26px;border-top:1px solid var(--line)}.brief h2{font-size:11px;margin:0 0 16px;color:var(--muted)}.brief p{font-size:21px;margin:0 0 24px}.facts{display:grid;grid-template-columns:110px 1fr;gap:10px 20px;max-width:560px}.facts span:nth-child(odd){color:var(--muted)}
+    .composer{position:absolute;left:48px;right:430px;bottom:34px;border:1px solid var(--line);border-radius:8px;padding:17px 20px;background:rgba(16,23,21,.88)}.composer-label{color:var(--muted);font-size:10px}.composer-text{margin-top:9px;font-size:16px}.score{position:absolute;right:18px;top:18px;color:var(--mint);font-size:12px;font-weight:700}
+    aside{margin:18px 18px 18px 0;padding:20px;background:rgba(16,23,21,.97);border:1px solid var(--line);border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.36);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:17px;border-bottom:1px solid var(--line)}.panel-title{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:760}.badge{padding:3px 7px;border-radius:5px;background:rgba(159,255,200,.1);color:var(--muted);font-size:8px}.close{padding:7px 10px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:10px}.label{margin:19px 0 8px;color:var(--muted);font-size:9px;font-weight:700}.settings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.select{min-height:42px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--line);border-radius:6px;font-size:11px;font-weight:650}.engine{margin:14px 0 18px}.engine strong{display:block;font-size:13px}.engine span{display:block;margin-top:4px;color:var(--muted);font-size:10px}.action{display:grid;place-items:center;height:44px;border-radius:6px;background:var(--mint);color:var(--bg);font-weight:800}
+    .result{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}.ready{display:flex;align-items:center;justify-content:space-between;padding:13px;border:1px solid rgba(159,255,200,.24);border-radius:7px;background:rgba(159,255,200,.06)}.ready strong{font-size:13px}.ready span{color:var(--mint);font-size:14px;font-weight:800}.draft{margin-top:13px;padding:14px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}.draft-head{display:flex;justify-content:space-between;color:var(--muted);font-size:9px;font-weight:700}.draft h3{margin:14px 0 8px;font-size:13px}.draft p{margin:0;color:var(--text);font-size:10px;line-height:1.6}.draft ul{margin:8px 0 0;padding-left:16px;color:var(--muted);font-size:9px;line-height:1.55}.panel-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.panel-actions div{display:grid;place-items:center;height:35px;border-radius:6px;border:1px solid var(--line);font-size:10px;font-weight:700}.panel-actions div:first-child{background:var(--mint);color:var(--bg);border-color:var(--mint)}
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <header>
+      <div class="brand"><span class="mark">P</span><span>PromptIQ <small>BY SHUBHAANG KATARUKA</small></span></div>
+      <div class="workspace">AI WORKSPACE / LAUNCH EMAIL</div>
+    </header>
+    <div class="main">
+      <section class="story">
+        <div class="eyebrow">DRAFT / 001</div>
+        <h1>A clearer brief.<br>A better answer.</h1>
+        <p class="lede">PromptIQ works beside the AI tools you already use, turning a rough thought into a prompt you can trust.</p>
+        <div class="brief">
+          <h2>THE REQUEST</h2>
+          <p>Write a launch email for my productivity app.</p>
+          <div class="facts"><span>Audience</span><strong>Freelancers and small teams</strong><span>Tone</span><strong>Warm, confident, direct</strong><span>Outcome</span><strong>Join the early-access list</strong></div>
+        </div>
+        <div class="composer"><span class="composer-label">YOUR DRAFT</span><div class="composer-text">Write a launch email for my productivity app</div><span class="score">28 / 100</span></div>
+      </section>
+      <aside>
+        <div class="panel-head"><div class="panel-title"><span class="mark" style="width:28px;height:28px;font-size:12px">P</span>PromptIQ <span class="badge">FREE</span></div><span class="close">Close</span></div>
+        <div class="label">MODE, ENGINE, PLATFORM</div>
+        <div class="settings"><div class="select">Concise</div><div class="select">AI Rewrite</div><div class="select">ChatGPT</div></div>
+        <div class="engine"><strong>AI Rewrite</strong><span>Free AI model. 20 rewrites per day.</span></div>
+        <div class="action">Optimize prompt</div>
+        <div class="result">
+          <div class="ready"><strong>Prompt is ready</strong><span>+64 pts</span></div>
+          <div class="draft">
+            <div class="draft-head"><span>REWRITTEN PROMPT</span><span>EDIT</span></div>
+            <h3>Write a concise launch email for a productivity app.</h3>
+            <p>Create three subject lines, preview text, and a polished email for freelancers and small teams.</p>
+            <ul><li>Tone: warm, confident, and direct</li><li>Goal: invite readers to join early access</li><li>Use placeholders instead of inventing product claims</li><li>End with one clear call to action</li></ul>
+          </div>
+          <div class="panel-actions"><div>Insert prompt</div><div>Compare</div></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

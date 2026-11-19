@@ -1,6 +1,5 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from './_utils/auth-helper.js';
-import { normalizePlan } from './_utils/plans.js';
 import {
   getCloudAiDailyLimit,
   getSmartTemplateDailyLimit
@@ -45,25 +44,14 @@ export default async function handler(req, res) {
       return;
     }
 
-    const users = await sql`
-      SELECT u.plan AS base_plan, s.plan AS sub_plan, s.status AS sub_status
-      FROM users u
-      LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
-      WHERE u.id = ${userId}
-      LIMIT 1
-    `;
+    const users = await sql`SELECT id FROM users WHERE id = ${userId} LIMIT 1`;
 
     if (users.length === 0) {
       res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
       return;
     }
 
-    const plan = normalizePlan(
-      users[0].sub_status === 'active' && users[0].sub_plan
-        ? users[0].sub_plan
-        : users[0].base_plan
-    );
-    const cloudAiLimit = getCloudAiDailyLimit(plan);
+    const cloudAiLimit = getCloudAiDailyLimit();
     const date = getUtcDateKey();
     const usageRows = await sql`
       SELECT count
@@ -71,18 +59,18 @@ export default async function handler(req, res) {
       WHERE user_id = ${String(userId)} AND date = ${date}
       LIMIT 1
     `;
-    const premiumAiUsed = Number(usageRows[0]?.count || 0);
+    const aiRewriteUsed = Number(usageRows[0]?.count || 0);
 
     res.status(200).json({
       date,
-      plan,
-      premiumAi: {
-        used: premiumAiUsed,
+      plan: 'free',
+      aiRewrite: {
+        used: aiRewriteUsed,
         limit: cloudAiLimit,
-        remaining: Math.max(0, cloudAiLimit - premiumAiUsed)
+        remaining: Math.max(0, cloudAiLimit - aiRewriteUsed)
       },
       smartTemplate: {
-        limit: getSmartTemplateDailyLimit(plan)
+        limit: getSmartTemplateDailyLimit()
       }
     });
   } catch (error) {

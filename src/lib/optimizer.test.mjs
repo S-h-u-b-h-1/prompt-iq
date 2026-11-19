@@ -54,14 +54,14 @@ await expectOptimizerError(
     status: 429,
     statusText: 'Too Many Requests',
     json: async () => ({
-      error: 'Daily AI trial limit reached. Free accounts include 5 AI optimizations per day.',
+      error: 'Daily AI Rewrite limit reached. Free accounts include 20 AI rewrites per day; Quick Rewrite remains available on your device.',
       code: 'CLOUD_AI_DAILY_LIMIT_REACHED'
     })
   },
   {
     status: 429,
     code: 'CLOUD_AI_DAILY_LIMIT_REACHED',
-    message: 'Daily AI trial limit reached. Free accounts include 5 AI optimizations per day.'
+    message: 'Daily AI Rewrite limit reached. Free accounts include 20 AI rewrites per day; Quick Rewrite remains available on your device.'
   }
 );
 

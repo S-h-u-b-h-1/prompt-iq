@@ -4,7 +4,8 @@
 
 const INTENT_KEYWORDS = {
   coding: /\b(code|function|class|bug|api|debug|regex|database|query|compile|github|git|javascript|js|python|html|css|java|c\+\+|rust|typescript|sql|programming|developer)\b/i,
-  marketing: /\b(marketing|seo|copywriting|ad|email campaign|sales|social media|instagram|facebook|audience|target market|ctr|conversion|funnel|landing page|brand|copywriter)\b/i,
+  marketing: /\b(marketing|seo|copywriting|ad|email campaign|launch email|newsletter|product launch|sales|social media|instagram|facebook|audience|target market|ctr|conversion|funnel|landing page|brand|copywriter)\b/i,
+  research: /\b(research|literature review|sources?|citations?|evidence|study|paper|methodology|hypothesis)\b/i,
   creative: /\b(story|novel|poem|fiction|creative writing|character|plot|scifi|dialogue|metaphor|brainstorm|ideas|concept art|fable|script|narrative)\b/i,
   business: /\b(business|strategy|startup|investor|deck|marketing plan|swot|okr|kpi|pitch|revenue|profit|executive|report|slide|meeting|project management|consultant)\b/i,
   finance: /\b(finance|stock|investment|budget|valuation|crypto|bitcoin|portfolio|market trend|sheet|accounting|tax|audit|cfo|compound interest)\b/i,
@@ -61,6 +62,26 @@ const PLATFORM_PROFILES = {
   deepseek: {
     label: 'DeepSeek',
     instruction: 'Use precise technical context, constraints, and a validation checklist for the final answer.'
+  },
+  grok: {
+    label: 'Grok',
+    instruction: 'Keep the request direct, current-context aware, and explicit about the desired evidence and output.'
+  },
+  mistral: {
+    label: 'Le Chat',
+    instruction: 'Use compact instructions, clear context boundaries, and an explicit deliverable.'
+  },
+  meta: {
+    label: 'Meta AI',
+    instruction: 'Use straightforward natural language, concrete constraints, and a clear final format.'
+  },
+  poe: {
+    label: 'Poe',
+    instruction: 'Keep the prompt model-neutral and state the task, context, constraints, and output clearly.'
+  },
+  you: {
+    label: 'You.com',
+    instruction: 'Ask for concise synthesis, source-aware claims when relevant, and a practical final answer.'
   },
   general: {
     label: 'AI assistant',
@@ -119,6 +140,75 @@ export function checkStructure(promptText) {
   };
 }
 
+function getIntentRequirements(intent, originalPrompt) {
+  const isEmail = /\b(email|newsletter)\b/i.test(originalPrompt);
+  const requirements = {
+    coding: [
+      'State assumptions about the language, framework, and runtime when they are not provided.',
+      'Handle relevant edge cases and include a short verification or test plan.'
+    ],
+    marketing: [
+      'Keep claims specific and credible; use labeled placeholders for missing product facts instead of inventing them.',
+      isEmail
+        ? 'Provide three subject line options, preview text, and a polished email body with one clear call to action.'
+        : 'Match the message to the intended audience, channel, and desired action.'
+    ],
+    research: [
+      'Separate established facts, reasonable inferences, and unresolved questions.',
+      'Request reliable sources and note important limitations or conflicting evidence.'
+    ],
+    business: [
+      'Prioritize decisions, trade-offs, measurable outcomes, and practical next steps.',
+      'Use relevant metrics or frameworks only when they genuinely clarify the recommendation.'
+    ],
+    creative: [
+      'Preserve the requested premise and voice while offering distinctive, non-generic choices.',
+      'Avoid cliches and keep characters, tone, and continuity consistent.'
+    ],
+    finance: [
+      'State assumptions and distinguish calculations from judgment or general information.',
+      'Call out material risks, uncertainty, and data that should be verified.'
+    ],
+    education: [
+      'Explain concepts in a logical sequence and adapt the depth to the learner.',
+      'Use a short example and a quick check for understanding when useful.'
+    ],
+    productivity: [
+      'Turn the request into practical steps with clear priorities and realistic effort.',
+      'Prefer a simple workflow over unnecessary tools or complexity.'
+    ],
+    analysis: [
+      'Use only the supplied data or clearly labeled assumptions.',
+      'Show the key findings, relevant comparisons, and limitations before recommendations.'
+    ],
+    writing: [
+      'Preserve the intended meaning while improving clarity, flow, and tone.',
+      'Avoid filler, repetition, unsupported claims, and unnecessary formality.'
+    ],
+    general: [
+      'Address the request directly and make the result specific enough to use immediately.',
+      'Do not invent missing facts; ask concise clarifying questions when a missing detail would materially change the answer.'
+    ]
+  };
+
+  return requirements[intent] || requirements.general;
+}
+
+function getOutputGuidance(intent, originalPrompt) {
+  if (intent === 'coding') return 'Return the implementation first, followed by concise setup, verification, and edge-case notes.';
+  if (intent === 'marketing' && /\b(email|newsletter)\b/i.test(originalPrompt)) {
+    return 'Return subject lines, preview text, and the final email in clean copy-ready sections.';
+  }
+  if (intent === 'research') return 'Use clear headings, cite sources where possible, and end with limitations and open questions.';
+  if (intent === 'analysis' || intent === 'business' || intent === 'finance') {
+    return 'Lead with the conclusion, then show supporting analysis and a short action list.';
+  }
+  if (intent === 'education') return 'Use a step-by-step explanation with one concrete example and a short recap.';
+  if (intent === 'productivity') return 'Return a prioritized checklist with owners, timing, or dependencies where relevant.';
+  if (intent === 'creative') return 'Return the requested creative work without prefacing it with process commentary.';
+  return 'Use the clearest format for the task, with short headings or bullets only when they improve readability.';
+}
+
 export function analyzeAndEnhancePrompt(originalPrompt, options = {}) {
   if (!originalPrompt || originalPrompt.trim() === '') {
     return {
@@ -137,7 +227,6 @@ export function analyzeAndEnhancePrompt(originalPrompt, options = {}) {
   const modeProfile = OPTIMIZATION_MODES[mode];
   const platformProfile = PLATFORM_PROFILES[platform];
   
-  // Define default values based on intent
   const roles = {
     coding: 'expert software engineer',
     marketing: 'senior marketing copywriter and conversion strategist',
@@ -152,50 +241,27 @@ export function analyzeAndEnhancePrompt(originalPrompt, options = {}) {
     general: 'highly capable expert assistant'
   };
 
-  const formats = {
-    coding: 'Clean markdown code blocks with line comments, input/output examples, and error handling notes.',
-    marketing: 'High-impact copy structured with bold accents, short paragraphs, and direct bullet-point lists.',
-    research: 'Detailed analysis organized with markdown headers, methodology descriptions, and references.',
-    business: 'Executive summary format with key takeaways, bulleted metrics, and SWOT or ROI tables where applicable.',
-    creative: 'Engaging narrative style with expressive descriptions and paragraph structures.',
-    education: 'Step-by-step breakdown using clear explanations, definitions, and concept analogies.',
-    productivity: 'Clean action checklist or process map with priority indicators.',
-    analysis: 'Structured data summary with findings, key insights, and clear comparison tables.',
-    writing: 'Polished prose matching the requested tone, formatted with appropriate line breaks.',
-    general: 'Clear paragraphs, structured markdown lists, and headers.'
-  };
+  const task = originalPrompt.trim();
+  const requirements = getIntentRequirements(intent, task);
+  const lines = [];
 
-  const constraints = {
-    coding: 'Ensure code runs efficiently, handles basic errors gracefully, and avoids using placeholder functions.',
-    marketing: 'Avoid jargon. Stay highly persuasive, clear, and action-oriented.',
-    research: 'Avoid bias. Base all assertions on logical reasoning and specify limits of analysis.',
-    business: 'Stay objective, focus on KPI metrics, and highlight actionable next steps.',
-    creative: 'Show, don\'t tell. Maximize sensory detail and ensure natural character voices.',
-    education: 'Avoid overly complex language. Ensure definitions are clear and accessible.',
-    productivity: 'Focus on simplicity and ease of execution. Keep it practical.',
-    analysis: 'Exclude speculative insights not grounded in data. Be precise with comparisons.',
-    writing: 'Avoid passive voice, reduce filler text, and check for tone consistency.',
-    general: 'Avoid boilerplate introductory remarks. Be direct and clear.'
-  };
+  if (!structure.role && mode !== 'concise') {
+    const role = roles[intent] || roles.general;
+    const article = /^[aeiou]/i.test(role) ? 'an' : 'a';
+    lines.push(`Work as ${article} ${role}.`);
+  }
 
-  let draft = '';
-  const roleText = roles[intent] || roles.general;
-  draft += `[ROLE]\nWork as the following specialist: ${roleText}.\n\n`;
+  lines.push('', 'Task', task, '', 'Requirements');
+  for (const requirement of requirements) lines.push(`- ${requirement}`);
+  lines.push(`- ${modeProfile.instruction}`);
+  lines.push(`- ${platformProfile.instruction}`);
+  if (!structure.audience) {
+    lines.push('- If the intended audience materially affects the answer, ask for it or use a clearly labeled assumption.');
+  }
+  lines.push('- Preserve the original intent and do not add facts, promises, or requirements that were not supplied.');
+  lines.push('', 'Output', getOutputGuidance(intent, task));
 
-  draft += `[TASK]\nComplete the following request:\n${originalPrompt.trim()}\n\n`;
-
-  draft += `[AUDIENCE AND CONTEXT]\nUse the audience and context stated in the request. When either is missing, make the smallest reasonable assumption and label it clearly.\n\n`;
-
-  draft += `[MODE]\n${modeProfile.label}: ${modeProfile.instruction}\n\n`;
-
-  draft += `[PLATFORM CALIBRATION]\nOptimize this prompt for ${platformProfile.label}. ${platformProfile.instruction}\n\n`;
-
-  const formatText = formats[intent] || formats.general;
-  draft += `[OUTPUT FORMAT]\n${formatText}\n\n`;
-
-  const constraintText = constraints[intent] || constraints.general;
-  draft += `[CONSTRAINTS]\n${constraintText}\n\n`;
-  draft += `[QUALITY CHECK]\nAddress the request directly, preserve the user's intent, make the result actionable, reason internally without exposing hidden chain-of-thought, and do not return placeholders or instructions that bypass an AI service's safety controls.`;
+  const draft = lines.join('\n').replace(/^\n+/, '').trim();
 
   return {
     enhancedPrompt: draft.trim(),

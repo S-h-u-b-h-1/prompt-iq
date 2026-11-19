@@ -7,7 +7,7 @@ let requests=[];
 let enabled=false;
 global.fetch=async(url,options)=>{
   requests.push({url,options});
-  let data={saveDrafts:enabled,saveSearches:enabled,disclosureVersion:'2026-09-13-v2'};
+  let data={saveDrafts:enabled,saveSearches:enabled,disclosureVersion:'2026-11-19-v3'};
   if(url.includes('preferences')&&options.method==='POST') {enabled=JSON.parse(options.body).saveDrafts;data=JSON.parse(options.body);}
   if(url.includes('activity'))data={saved:true,success:true};
   return {ok:true,json:async()=>data};

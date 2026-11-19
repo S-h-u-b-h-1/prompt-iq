@@ -5,11 +5,11 @@ import { getCapturePreferences, saveActivity } from '../lib/activity.js';
 import { createDraftRecorder } from '../lib/draft-recorder.js';
 import {
   saveOptimization,
-  getUserTier,
   getSessionToken,
   clearSessionToken,
   toggleFavoritePrompt,
-  consumeSmartTemplateQuota
+  consumeSmartTemplateQuota,
+  trackTelemetry
 } from '../lib/storage.js';
 import { diffPrompt } from '../lib/diff.js';
 import { explainChanges } from '../lib/explain.js';
@@ -108,15 +108,9 @@ async function init() {
     panelApi.setPlatform(adapter.platform);
   }
 
-  // Sync initial logged state and user tier
+  // Sync initial account state.
   const token = await getSessionToken();
   await syncAccountAccess(token);
-  if (panelApi) {
-    try {
-      const tier = await getUserTier();
-      panelApi.setTier(tier);
-    } catch (e) {}
-  }
 
   const el = adapter.getInputElement();
   if (el) {
@@ -245,45 +239,58 @@ async function handleOptimize() {
     return;
   }
 
-  let tier = await getUserTier();
   const settings = panelApi.getSettings ? panelApi.getSettings() : { mode: 'standard', platform: adapter.platform };
   const mode = settings.mode || 'standard';
-  const engine = settings.engine || 'smart_template';
+  const engine = settings.engine || 'ai_rewrite';
   if (panelApi) {
     panelApi.setLoggedState(true);
     panelApi.setStorageReady(true);
-    panelApi.setTier(tier);
+    panelApi.setTier('free');
   }
   const localResult = analyzeAndEnhancePrompt(text, {
     mode,
     platform: adapter.platform
   });
   let result;
-  let optimizationTier = tier;
+  let usedAiRewrite = engine === 'ai_rewrite';
 
   try {
-    const usePremiumAi = Boolean(token) && engine === 'premium_ai';
+    void trackTelemetry('optimization_requested');
 
-    if (usePremiumAi) {
-      const response = await chrome.runtime.sendMessage({
-        action: 'CALL_OPTIMIZER',
-        originalPrompt: text,
-        platform: adapter.platform,
-        locallyEnhancedPrompt: localResult.enhancedPrompt,
-        detectedIntent: localResult.intent,
-        mode,
-        token
-      });
+    if (usedAiRewrite) {
+      try {
+        const response = await chrome.runtime.sendMessage({
+          action: 'CALL_OPTIMIZER',
+          originalPrompt: text,
+          platform: adapter.platform,
+          locallyEnhancedPrompt: localResult.enhancedPrompt,
+          detectedIntent: localResult.intent,
+          mode,
+          token
+        });
 
-      if (!response || !response.success) {
-        const error = new Error(response?.error || 'Failed to optimize prompt.');
-        error.status = response?.status;
-        error.code = response?.code;
-        throw error;
+        if (!response || !response.success) {
+          const error = new Error(response?.error || 'Failed to optimize prompt.');
+          error.status = response?.status;
+          error.code = response?.code;
+          throw error;
+        }
+        result = response.result;
+      } catch (cloudError) {
+        if (cloudError.status === 401 || cloudError.status === 403) throw cloudError;
+        await consumeSmartTemplateQuota('free');
+        result = createLocalOptimization(localResult);
+        result.changes.unshift({
+          type: 'specificity',
+          description: cloudError.code === 'CLOUD_AI_DAILY_LIMIT_REACHED'
+            ? 'The daily AI Rewrite allowance was used, so PromptIQ completed this rewrite on your device.'
+            : 'AI Rewrite was unavailable, so PromptIQ completed this rewrite on your device.'
+        });
+        usedAiRewrite = false;
+        void trackTelemetry('optimization_fallback_used');
       }
-      result = response.result;
     } else {
-      await consumeSmartTemplateQuota(tier);
+      await consumeSmartTemplateQuota('free');
       result = createLocalOptimization(localResult);
     }
 
@@ -299,7 +306,7 @@ async function handleOptimize() {
       mode,
       originalScore,
       newScore,
-      usePremiumAi ? 'premium_ai' : 'smart_template'
+      usedAiRewrite ? 'ai_rewrite' : 'quick_rewrite'
     );
 
     const diffedTokens = diffPrompt(text, result.optimized);
@@ -313,11 +320,13 @@ async function handleOptimize() {
       platform: adapter.platform,
       intent: localResult.intent,
       mode,
-      engine: usePremiumAi ? 'premium_ai' : 'smart_template',
-      tier: optimizationTier
+      engine: usedAiRewrite ? 'ai_rewrite' : 'quick_rewrite',
+      tier: 'free'
     });
+    void trackTelemetry('optimization_completed');
   } catch (err) {
-    if (err.code === 'PREMIUM_LIMIT_REACHED' || err.code === 'PREMIUM_DAILY_LIMIT_REACHED' || err.code === 'LOCAL_DAILY_LIMIT_REACHED') {
+    void trackTelemetry('optimization_failed');
+    if (err.code === 'CLOUD_AI_DAILY_LIMIT_REACHED' || err.code === 'LOCAL_DAILY_LIMIT_REACHED') {
       if (panelApi) {
         panelApi.showError(err);
       }
@@ -372,6 +381,7 @@ function handleUse(finalPrompt) {
     const structure = checkStructure(textToUse);
     scoreData.missing = structure.missing;
     panelApi.updateScore(scoreData);
+    void trackTelemetry('prompt_inserted');
   }
 }
 
@@ -389,6 +399,7 @@ function handleUndo() {
 async function handleFavorite(record) {
   if (!isContextValid()) return false;
   const result = await toggleFavoritePrompt(record);
+  void trackTelemetry('favorite_toggled');
   return result.favorite;
 }
 

@@ -1,5 +1,5 @@
 /**
- * Per-site DOM detection and read/write for 7 AI platforms.
+ * Per-site DOM detection and read/write for supported AI platforms.
  */
 
 const PLATFORMS = [
@@ -38,12 +38,64 @@ const PLATFORMS = [
     matches: ['chat.deepseek.com'],
     selector: '#chat-input, textarea, [contenteditable="true"][role="textbox"]',
     isContentEditable: false
+  },
+  {
+    id: 'grok',
+    matches: ['grok.com'],
+    selector: 'textarea, [contenteditable="true"][role="textbox"]',
+    isContentEditable: false
+  },
+  {
+    id: 'mistral',
+    matches: ['chat.mistral.ai'],
+    selector: 'textarea, div.ProseMirror[contenteditable="true"], [contenteditable="true"][role="textbox"]',
+    isContentEditable: false
+  },
+  {
+    id: 'meta',
+    matches: ['meta.ai', 'www.meta.ai'],
+    selector: '[contenteditable="true"][role="textbox"], textarea',
+    isContentEditable: false
+  },
+  {
+    id: 'poe',
+    matches: ['poe.com'],
+    selector: 'textarea, [contenteditable="true"][role="textbox"], div.ProseMirror[contenteditable="true"]',
+    isContentEditable: false
+  },
+  {
+    id: 'you',
+    matches: ['you.com'],
+    selector: 'textarea, [contenteditable="true"][role="textbox"]',
+    isContentEditable: false
   }
 ];
 
+function matchesHostname(hostname, expected) {
+  return hostname === expected || hostname.endsWith(`.${expected}`);
+}
+
+function getVisibleComposer(selector) {
+  const candidates = selector
+    .split(',')
+    .flatMap((part) => [...document.querySelectorAll(part.trim())])
+    .filter((element, index, all) => all.indexOf(element) === index)
+    .filter((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return rect.width >= 120 && rect.height >= 24 && style.display !== 'none' && style.visibility !== 'hidden';
+    });
+
+  return candidates.sort((a, b) => {
+    const aRect = a.getBoundingClientRect();
+    const bRect = b.getBoundingClientRect();
+    return (bRect.bottom - aRect.bottom) || ((bRect.width * bRect.height) - (aRect.width * aRect.height));
+  })[0] || null;
+}
+
 export function getAdapter() {
   const hostname = window.location.hostname;
-  const platform = PLATFORMS.find(p => p.matches.some(m => hostname.includes(m)));
+  const platform = PLATFORMS.find((item) => item.matches.some((match) => matchesHostname(hostname, match)));
   
   if (!platform) return null;
 
@@ -51,13 +103,7 @@ export function getAdapter() {
     platform: platform.id,
     
     getInputElement: () => {
-      // Find the input element based on platform selectors
-      const selectors = platform.selector.split(',').map(s => s.trim());
-      for (const sel of selectors) {
-        const el = document.querySelector(sel);
-        if (el) return el;
-      }
-      return null;
+      return getVisibleComposer(platform.selector);
     },
 
     getText: (el) => {
@@ -99,8 +145,11 @@ export function getAdapter() {
           el.innerText = text;
           el.dispatchEvent(new Event('input', { bubbles: true }));
         } else {
+          const prototype = el.tagName === 'INPUT'
+            ? window.HTMLInputElement.prototype
+            : window.HTMLTextAreaElement.prototype;
           const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-            window.HTMLTextAreaElement.prototype,
+            prototype,
             'value'
           )?.set;
           if (nativeInputValueSetter) {

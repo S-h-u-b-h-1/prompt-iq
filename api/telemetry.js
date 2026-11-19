@@ -12,9 +12,19 @@ const ALLOWED_EVENTS = new Set([
   'popup_opened',
   'login_completed',
   'signup_completed',
-  'checkout_started',
+  'prompt_storage_enabled',
+  'optimization_requested',
+  'optimization_completed',
+  'optimization_failed',
+  'optimization_fallback_used',
+  'prompt_inserted',
+  'favorite_toggled',
+  'contribution_started',
+  'contribution_upi_copied',
   'website_viewed',
-  'store_link_clicked'
+  'store_link_clicked',
+  'website_demo_optimized',
+  'website_demo_copied'
 ]);
 
 export default async function handler(req, res) {

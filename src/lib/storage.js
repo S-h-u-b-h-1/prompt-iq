@@ -12,10 +12,9 @@ const MAX_FAVORITE_PROMPTS = 100;
 const FAVORITES_KEY = 'favoritePrompts';
 const DAILY_USAGE_KEY = 'dailyUsage';
 export const FREE_SMART_TEMPLATE_DAILY_LIMIT = 100;
-export const PREMIUM_SMART_TEMPLATE_DAILY_LIMIT = 200;
 
-export function normalizeTier(tier) {
-  return tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
+export function normalizeTier() {
+  return 'free';
 }
 
 function getLocalDateKey(date = new Date()) {
@@ -25,10 +24,8 @@ function getLocalDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export function getSmartTemplateDailyLimit(tier) {
-  return normalizeTier(tier) === 'premium'
-    ? PREMIUM_SMART_TEMPLATE_DAILY_LIMIT
-    : FREE_SMART_TEMPLATE_DAILY_LIMIT;
+export function getSmartTemplateDailyLimit() {
+  return FREE_SMART_TEMPLATE_DAILY_LIMIT;
 }
 
 async function requestJson(path, options = {}) {
@@ -276,7 +273,7 @@ export async function getSmartTemplateQuotaStatus(tier) {
 export async function consumeSmartTemplateQuota(tier) {
   const status = await getSmartTemplateQuotaStatus(tier);
   if (status.remaining <= 0) {
-    const error = new Error(`Daily Smart Template limit reached. ${normalizeTier(tier) === 'premium' ? 'Premium includes 200 local optimizations per day.' : 'Free includes 100 local optimizations per day.'}`);
+    const error = new Error('Daily Quick Rewrite limit reached. Free accounts include 100 on-device rewrites per day.');
     error.status = 429;
     error.code = 'LOCAL_DAILY_LIMIT_REACHED';
     error.limit = status.limit;
@@ -365,7 +362,7 @@ export async function fetchUserProfile() {
   }
 }
 
-export async function getPremiumUsageStatus() {
+export async function getUsageStatus() {
   const token = await getSessionToken();
   if (!token) return null;
 
@@ -396,22 +393,6 @@ export async function trackTelemetry(eventType) {
   } catch (error) {
     // Analytics must never interrupt the extension workflow.
   }
-}
-
-// Subscription Actions
-export async function checkoutSubscription() {
-  const token = await getSessionToken();
-  if (!token) throw new Error('You must be logged in to subscribe.');
-
-  const data = await requestJson('/api/subscription/checkout', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  });
-
-  return data.url;
 }
 
 // IndexedDB Actions (Synchronized via JWT Authorization)

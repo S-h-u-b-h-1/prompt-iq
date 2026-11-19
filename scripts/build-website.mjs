@@ -1,4 +1,4 @@
-import { copyFile, cp, mkdir, rm } from 'node:fs/promises';
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const outputDirectory = path.resolve('site-dist');
@@ -22,8 +22,19 @@ await Promise.all([
   copyFile(path.resolve('public/favicon.svg'), path.join(outputDirectory, 'favicon.svg')),
   copyFile(path.resolve('public/brand-mark.svg'), path.join(outputDirectory, 'brand-mark.svg')),
   copyFile(path.resolve('website-assets/optical-rails-v13.png'), path.join(outputDirectory, 'website-assets/optical-rails-v13.png')),
-  copyFile(path.resolve('website-assets/product-workspace-v13.png'), path.join(outputDirectory, 'website-assets/product-workspace-v13.png')),
+  copyFile(path.resolve('website-assets/product-workspace-v16.png'), path.join(outputDirectory, 'website-assets/product-workspace-v16.png')),
   copyFile(path.resolve('public/store_icon.png'), path.join(outputDirectory, 'store_icon.png')),
 ]);
+
+const websiteScriptPath = path.join(outputDirectory, 'website.js');
+const websiteScript = await readFile(websiteScriptPath, 'utf8');
+const gaMeasurementId = /^G-[A-Z0-9]+$/i.test(process.env.VITE_GA_MEASUREMENT_ID || '')
+  ? process.env.VITE_GA_MEASUREMENT_ID
+  : '';
+await writeFile(
+  websiteScriptPath,
+  websiteScript.replace('__PROMPTIQ_GA_MEASUREMENT_ID__', gaMeasurementId),
+  'utf8'
+);
 
 console.log('Website built with homepage, policy pages, support, and assets.');

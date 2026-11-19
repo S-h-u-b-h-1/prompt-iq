@@ -25,8 +25,8 @@ global.localStorage = {
 
 async function testSessionToken() {
   assert.strictEqual(normalizeTier('free'), 'free');
-  assert.strictEqual(normalizeTier('premium'), 'premium');
-  assert.strictEqual(normalizeTier('pro'), 'premium');
+  assert.strictEqual(normalizeTier('premium'), 'free');
+  assert.strictEqual(normalizeTier('pro'), 'free');
   assert.strictEqual(normalizeTier('unknown'), 'free');
 
   // Set token
@@ -74,7 +74,7 @@ async function testSmartTemplateQuotas() {
   localStorage.clear();
 
   assert.strictEqual(getSmartTemplateDailyLimit('free'), 100);
-  assert.strictEqual(getSmartTemplateDailyLimit('premium'), 200);
+  assert.strictEqual(getSmartTemplateDailyLimit('premium'), 100);
 
   let freeStatus = await getSmartTemplateQuotaStatus('free');
   assert.strictEqual(freeStatus.used, 0);
@@ -93,7 +93,7 @@ async function testSmartTemplateQuotas() {
 
   const premiumStatus = await getSmartTemplateQuotaStatus('premium');
   assert.strictEqual(premiumStatus.used, 100);
-  assert.strictEqual(premiumStatus.remaining, 100);
+  assert.strictEqual(premiumStatus.remaining, 0);
 }
 
 Promise.resolve()

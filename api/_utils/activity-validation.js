@@ -1,5 +1,5 @@
-export const DISCLOSURE_VERSION = '2026-09-13-v2';
-const PLATFORMS = new Set(['chatgpt','claude','gemini','perplexity','copilot','deepseek','general']);
+export const DISCLOSURE_VERSION = '2026-11-19-v3';
+const PLATFORMS = new Set(['chatgpt','claude','gemini','perplexity','copilot','deepseek','grok','mistral','meta','poe','you','general']);
 const MODES = new Set(['standard','concise','detailed','creative','technical']);
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -42,6 +42,6 @@ export function validateOptimization(body) {
   if(body.mode != null && !MODES.has(body.mode)) fail('Invalid mode');
   if(body.intent != null) text(body.intent,100,'intent');
   if(body.clientEventId != null && !UUID.test(body.clientEventId)) fail('Invalid event ID');
-  if(body.engine != null && !['smart_template','premium_ai'].includes(body.engine)) fail('Invalid engine');
+  if(body.engine != null && !['quick_rewrite','ai_rewrite','smart_template','premium_ai'].includes(body.engine)) fail('Invalid engine');
   return body;
 }

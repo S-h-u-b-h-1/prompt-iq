@@ -5,7 +5,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   
   let isCooldownActive = false;
   let currentRunId = null;
-  let userTier = 'free';
   let isLoggedIn = false;
   let isStorageReady = false;
   let detectedPlatform = 'general';
@@ -37,6 +36,11 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     perplexity: 'Perplexity',
     copilot: 'Copilot',
     deepseek: 'DeepSeek',
+    grok: 'Grok',
+    mistral: 'Le Chat',
+    meta: 'Meta AI',
+    poe: 'Poe',
+    you: 'You.com',
     general: 'AI assistant'
   };
   
@@ -167,11 +171,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     .status-free {
       background: rgba(159, 255, 200, 0.1);
       color: var(--pi-muted);
-    }
-    .status-premium {
-      background: rgba(159, 255, 200, 0.14);
-      color: var(--pi-pro);
-      border: 1px solid rgba(159, 255, 200, 0.2);
     }
     .signin-card {
       display: none;
@@ -642,58 +641,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       100% { transform: translateX(100%); }
     }
     
-    /* Paywall Overlay */
-    .paywall-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(159, 255, 200, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 1000010;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .paywall-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .paywall-card {
-      background: var(--pi-bg);
-      border: 1px solid var(--pi-border);
-      border-radius: 8px;
-      padding: 28px;
-      text-align: center;
-      max-width: 320px;
-      box-shadow: 0 20px 40px -10px rgba(159, 255, 200, 0.4);
-      box-sizing: border-box;
-    }
-    .paywall-icon {
-      font-size: 36px;
-      margin-bottom: 12px;
-    }
-    .paywall-title {
-      font-weight: 800;
-      font-size: 18px;
-      margin-bottom: 8px;
-      color: var(--pi-text);
-      letter-spacing: 0;
-    }
-    .paywall-desc {
-      font-size: 12.5px;
-      color: var(--pi-muted);
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-    
     /* Feedback Section */
     .feedback-section {
       background: var(--pi-card);
@@ -823,7 +770,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       <div class="header-logo-group">
         <svg width="24" height="24" viewBox="0 0 128 128" aria-hidden="true" style="flex-shrink:0"><rect width="128" height="128" rx="26" fill="#9fffc8"/><path fill="#101414" d="M31 31h42l24 25v18L73 98H53l-22 13V31zm17 17v34l17-10h5l12-12-12-12H48z" fill-rule="evenodd"/></svg>
         <div class="title">PromptIQ</div>
-        <div class="status-badge status-free" id="header-pro-badge">FREE</div>
+        <div class="status-badge status-free">FREE</div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <button class="btn btn-secondary" id="logout-sidebar-btn" aria-label="Log out of PromptIQ" style="padding: 4px 8px; font-size: 10px; background: rgba(159, 255, 200, 0.08); color: var(--pi-danger); border-color: rgba(159, 255, 200, 0.12); display: none;">Log Out</button>
@@ -842,13 +789,13 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
           <option value="technical">Technical</option>
         </select>
         <select class="select-control" id="engine-select" aria-label="Optimization engine">
-          <option value="smart_template">Local</option>
-          <option value="premium_ai">Premium AI</option>
+          <option value="ai_rewrite">AI Rewrite</option>
+          <option value="quick_rewrite">Quick Rewrite</option>
         </select>
         <div class="platform-pill" id="platform-pill">AI assistant</div>
       </div>
       <div class="engine-summary">
-        <div class="engine-name" id="engine-name">Smart Template</div>
+        <div class="engine-name" id="engine-name">AI Rewrite</div>
         <div class="engine-copy" id="engine-copy">Create an account to score, save, and optimize prompts.</div>
       </div>
     </div>
@@ -901,17 +848,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       <div class="error-title" id="error-panel-title">Optimization Failed</div>
       <div class="error-message" id="error-panel-message">Please try refreshing the page.</div>
       <button class="btn btn-secondary" id="error-open-popup-btn" aria-label="Open PromptIQ account page" style="width: 100%;">Open Account</button>
-    </div>
-    
-    <!-- Paywall Overlay -->
-    <div class="paywall-overlay" id="paywall-overlay">
-      <div class="paywall-card">
-        <div class="paywall-icon" id="paywall-icon">AI</div>
-        <div class="paywall-title" id="paywall-title">Unlock PromptIQ Premium</div>
-        <div class="paywall-desc" id="paywall-desc">Use server-side AI optimization while keeping API keys out of the extension.</div>
-        <button class="btn btn-primary" id="paywall-upgrade-btn" aria-label="Open PromptIQ popup to upgrade" style="width: 100%;">Open Upgrade Options</button>
-        <button class="btn btn-secondary" id="paywall-close-btn" aria-label="Close upgrade message" style="width: 100%; margin-top: 8px;">Back</button>
-      </div>
     </div>
     
     <!-- Result Editor Area -->
@@ -983,7 +919,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
   const changesList = shadow.getElementById('changes-list');
   const changesHeader = shadow.getElementById('changes-header');
   const toggleChangesLabel = shadow.getElementById('toggle-changes-label');
-  const paywallOverlay = shadow.getElementById('paywall-overlay');
   const optimizeBtn = shadow.getElementById('optimize-btn');
   const loaderShimmer = shadow.getElementById('loader-shimmer');
   const errorPanel = shadow.getElementById('error-panel');
@@ -1007,10 +942,15 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
         if (data.optimizationMode && modeSelect.querySelector(`option[value="${data.optimizationMode}"]`)) {
           modeSelect.value = data.optimizationMode;
         }
-        if (data.optimizationEngine && engineSelect.querySelector(`option[value="${data.optimizationEngine}"]`)) {
+        const migratedEngine = data.optimizationEngine === 'premium_ai'
+          ? 'ai_rewrite'
+          : data.optimizationEngine === 'smart_template'
+            ? 'quick_rewrite'
+            : data.optimizationEngine;
+        if (migratedEngine && engineSelect.querySelector(`option[value="${migratedEngine}"]`)) {
           hasStoredEnginePreference = true;
-          storedEnginePreference = data.optimizationEngine;
-          engineSelect.value = data.optimizationEngine;
+          storedEnginePreference = migratedEngine;
+          engineSelect.value = migratedEngine;
         }
         updateEngineSummary();
       });
@@ -1024,7 +964,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     const engineCopy = shadow.getElementById('engine-copy');
     const requestedEngine = engineSelect.value;
     if (!isLoggedIn || !isStorageReady) {
-      engineSelect.value = 'smart_template';
+      engineSelect.value = 'ai_rewrite';
       engineName.textContent = 'Account required';
       engineCopy.textContent = isLoggedIn
         ? 'Review prompt storage and finish account setup to continue.'
@@ -1032,24 +972,20 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       return;
     }
 
-    const effectiveEngine = requestedEngine === 'premium_ai'
-      ? 'premium_ai'
-      : 'smart_template';
+    const effectiveEngine = requestedEngine === 'quick_rewrite'
+      ? 'quick_rewrite'
+      : 'ai_rewrite';
 
     if (effectiveEngine !== requestedEngine) {
       engineSelect.value = effectiveEngine;
     }
 
-    if (effectiveEngine === 'premium_ai') {
-      engineName.textContent = 'Premium AI';
-      engineCopy.textContent = userTier === 'premium'
-        ? 'Uses secure server-side AI. Premium includes 50 optimizations per day.'
-        : 'Free account trial: 5 secure server-side AI optimizations per day.';
+    if (effectiveEngine === 'ai_rewrite') {
+      engineName.textContent = 'AI Rewrite';
+      engineCopy.textContent = 'Uses a free server-side AI model. Includes 20 rewrites per day.';
     } else {
-      engineName.textContent = 'Smart Template';
-      engineCopy.textContent = userTier === 'premium'
-        ? 'Runs locally. Premium includes 200 Smart Template optimizations per day.'
-        : 'Runs locally. Free includes 100 Smart Template optimizations per day.';
+      engineName.textContent = 'Quick Rewrite';
+      engineCopy.textContent = 'Runs on this device. Includes 100 rewrites per day and remains available when AI is busy.';
     }
   }
 
@@ -1076,9 +1012,9 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     }
 
     if (!hasAccess) {
-      engineSelect.value = 'smart_template';
-    } else if (userTier === 'premium' && !hasStoredEnginePreference) {
-      engineSelect.value = 'premium_ai';
+      engineSelect.value = 'ai_rewrite';
+    } else if (!hasStoredEnginePreference) {
+      engineSelect.value = 'ai_rewrite';
     } else if (
       storedEnginePreference &&
       engineSelect.querySelector(`option[value="${storedEnginePreference}"]`)
@@ -1270,15 +1206,6 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     optimizeBtn.click();
   });
 
-  // Paywall Actions
-  shadow.getElementById('paywall-close-btn').addEventListener('click', () => {
-    paywallOverlay.classList.remove('active');
-  });
-
-  shadow.getElementById('paywall-upgrade-btn').addEventListener('click', () => {
-    openPromptIqPopup();
-  });
-
   // Feedback Event Listeners
   shadow.getElementById('feedback-yes').addEventListener('click', async () => {
     if (onFeedback && currentRunId) {
@@ -1314,7 +1241,7 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
     },
     getSettings: () => ({
       mode: modeSelect.value || 'standard',
-      engine: engineSelect.value || 'smart_template',
+      engine: engineSelect.value || 'ai_rewrite',
       platform: detectedPlatform || 'general'
     }),
     setPlatform: (platform) => {
@@ -1325,30 +1252,8 @@ export function createPanel(onOptimize, onUse, onFeedback, onLogout, onUndo, onF
       const isVisible = panel.classList.toggle('visible');
       container.classList.toggle('panel-open', isVisible);
     },
-    setTier: (tier) => {
-      userTier = tier === 'premium' || tier === 'pro' ? 'premium' : 'free';
-      const proBadge = shadow.getElementById('header-pro-badge');
-
-      if (userTier === 'premium') {
-        proBadge.textContent = 'PREMIUM';
-        proBadge.className = 'status-badge status-premium';
-      } else {
-        proBadge.textContent = 'FREE';
-        proBadge.className = 'status-badge status-free';
-      }
+    setTier: () => {
       refreshEngineAvailability();
-    },
-    showPaywall: (type, lockedMode = null) => {
-      loaderShimmer.style.display = 'none';
-      optimizeBtn.disabled = !isLoggedIn || !isStorageReady;
-      
-      const titleEl = shadow.getElementById('paywall-title');
-      const descEl = shadow.getElementById('paywall-desc');
-      
-      titleEl.textContent = 'Unlock PromptIQ Premium';
-      descEl.textContent = 'Premium uses PromptIQ server-side AI for deeper, context-aware optimization.';
-      
-      paywallOverlay.classList.add('active');
     },
     updateScore: (scoreData) => {
       const dot = shadow.getElementById('score-dot');

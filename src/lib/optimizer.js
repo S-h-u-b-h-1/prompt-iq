@@ -19,8 +19,8 @@ function createOptimizerError(status, payload = {}, statusText = '') {
 
   if (isPromptIqAuthError) {
     userMessage = 'Your session expired. Please log in again.';
-  } else if (status === 403 || /pro mode|locked|premium/i.test(rawMessage)) {
-    userMessage = 'Cloud AI optimization requires PromptIQ Premium.';
+  } else if (status === 403 || /locked/i.test(rawMessage)) {
+    userMessage = 'Finish account setup before using AI Rewrite.';
   } else if (code === 'CLOUD_AI_DAILY_LIMIT_REACHED' || code === 'PREMIUM_DAILY_LIMIT_REACHED') {
     userMessage = rawMessage;
   } else if (status === 429 || /daily limit|rate limit|quota/i.test(rawMessage)) {

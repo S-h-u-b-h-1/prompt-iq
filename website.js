@@ -9,6 +9,28 @@ const output = document.getElementById('demo-output');
 const status = document.getElementById('demo-status');
 const copy = document.getElementById('demo-copy');
 let copyReset;
+const GA_MEASUREMENT_ID = '__PROMPTIQ_GA_MEASUREMENT_ID__';
+
+if (GA_MEASUREMENT_ID && /^G-[A-Z0-9]+$/i.test(GA_MEASUREMENT_ID)) {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_MEASUREMENT_ID, {
+    anonymize_ip: true,
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false
+  });
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_MEASUREMENT_ID)}`;
+  document.head.appendChild(script);
+}
+
+const trackGa = (eventType) => {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventType, { transport_type: 'beacon' });
+  }
+};
 
 const refreshScore = () => {
   score.textContent = scorePrompt(prompt.value).score + ' / 100';
@@ -43,8 +65,10 @@ document.getElementById('demo-form').addEventListener('submit', (event) => {
   output.textContent = optimized.enhancedPrompt;
   result.hidden = false;
   empty.hidden = true;
-  status.textContent = 'Ready. Refined locally with Smart Template.';
+  status.textContent = 'Ready. Refined locally with Quick Rewrite.';
   copy.textContent = 'Copy prompt';
+  track('website_demo_optimized');
+  trackGa('website_demo_optimized');
 });
 
 copy.addEventListener('click', async () => {
@@ -52,6 +76,8 @@ copy.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(output.textContent);
     copy.textContent = 'Copied';
+    track('website_demo_copied');
+    trackGa('website_demo_copied');
   } catch {
     copy.textContent = 'Copy unavailable';
     status.textContent = 'Select the refined prompt to copy it.';
@@ -74,6 +100,7 @@ if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: re
 }
 
 const track = (eventType) => {
+  if (location.hostname !== 'promptiq-theta.vercel.app') return;
   fetch('/api/telemetry', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -84,6 +111,31 @@ const track = (eventType) => {
 if (location.hostname === 'promptiq-theta.vercel.app') {
   track('website_viewed');
   document.querySelectorAll('.store-link').forEach((link) => {
-    link.addEventListener('click', () => track('store_link_clicked'));
+    link.addEventListener('click', () => {
+      track('store_link_clicked');
+      trackGa('store_link_clicked');
+    });
   });
 }
+
+document.querySelectorAll('.contribution-link').forEach((button) => {
+  button.addEventListener('click', () => {
+    track('contribution_started');
+    trackGa('contribution_started');
+    window.location.href = button.dataset.upi;
+  });
+});
+
+document.querySelectorAll('.copy-upi').forEach((button) => {
+  button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText('shubhaang2201@axl');
+      button.textContent = 'UPI ID copied';
+      track('contribution_upi_copied');
+      trackGa('contribution_upi_copied');
+      window.setTimeout(() => { button.textContent = 'Copy UPI ID'; }, 1800);
+    } catch {
+      button.textContent = 'UPI: shubhaang2201@axl';
+    }
+  });
+});

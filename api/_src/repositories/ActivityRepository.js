@@ -15,7 +15,7 @@ export class ActivityRepository {
              disclosure_version AS "disclosureVersion"
       FROM prompt_iq.capture_preferences WHERE user_id = ${userId}
     `]);
-    return rows[0] || {saveDrafts:false,saveSearches:false,disclosureVersion:'2026-09-13-v2'};
+    return rows[0] || {saveDrafts:false,saveSearches:false,disclosureVersion:'2026-11-19-v3'};
   }
 
   async setPreferences(userId, value) {
@@ -38,7 +38,8 @@ export class ActivityRepository {
     const statement = entry.kind === 'draft' ? sql`
       WITH consent AS MATERIALIZED (
         SELECT user_id FROM prompt_iq.capture_preferences
-        WHERE user_id=${userId} AND save_drafts=true FOR UPDATE
+        WHERE user_id=${userId} AND save_drafts=true
+          AND disclosure_version='2026-11-19-v3' FOR UPDATE
       )
       INSERT INTO prompt_iq.drafts(user_id,client_id,prompt_text,platform,mode,client_revision)
       SELECT user_id,${entry.clientId}::uuid,${entry.text},${entry.platform},${entry.mode},${entry.revision} FROM consent
@@ -50,7 +51,8 @@ export class ActivityRepository {
     ` : sql`
       WITH consent AS MATERIALIZED (
         SELECT user_id FROM prompt_iq.capture_preferences
-        WHERE user_id=${userId} AND save_searches=true FOR UPDATE
+        WHERE user_id=${userId} AND save_searches=true
+          AND disclosure_version='2026-11-19-v3' FOR UPDATE
       )
       INSERT INTO prompt_iq.searches(user_id,client_id,query_text,category,result_count)
       SELECT user_id,${entry.clientId}::uuid,${entry.text},${entry.category},${entry.resultCount} FROM consent

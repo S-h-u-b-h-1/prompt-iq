@@ -9,9 +9,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #9fff
 .app{min-height:590px;display:flex;flex-direction:column;border:1px solid var(--border)}
 .topbar{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 18px;border-bottom:1px solid var(--border);background:#101414}
 .brand{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:750}
+.brand small{display:block;color:var(--muted);font-size:8px;font-weight:550}
 .mark{display:block;width:30px;height:30px;border-radius:6px}
 .plan-badge{min-width:54px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;color:var(--muted);background:rgba(159, 255, 200, .08);text-align:center;font-size:9px;font-weight:700}
-.plan-badge.premium{color:#9fffc8;border-color:#9fffc8;background:rgba(159, 255, 200, .08)}
 main{padding:16px 18px 10px;flex:1;animation:enter .4s var(--ease) both}
 .account{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .account>div:first-child{min-width:0;flex:1}
@@ -41,18 +41,12 @@ main{padding:16px 18px 10px;flex:1;animation:enter .4s var(--ease) both}
 .usage-help{display:none}
 .meter{height:5px;margin-top:8px;border-radius:3px;overflow:hidden;background:rgba(159, 255, 200, .08)}
 .meter>span{display:block;width:0;height:100%;border-radius:inherit;background:var(--green);transition:width .65s var(--ease)}
-.meter.premium>span{background:var(--blue)}
 .action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .action-grid .btn{width:100%}
-.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.plan{min-width:0;padding:12px;border:1px solid var(--border);border-radius:8px;background:#101414}
-.plan+.plan{background:rgba(159, 255, 200, .08);border-color:#9fffc8}
-.plan-name{font-size:11px;font-weight:650}
-.plan-price{font-size:24px;font-weight:700;margin-top:4px;line-height:1.2}
-.plan-price span{font-size:9px;font-weight:400;color:var(--muted)}
-.plan p{margin:8px 0 0;color:var(--muted);font-size:10px;line-height:1.5}
-.plan .btn{width:100%;margin-top:10px;background:var(--blue);border-color:var(--blue);color:#101414}
-.plan .btn:hover{background:#9fffc8}
+.support-card{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:end}
+.support-card p{margin:0;color:var(--muted);font-size:10px;line-height:1.55}
+.support-card code{display:inline-block;margin-top:7px;color:var(--blue);font-size:11px}
+.support-actions{display:grid;gap:6px;min-width:120px}
 .notice{display:none;padding:9px 10px;margin:0 0 12px;border:1px solid #9fffc8;border-radius:6px;color:#9fffc8;background:rgba(159, 255, 200, .08);font-size:11px}
 .notice.visible{display:block;animation:enter .25s var(--ease)}
 .notice.error{color:#9fffc8;border-color:#9fffc8;background:rgba(159, 255, 200, .08)}
@@ -82,5 +76,5 @@ dialog::backdrop{background:rgba(159, 255, 200, 0.251);backdrop-filter:blur(4px)
 @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes dialog-enter{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-@media(max-width:379px){main{padding:14px}.topbar{padding:0 14px}.account{flex-wrap:wrap}.account-actions{gap:4px}.btn-small{padding:0 7px}.plan{padding:10px}.plan-price{font-size:22px}.account-copy{font-size:10px}}
+@media(max-width:379px){main{padding:14px}.topbar{padding:0 14px}.account{flex-wrap:wrap}.account-actions{gap:4px}.btn-small{padding:0 7px}.account-copy{font-size:10px}.support-card{grid-template-columns:1fr}.support-actions{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

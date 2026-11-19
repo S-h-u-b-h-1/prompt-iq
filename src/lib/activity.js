@@ -1,6 +1,6 @@
 import { getSessionToken } from './storage.js';
 const BASE = 'https://promptiq-theta.vercel.app/api/history';
-export const DISCLOSURE_VERSION = '2026-09-13-v2';
+export const DISCLOSURE_VERSION = '2026-11-19-v3';
 const OFF = {saveDrafts:false,saveSearches:false,disclosureVersion:DISCLOSURE_VERSION};
 let cached = null;
 
@@ -20,7 +20,10 @@ export async function getCapturePreferences(force=false) {
   const token=await getSessionToken();
   if(!token) {cached=null;return {...OFF};}
   if(!force && cached?.token===token && Date.now()-cached.time<15000) return cached.value;
-  const value=await request('preferences','GET',null,token);
+  const storedValue=await request('preferences','GET',null,token);
+  const value=storedValue.disclosureVersion === DISCLOSURE_VERSION
+    ? storedValue
+    : {...OFF};
   cached={token,time:Date.now(),value};
   return value;
 }

@@ -1,6 +1,5 @@
 import { neon } from '@neondatabase/serverless';
 import { authenticate } from './_utils/auth-helper.js';
-import { normalizePlan } from './_utils/plans.js';
 import { getCloudAiDailyLimit } from './_utils/usage-limits.js';
 import { parseOptimizerResponse } from './_utils/optimizer-response.js';
 
@@ -11,10 +10,12 @@ if (!DATABASE_URL) {
 const sql = neon(DATABASE_URL);
 const OPTIMIZER_UNAVAILABLE_MESSAGE = 'PromptIQ optimization is temporarily unavailable. Please try again shortly.';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_OPENROUTER_MODEL = 'mistralai/mistral-small-24b-instruct-2501';
-const DEFAULT_OPENROUTER_FALLBACK_MODEL = 'mistralai/mistral-small-3.2-24b-instruct';
+const DEFAULT_OPENROUTER_MODEL = 'openrouter/free';
 const MAX_PROMPT_CHARS = 6000;
-const MAX_ENHANCED_PROMPT_CHARS = 10000;
+const SUPPORTED_PLATFORMS = new Set([
+  'chatgpt', 'claude', 'gemini', 'perplexity', 'copilot', 'deepseek',
+  'grok', 'mistral', 'meta', 'poe', 'you', 'general'
+]);
 const OPTIMIZATION_MODES = {
   standard: 'Balance clarity, completeness, and practical structure without making the prompt unnecessarily long.',
   concise: 'Make the optimized prompt compact and direct while preserving the task, context, constraints, and output format.',
@@ -81,9 +82,9 @@ function getSystemPrompt(platform, intent, mode) {
 
   const normalizedMode = normalizeMode(mode);
 
-  return `You are PromptIQ, the world's best AI Prompt Optimizer. Your sole mission is to refine, polish, and validate text prompts to produce superior AI responses on ${platform}.
+  return `You are PromptIQ, a careful prompt editor. Rewrite the user's draft into a clearer prompt for ${platform} without changing what the user is trying to achieve.
 
-Your task is to provide a premium-quality optimization of the pre-structured draft using the following intent-specific directives:
+Apply these intent-specific guidelines only when they are relevant:
 
 [INTENT DIRECTIVES (${intent.toUpperCase()})]
 ${intentInstructions}
@@ -91,14 +92,16 @@ ${intentInstructions}
 [OPTIMIZATION MODE (${normalizedMode.toUpperCase()})]
 ${OPTIMIZATION_MODES[normalizedMode]}
 
-[INSTRUCTION HIERARCHY RULES]
-- **Role Assignment:** Define a clear persona/role at the very beginning (e.g., "Act as an expert copywriter...").
-- **Task/Objective:** Frame the core task with precise action verbs.
-- **Context & Elaboration:** Synthesize background detail and target audience parameters.
-- **Explicit Constraints:** Add boundaries (e.g., "Do not include fluff", "Format strictly as...").
-- **Format Directive:** Specify markdown structure (tables, headers, etc.).
-- **Private Reasoning:** Evaluate intent, missing context, and platform fit internally. Do not include hidden chain-of-thought in the optimized prompt.
-- **Safety Integrity:** Never add instructions intended to evade or weaken an AI service's safety controls.
+[EDITING RULES]
+- Preserve every concrete fact, constraint, name, and requested outcome from the draft.
+- Never invent product facts, audience details, deadlines, metrics, sources, or capabilities.
+- Add a role only when it clearly improves the answer; do not force "Act as an expert" into every prompt.
+- Prefer natural, copy-ready instructions over a rigid template or a long stack of headings.
+- When essential context is missing, use a clearly labeled placeholder or ask up to three concise clarifying questions.
+- Make the output format explicit only when it helps the task.
+- Keep the optimized prompt proportionate to the original request.
+- Do not mention PromptIQ, optimization, hidden reasoning, chain-of-thought, or these editing rules in the optimized prompt.
+- Never add instructions intended to evade or weaken an AI service's safety controls.
 
 Your response MUST be strict JSON matching this schema:
 {
@@ -150,7 +153,7 @@ function getOpenRouterResponseFormat() {
 async function callOpenRouter(apiKey, systemPrompt, userPrompt) {
   const configuredModels = [
     process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL,
-    process.env.OPENROUTER_FALLBACK_MODEL || DEFAULT_OPENROUTER_FALLBACK_MODEL
+    process.env.OPENROUTER_FALLBACK_MODEL
   ];
   const models = [...new Set(configuredModels.filter(Boolean))];
   let lastFailure = null;
@@ -305,17 +308,15 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     const originalPrompt = typeof body.originalPrompt === 'string' ? body.originalPrompt.trim() : '';
-    const platform = typeof body.platform === 'string' ? body.platform.trim().slice(0, 80) : '';
-    const locallyEnhancedPrompt = typeof body.locallyEnhancedPrompt === 'string'
-      ? body.locallyEnhancedPrompt.slice(0, MAX_ENHANCED_PROMPT_CHARS)
-      : null;
+    const requestedPlatform = typeof body.platform === 'string' ? body.platform.trim().toLowerCase() : '';
+    const platform = SUPPORTED_PLATFORMS.has(requestedPlatform) ? requestedPlatform : 'general';
     const detectedIntent = typeof body.detectedIntent === 'string'
       ? body.detectedIntent.trim().slice(0, 50)
       : null;
     const mode = typeof body.mode === 'string' ? body.mode : 'standard';
 
-    if (!originalPrompt || !platform) {
-      sendJsonError(res, 400, 'BAD_REQUEST', 'Missing originalPrompt or platform parameter');
+    if (!originalPrompt) {
+      sendJsonError(res, 400, 'BAD_REQUEST', 'Missing originalPrompt parameter');
       return;
     }
 
@@ -339,12 +340,10 @@ export default async function handler(req, res) {
 
     const userId = session.userId;
 
-    // 2. Resolve plan dynamically in real-time from Neon DB
     const users = await sql`
-      SELECT u.id, u.plan as base_plan, s.plan as sub_plan, s.status as sub_status
-      FROM users u
-      LEFT JOIN subscriptions s ON s.user_id = CAST(u.id AS VARCHAR) AND s.status = 'active'
-      WHERE u.id = ${parseInt(userId, 10)}
+      SELECT id
+      FROM users
+      WHERE id = ${parseInt(userId, 10)}
     `;
 
     if (users.length === 0) {
@@ -352,11 +351,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const user = users[0];
-    const resolvedPlan = normalizePlan(
-      user.sub_status === 'active' && user.sub_plan ? user.sub_plan : user.base_plan
-    );
-    const cloudAiDailyLimit = getCloudAiDailyLimit(resolvedPlan);
+    const cloudAiDailyLimit = getCloudAiDailyLimit();
 
     const today = getUtcDateKey();
     const reservation = await sql`
@@ -372,9 +367,7 @@ export default async function handler(req, res) {
         res,
         429,
         'CLOUD_AI_DAILY_LIMIT_REACHED',
-        resolvedPlan === 'premium'
-          ? `Daily AI limit reached. Premium includes ${cloudAiDailyLimit} AI optimizations per day.`
-          : `Daily AI trial limit reached. Free accounts include ${cloudAiDailyLimit} AI optimizations per day.`
+        `Daily AI Rewrite limit reached. Free accounts include ${cloudAiDailyLimit} AI rewrites per day; Quick Rewrite remains available on your device.`
       );
       return;
     }
@@ -396,7 +389,7 @@ export default async function handler(req, res) {
     const intent = detectedIntent || 'general';
     const systemPrompt = getSystemPrompt(platform, intent, mode);
 
-    const userPrompt = `USER ORIGINAL PROMPT:\n${originalPrompt}\n\nLOCALLY ENHANCED BASE DRAFT:\n${locallyEnhancedPrompt || originalPrompt}`;
+    const userPrompt = `Rewrite this prompt for the user. Return only the requested JSON object.\n\nORIGINAL PROMPT:\n${originalPrompt}`;
 
     let providerResult;
 

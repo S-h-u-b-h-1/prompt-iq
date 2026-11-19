@@ -6,9 +6,9 @@ import {
   signupUser, 
   loginUser, 
   fetchUserProfile, 
-  checkoutSubscription,
   getFavoritePrompts,
-  toggleFavoritePrompt
+  toggleFavoritePrompt,
+  trackTelemetry
 } from '../lib/storage.js';
 import { scorePrompt } from '../lib/scorer.js';
 import { getCapturePreferences, setCapturePreferences, saveActivity, getSavedActivity, clearSavedActivity } from '../lib/activity.js';
@@ -127,7 +127,7 @@ async function checkAuthStatus() {
     initFavorites();
     initLibrary();
     initSignout();
-    initPayments();
+    initContribution();
     appInitialized = true;
   }
   const preferences = await getCapturePreferences(true).catch(() => ({saveDrafts:false}));
@@ -219,27 +219,19 @@ function initAuthListeners() {
   };
 }
 
-// Plan & Payments
-function initPayments() {
-  const upgradeBtn = document.getElementById('upgrade-pro-btn');
-  if (!upgradeBtn) return;
+function initContribution() {
+  const contributionBtn = document.getElementById('contribution-btn');
+  if (!contributionBtn) return;
 
-  upgradeBtn.onclick = async () => {
-    upgradeBtn.disabled = true;
-    upgradeBtn.textContent = 'Opening checkout...';
+  contributionBtn.onclick = async () => {
+    void trackTelemetry('contribution_started');
     try {
-      const token = await getSessionToken();
-      if (!token) {
-        await chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/onboarding.html') });
-        return;
-      }
-      const checkoutUrl = await checkoutSubscription();
-      await chrome.tabs.create({ url: checkoutUrl });
-    } catch (err) {
-      alert(`Checkout failed: ${err.message}`);
-    } finally {
-      upgradeBtn.disabled = false;
-      upgradeBtn.textContent = (await getSessionToken()) ? 'Upgrade to Premium' : 'Sign in for Premium';
+      await chrome.tabs.create({
+        url: 'upi://pay?pa=shubhaang2201%40axl&pn=Shubhaang%20Kataruka&am=150&cu=INR&tn=Support%20PromptIQ'
+      });
+    } catch {
+      await navigator.clipboard.writeText('shubhaang2201@axl');
+      contributionBtn.textContent = 'UPI ID copied';
     }
   };
 }
@@ -312,22 +304,12 @@ async function initDashboard(user) {
 async function renderDashboard(user) {
   const planStatusText = document.getElementById('plan-status-text');
   const loggedInUserText = document.getElementById('logged-in-user-text');
-  const upgradeBtn = document.getElementById('upgrade-pro-btn');
   
   const history = await getHistory();
 
   if (user) {
     loggedInUserText.textContent = `Logged in as: ${user.email}`;
-    if (user.plan === 'premium') {
-      planStatusText.innerHTML = `<span style="color: var(--accent-cyan); font-weight: 800;">Premium Active</span>`;
-      if (upgradeBtn) upgradeBtn.style.display = 'none';
-    } else {
-      planStatusText.innerHTML = `<span style="color: var(--text-secondary); font-weight: 700;">Free Plan</span>`;
-      if (upgradeBtn) {
-        upgradeBtn.style.display = 'block';
-        upgradeBtn.textContent = 'Upgrade to Premium';
-      }
-    }
+    planStatusText.innerHTML = `<span style="color: var(--text-secondary); font-weight: 700;">Free</span>`;
   }
 
   const logoutBtn = document.getElementById('logout-btn');

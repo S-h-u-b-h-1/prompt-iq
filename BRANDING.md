@@ -1,4 +1,4 @@
-# PromptIQ visual identity, release 1.0.15
+# PromptIQ visual identity, release 1.0.16
 
 The two dominant brand colors are graphite (#101414) and electric mint (#9fffc8). Soft neutral text (#f1f7f3), muted text (#a8b8af), and a raised graphite surface (#171e1b) preserve readability without competing with the accent. The website and extension use the same dark identity.
 
@@ -16,9 +16,9 @@ The two dominant brand colors are graphite (#101414) and electric mint (#9fffc8)
 - public/brand-mark.svg and public/favicon.svg: local speech/command monogram.
 - public/icon-16.png, public/icon-48.png, public/store_icon.png: browser-rendered mint/graphite toolbar icons.
 - website-assets/optical-rails-v13.png: original generated full-bleed hero artwork, with graphite optical rails and mint light. Generated using the built-in image tool; not executable extension content.
-- website-assets/product-workspace-v13.png: 2400 x 1600 capture of the actual optimizer with local Smart Template output in a labeled demonstration workspace.
-- public/screenshot1.png and public/screenshot2.png: 1280 x 800 captures before and after optimization.
-- public/screenshot3.png: 1280 x 800 account popup capture.
+- website-assets/product-workspace-v16.png: 2400 x 1600 capture of the current free AI Rewrite experience.
+- store-assets/screenshot1-v16.png: 1280 x 800 Chrome Web Store screenshot derived from the current product capture.
+- website-assets/product-workspace-v16.html: reproducible source for the product capture.
 
 The previous studio artwork is retained as source history but is no longer shipped on the website. Versioned asset URLs prevent old artwork or styles being reused from cache.
 
@@ -26,6 +26,6 @@ The previous studio artwork is retained as source history but is no longer shipp
 
 Run npm test, npm run verify:brand, npm run build:website, and npm run package:extension.
 
-Browser checks cover the local preview's 15 platform/mode combinations, copy, empty input, safe text rendering, account UI with mocked responses, plan usage displays, five website viewport sizes, and three floating panel sizes with compare, edit, insert, undo, and favorite callbacks.
+Browser checks cover the website, account flow, usage displays, responsive layouts, and the floating panel with compare, edit, insert, undo, and favorite callbacks. The unpacked extension is also loaded into a test browser to verify its real popup and ChatGPT injection.
 
-Premium is US$1/month excluding taxes. The checkout validator requires a USD 100-cent monthly plan and does not reuse links from a different plan. Payment provider configuration and the separately prepared Neon activity migration are not activated by this release.
+PromptIQ has no paid feature tier in this release. Every account receives 20 server-backed AI Rewrites and 100 on-device Quick Rewrites per day. The optional ₹150 UPI contribution does not unlock features or create a subscription.

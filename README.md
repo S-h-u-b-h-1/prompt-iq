@@ -1,12 +1,15 @@
-# PromptIQ
+# PromptIQ by Shubhaang
 
-PromptIQ is a Manifest V3 Chrome extension that improves prompts directly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, and DeepSeek.
+PromptIQ is a free Manifest V3 Chrome extension by Shubhaang Kataruka. It scores and rewrites prompts directly inside ChatGPT, Claude, Gemini, Perplexity, Copilot, DeepSeek, Grok, Le Chat, Meta AI, Poe, and You.com.
 
-## Plans
+## Product access
 
-- Free: account required; 100 Smart Template optimizations and 5 cloud AI trials per day.
-- Premium: 200 Smart Template optimizations plus 50 cloud AI optimizations per day.
-- Premium price: US$1 per month, excluding applicable taxes, through Razorpay.
+- 20 free AI Rewrites per account per day.
+- 100 on-device Quick Rewrites per day.
+- Standard, Concise, Detailed, Creative, and Technical modes.
+- History, favorites, comparison, insertion, and undo.
+- No subscription or paid feature tier.
+- Optional ₹150 UPI contribution to `shubhaang2201@axl`; contributions do not unlock features.
 
 The extension requires an account and explicit prompt-storage consent before it reads a supported chat composer. It stores the latest revision of each prompt draft for 30 days, not every keystroke. Users can inspect and delete saved activity from Dashboard > History.
 
@@ -22,30 +25,32 @@ Load `dist/` as an unpacked extension after running `npm run build`.
 
 ## Environment
 
-The Vercel deployment always requires `DATABASE_URL` and `JWT_SECRET`. Configure at least one cloud AI provider; OpenRouter is preferred and Gemini is the fallback. Razorpay values are required only when enabling paid checkout.
+The Vercel deployment requires:
 
 ```text
 DATABASE_URL
 JWT_SECRET
 GEMINI_API_KEY
+ADMIN_DASHBOARD_KEY
+```
+
+OpenRouter is optional:
+
+```text
 OPENROUTER_API_KEY
 OPENROUTER_MODEL
 OPENROUTER_FALLBACK_MODEL
-RAZORPAY_KEY_ID
-RAZORPAY_KEY_SECRET
-RAZORPAY_PLAN_ID
-RAZORPAY_WEBHOOK_SECRET
 ```
 
-`OPENROUTER_MODEL` and `OPENROUTER_FALLBACK_MODEL` are optional. PromptIQ defaults to `mistralai/mistral-small-24b-instruct-2501`, falls back through OpenRouter to `mistralai/mistral-small-3.2-24b-instruct`, and can use `GEMINI_API_KEY` if OpenRouter is unavailable.
+When OpenRouter is configured, PromptIQ defaults to the `openrouter/free` router. Gemini 2.5 Flash Lite and Gemini 2.5 Flash are the direct provider fallback. Provider keys remain on the server and are never packaged with the extension.
 
-Create a USD 1 monthly Razorpay plan (100 cents; taxes excluded), confirm the account supports USD recurring payments, and verify applicable tax settings before activating checkout. Do not reuse the old INR plan. Review existing subscriptions before changing the production plan ID. Configure the webhook URL as:
+The public website can send privacy-safe event names to Google Analytics when this build variable is configured:
 
 ```text
-https://promptiq-theta.vercel.app/api/subscription/webhook
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-Subscribe the webhook to subscription lifecycle events. Never put payment or AI-provider secrets in extension files.
+The aggregate first-party analytics page is `/api/admin/dashboard`. It uses HTTP Basic authentication; enter any username and use `ADMIN_DASHBOARD_KEY` as the password.
 
 ## Release
 
@@ -57,6 +62,6 @@ npm run package:extension
 npm run build:website
 ```
 
-Upload `dist.zip` to the Chrome Web Store. The extension version is defined in `public/manifest.json`; every submitted update must use a higher version than the currently published item.
+Upload `dist.zip` to the Chrome Web Store. The extension version is defined in `public/manifest.json`; each submitted update must use a higher version than the currently published item.
 
 Store copy, permission explanations, privacy disclosures, and the release checklist are in `CHROMEWEBSTORE.md`.
